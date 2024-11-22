@@ -1,12 +1,14 @@
 package csjar.controlpatrimonial.service.impl;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import csjar.controlpatrimonial.domain.Perfil;
 import csjar.controlpatrimonial.repository.PerfilRepository;
 import csjar.controlpatrimonial.service.PerfilService;
 
+@Service
 public class PerfilServiceImpl implements PerfilService {
 
 	private PerfilRepository perfilRepository;

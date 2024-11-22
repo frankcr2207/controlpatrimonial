@@ -30,6 +30,9 @@ public class Usuario {
 	@Column(name="s_apellidos")
 	private String apellidos;
 	
+	@Column(name="s_correo")
+	private String correo;
+	
 	@Column(name="s_login")
 	private String login;
 	

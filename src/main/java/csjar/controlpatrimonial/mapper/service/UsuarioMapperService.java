@@ -1,5 +1,12 @@
 package csjar.controlpatrimonial.mapper.service;
 
-public class UsuarioMapperService {
+import csjar.controlpatrimonial.domain.Usuario;
+import csjar.controlpatrimonial.dto.ResponseUsuarioDTO;
 
+public interface UsuarioMapperService {
+
+	ResponseUsuarioDTO toDTO(Usuario usuario);
+	
+	Usuario toEntity(ResponseUsuarioDTO responseUsuarioDTO);
+	
 }
