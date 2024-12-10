@@ -5,9 +5,12 @@ import lombok.Data;
 @Data
 public class RequestUsuarioDTO {
 
+	private Integer id;
+	private String login;
 	private String dni;
 	private String nombres;
 	private String apellidos;
-	private Integer idperfil;
+	private String estado;
+	private Integer idPerfil;
 	
 }

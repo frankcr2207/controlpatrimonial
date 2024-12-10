@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title></title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.3.1/css/all.min.css">
+<link rel="stylesheet" href="../css/style.css">
+<style type="text/css">
+body {
+	background-image: url("../img/corte.jpg");
+	background-size: cover;
+}
+</style>
+</head>
+<body>
+	<div>
+		<div class="form-inline">
+			<div class="form-group mb-2">
+				<img style="padding: 10px; margin: auto;" src="../img/pj_color.png"
+					width="90px">
+			</div>
+			<div class="form-group mx-sm-3 mb-2"
+				style="color: white; font-size: 20px;">
+				PODER JUDICIAL<br> CORTE SUPERIOR DE JUSTICIA DE AREQUIPA
+			</div>
+		</div>
+		<div>
+			<div class="text-animation">PLATAFORMA DE CONTROL PATRIMONIAL
+			</div>
+		</div>
+		<div class="text">
+			<p>PLATS, sistema</p>
+			<p>
+				<span class="word moderno">moderno.</span> <span
+					class="word funcional">funcional.</span> <span class="word seguro">seguro.</span>
+				<span class="word flexible">flexible.</span>
+			</p>
+		</div>
+		<div class="container-login100" align="right">
+
+
+			<div class="wrap-login100 p-t-50 p-b-90 p-l-50 p-r-50">
+				<form class="login100-form flex-sb flex-w" action="" method="post">
+					<span class="login100-form-title"> <a href=""
+						target="_blank"> <i class="fas fa-user"></i>
+					</a>
+					</span>
+					<div class="formGroup">
+						<input type="email" placeholder="Usuario" name="email" required
+							autocomplete="off">
+					</div>
+					<div class="formGroup">
+						<input type="password" id="password" placeholder="Contraseña"
+							required autocomplete="off">
+					</div>
+					<div class="formGroup">
+						<button type="button" class="btn2">ACCEDER</button>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+
+	<footer
+		style="background-color: black; left: 0; bottom: 0; width: 100%; position: fixed; color: white; text-align: center; border-top: 1px solid white;">
+		<div
+			style="margin: 0px auto; width: 100%; overflow: hidden; padding-top: 15px"
+			class="form-row">
+			<div style="width: 10%; font-size: 11px">
+				Powered by Jorge C.R. <i class='fab fa-java' style='font-size: 20px'></i><br>Cel.
+				999039040
+			</div>
+			<div style="width: 80%">
+				<p style="color: white; font-size: 11px">
+					Corte Superior de Justicia de Arequipa - Plaza España S/N -
+					Arequipa - Perú<br> &copy; PLATS v2.6 - Todos los derechos
+					reservados
+				</p>
+			</div>
+			<div style="width: 10%"></div>
+		</div>
+	</footer>
+
+	<script type="text/javascript">
+		var wrapper = document.getElementsByClassName("text-animation")[0];
+		wrapper.style.opacity = "1";
+		wrapper.innerHTML = wrapper.textContent
+				.replace(/./g, "<span>$&</span>");
+
+		var spans = wrapper.getElementsByTagName("span");
+
+		for (var i = 0; i < spans.length; i++) {
+			spans[i].style.animationDelay = i * 70 + "ms";
+		}
+
+		var words = document.getElementsByClassName('word');
+		var wordArray = [];
+		var currentWord = 0;
+
+		words[currentWord].style.opacity = 1;
+		for (var i = 0; i < words.length; i++) {
+			splitLetters(words[i]);
+		}
+
+		function changeWord() {
+			var cw = wordArray[currentWord];
+			var nw = currentWord == words.length - 1 ? wordArray[0]
+					: wordArray[currentWord + 1];
+			for (var i = 0; i < cw.length; i++) {
+				animateLetterOut(cw, i);
+			}
+
+			for (var i = 0; i < nw.length; i++) {
+				nw[i].className = 'letter behind';
+				nw[0].parentElement.style.opacity = 1;
+				animateLetterIn(nw, i);
+			}
+
+			currentWord = (currentWord == wordArray.length - 1) ? 0
+					: currentWord + 1;
+		}
+
+		function animateLetterOut(cw, i) {
+			setTimeout(function() {
+				cw[i].className = 'letter out';
+			}, i * 80);
+		}
+
+		function animateLetterIn(nw, i) {
+			setTimeout(function() {
+				nw[i].className = 'letter in';
+			}, 340 + (i * 80));
+		}
+
+		function splitLetters(word) {
+			var content = word.innerHTML;
+			word.innerHTML = '';
+			var letters = [];
+			for (var i = 0; i < content.length; i++) {
+				var letter = document.createElement('span');
+				letter.className = 'letter';
+				letter.innerHTML = content.charAt(i);
+				word.appendChild(letter);
+				letters.push(letter);
+			}
+
+			wordArray.push(letters);
+		}
+
+		changeWord();
+		setInterval(changeWord, 4000);
+	</script>
+</body>
+</html>

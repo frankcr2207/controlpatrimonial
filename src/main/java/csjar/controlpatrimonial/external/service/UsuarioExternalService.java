@@ -4,6 +4,6 @@ import csjar.controlpatrimonial.dto.ResponseUsuarioDTO;
 
 public interface UsuarioExternalService {
 
-	ResponseUsuarioDTO buscarServicioPersonal(String dni);
+	ResponseUsuarioDTO buscarEmpleado(String dni);
 	
 }

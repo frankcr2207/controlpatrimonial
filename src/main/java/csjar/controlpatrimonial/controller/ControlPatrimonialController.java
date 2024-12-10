@@ -4,14 +4,21 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
 
+import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
 
-@RestController
+@RequestMapping("/controlPatrimonial")
+@Controller
 public class ControlPatrimonialController {
+	
+	@GetMapping("/")
+	public String login(){
+		return "vistas/login";
+	}
 
-	@GetMapping(value = "/")
+	@GetMapping(value = "/abc")
 	public String getToken() throws NoSuchAlgorithmException {
 		String userId = "12345";
         String secretKey = "mi_clave_secreta";
