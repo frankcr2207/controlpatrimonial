@@ -17,11 +17,11 @@ import csjar.controlpatrimonial.dto.RequestPerfilDTO;
 import csjar.controlpatrimonial.dto.ResponsePerfilDTO;
 import csjar.controlpatrimonial.service.PerfilService;
 
-@RestController
-@RequestMapping("/perfil")
+//@RestController
+//@RequestMapping("/perfil")
 public class PerfilController {
 
-	private PerfilService perfilService;
+	/*private PerfilService perfilService;
 	
 	public PerfilController(PerfilService perfilService) {
 		super();
@@ -48,6 +48,6 @@ public class PerfilController {
 	public ResponseEntity<ResponseEntity<HttpStatus>> modificarPerfil(@RequestBody RequestPerfilDTO perfil) throws NoSuchAlgorithmException {
 		this.perfilService.modificarPerfil(perfil);
 		return new ResponseEntity<>(HttpStatus.ACCEPTED);
-	}
+	}*/
 	
 }

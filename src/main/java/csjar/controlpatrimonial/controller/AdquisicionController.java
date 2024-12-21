@@ -10,16 +10,18 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 
 import csjar.controlpatrimonial.dto.RequestAdquisicionDTO;
 import csjar.controlpatrimonial.dto.RequestBienesDTO;
 import csjar.controlpatrimonial.dto.ResponseAdquisicionDTO;
 import csjar.controlpatrimonial.service.AdquisicionService;
 
+//@RequestMapping("/adquisicion")
 @Controller
 public class AdquisicionController {
 	
-	private AdquisicionService adquisicionService;
+	/*private AdquisicionService adquisicionService;
 	
 	public AdquisicionController(AdquisicionService adquisicionService) {
 		super();
@@ -37,10 +39,10 @@ public class AdquisicionController {
 		return new ResponseEntity<>(HttpStatus.CREATED);
 	}
 	
-	@PostMapping
+	@PostMapping("/generar")
 	public ResponseEntity<ResponseEntity<HttpStatus>> generarBienes(@RequestBody List<RequestBienesDTO> request) throws NoSuchAlgorithmException {
 		this.adquisicionService.generarBienes(request);
 		return new ResponseEntity<>(HttpStatus.CREATED);
-	}
+	}*/
 	
 }

@@ -17,11 +17,11 @@ import csjar.controlpatrimonial.dto.RequestUsuarioDTO;
 import csjar.controlpatrimonial.dto.ResponseUsuarioDTO;
 import csjar.controlpatrimonial.service.UsuarioService;
 
-@RestController
-@RequestMapping("/usuario")
+//@RestController
+//@RequestMapping("/usuario")
 public class UsuarioController {
 
-	private UsuarioService usuarioService;
+	/*private UsuarioService usuarioService;
 	
 	public UsuarioController(UsuarioService usuarioService) {
 		super();
@@ -50,5 +50,5 @@ public class UsuarioController {
 		this.usuarioService.restablecerUsuario(id);
 		return new ResponseEntity<>(HttpStatus.CREATED);
 	}
-	
+	*/
 }

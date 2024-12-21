@@ -6,6 +6,8 @@ import csjar.controlpatrimonial.domain.Usuario;
 
 public interface UsuarioRepository extends JpaRepository<Usuario, Integer>{
 
+	Usuario findByLoginAndEstado(String login, String estado);
+	
 	Usuario findByDni(String dni);
 	
 }

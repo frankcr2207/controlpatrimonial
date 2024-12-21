@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+
+	<style type="text/css">
+	 	.selected{ background-color: #E1E1E1; } tr:hover{ background-color: #E1E1E1; } 
+
+		input{
+	    	border:0;
+		    border-bottom: 1px solid #009CBF;
+		    font-size: 11px;
+	    }
+	    
+	    .modalLabel{
+	    	width: 100px;
+	    	font-weight: bold;
+	    }
+
+	</style>
+</head>
+<body>
+	
+	<div class="card card-body">
+		<div style="width:100%; height: 100%; font-size: 11px" id=solicitud>
+			<h3>REGISTRO NUEVA ADQUISICIÓN</h3>
+			<label>N° DOCUMENTO: </label><input type="text" id="txtNumDocumento"> <br>
+			<label>FECHA DOCUMENTO: </label><input type="date" id="txtNumDocumento"> <br>
+			<label>TIPO ADQUISICIÓN: </label><select id="listTipo"></select> <button id="btnAgregar" type="button">+</button><button id="btnAgregar" type="button">GUARDAR</button>
+			<hr>
+			<label>GRUPO: </label><select id="listGrupo"></select>&nbsp;<label>CLASE: </label><select id="listClase"></select>
+			<label>DENOMINACIÓN: </label><select id="listDenominacion"></select>&nbsp;<label>CANTIDAD: </label><input type="number" id="txtCantidad">
+			<button id="btnAgregar" type="button">AGREGAR</button>
+			<hr>
+			<table id="tablaCatalogo">
+			</table>
+
+		</div>
+	</div>
+	
+	<script type="text/javascript">
+	   	$(document).ready(function() {
+	   		
+	   		$("#lstAccion").change(function() {
+	      		var accion = $(this).find(":selected").val();
+	      		$("#tablaAudiencias").empty();
+	 			if(accion=="N")
+	 				$("#btnPublicarAudiencias").show();
+	 			else 
+	 				$("#btnPublicarAudiencias").hide();
+	    	});
+	   		
+	    	$("#lstSede").change(function() {
+	      		var idSede = $(this).find(":selected").val();
+	      		var especialidad = $("#txtEspecialidad").val();
+	 
+		      	$.ajax({
+		       		type : "GET",
+		       		url : "getInstanciaAudiencia?sede=" + idSede + "&especialidad=" + especialidad,
+			        dataType : 'json',
+			        success : function(data) {
+			         	var html = '';
+			         	var len = data.length;
+			         	html += '<div class="row row-cols-2 row-cols-sm-2 row-cols-md-2">';
+			         	for (var i = 0; i < len; i++) {
+							html+='<div class="col"><label><input name="instancia" type="checkbox" id="cbox1" value="'+ data[i].id+'"> '+data[i].denominacion+'</label></div>';
+			         	}
+			         	html += ' </div>';
+				        $("#divInstancias").html(html);
+			        },
+		        	error : function(e) {
+		        	 	Swal.fire({
+						  	icon: 'error',
+						  	title: 'ATENCIÓN',
+						  	text: 'No se pudo cargar instancias.!!',
+						});
+			     	}
+		      	});
+	    	});
+
+	    	
+	    	$("#btnPublicarAudiencias").click(function(){
+	    		var html = '';
+	    		var audiencias = [];
+	    		$('#tablaAudiencias .filaAudiencia').each(function() {
+	    			var audiencia = {};
+	    			var modalidad = $(this).find("td:eq(10) select").val();
+	    			var estado = $(this).find("td:eq(11) select").val();
+	    			if(estado != 'O'){
+	    				audiencia["expediente"] = $(this).find("td:eq(0)").text();
+	    				audiencia["idInstancia"] = $(this).find("td:eq(1)").text();
+	    				audiencia["idSede"] = $(this).find("td:eq(2)").text();
+	    				audiencia["especialidad"] = $("#txtEspecialidad").val();
+	    				audiencia["parte1"] = $(this).find("td:eq(4)").text();
+	    				audiencia["parte2"] = $(this).find("td:eq(5)").text();
+	    				audiencia["delito"] = $(this).find("td:eq(6)").text();
+	    				audiencia["tipo"] = $(this).find("td:eq(7)").text();
+	    				audiencia["fechaHora"] = $(this).find("td:eq(8)").text();
+	    				audiencia["enlace"] = $(this).find("td:eq(12) input").val();
+	    				audiencia["modalidad"] = modalidad;
+	    				audiencia["estado"] = estado;
+	    				audiencias.push(audiencia);
+	    			}
+	    		});
+	    		if(audiencias.length == 0){
+					toastr.clear();
+					toastr.options = {
+						"closeButton":true,
+						"progressBar": true,
+						"positionClass":"toast-topcenter-right"
+					};
+					toastr.error("Debe seleccionar al menos una audiencia!!");
+	    		}
+	    		else{
+	    			$.ajax({
+	    				type: "POST",
+	    				url: "publicarAudiencias",
+	    				data: JSON.stringify(audiencias),
+	    				cache: false,
+	    				dataType: "json",
+	    				contentType: "application/json; charset=utf-8",
+	    				processData: false,
+	    				success:function(response) {
+	    					$("#tablaAudiencias").empty();
+	    					Swal.fire(
+	    						'AUDIENCIAS PUBLICADAS!!',
+	    						'Click en OK para continuar!',
+	    						'success'
+	    					);	
+	    				},
+	    		        error : function(response){
+	    		        	var r = jQuery.parseJSON(response.responseText);
+	    					toastr.clear();
+	    					toastr.options = {
+	    						"closeButton":true,
+	    						"progressBar": true,
+	    						"positionClass":"toast-topcenter-right"
+	    					};
+	    					toastr.warning(r.message);	
+	    		        }
+	    			});
+	    		}
+	        });
+	    	
+	    	$("#btnGuardarModificacionAudiencia").click(function(){
+	    		
+	    		var enlace = $("#txtEnlace").val();
+	    		var estado = $("#lstEditarEstado").val();
+	    		
+
+    			var audiencia = {};
+	    		audiencia["id"] = $("#txtIdAudiencia").val();
+	    		audiencia["enlace"] = $("#txtEnlace").val();
+	    		audiencia["estado"] = $("#lstEditarEstado").val();
+	    		
+    			$.ajax({
+    				type: "PUT",
+    				url: "modificarAudiencia",
+    				data: JSON.stringify(audiencia),
+    				cache: false,
+    				dataType: "json",
+    				contentType: "application/json; charset=utf-8",
+    				processData: false,
+    				success:function(response) {
+    					$("#modalEditarAudiencia").modal('hide');
+    					$("#tablaAudiencias").empty();
+    					getAudiencias();
+    					Swal.fire(
+    						'AUDIENCIA MODIFICADA!!',
+    						'Click en OK para continuar!',
+    						'success'
+    					);	
+    				},
+    		        error : function(response){
+    		        	var r = jQuery.parseJSON(response.responseText);
+    					toastr.clear();
+    					toastr.options = {
+    						"closeButton":true,
+    						"progressBar": true,
+    						"positionClass":"toast-topcenter-right"
+    					};
+    					toastr.warning(r.message);	
+    		        }
+    			});
+	        });
+	  	});
+  	</script>
+	
+    <script type="text/javascript">
+    
+	    function getAudiencias(){
+			var accion = $("#lstAccion").val();
+			var idSede = $("#lstSede").val();
+			var fecha = $("#txtFecha").val();
+			var especialidad = $("#txtEspecialidad").val();
+	        var instancias = [];
+	        $.each($("input[name='instancia']:checked"), function(){
+	        	instancias.push($(this).val());
+	        });
+	        
+			if(instancias.length == 0 || idSede == '0' || accion == '0' || fecha == ''){
+				toastr.clear();
+				toastr.options = {
+					"closeButton":true,
+					"progressBar": true,
+					"positionClass":"toast-topcenter-right"
+				};
+				toastr.warning("Debe completar todos los campos!!");
+				return false;
+			}
+			
+			var endPoint;
+			if(accion == "N")
+				endPoint = "getAgendaSij";
+			else
+				endPoint = "getAudienciasPublicadas";
+	        
+	        $.ajax({
+	       		type : "GET",
+	       		url : endPoint + "?sede=" + idSede + "&instancias=" + instancias + "&fecha=" + fecha,
+		        dataType : 'json',
+		        success : function(data) {
+		         	var html = '';
+
+		         	if(accion=="N"){
+			         	html += '<tbody><tr><th>EXPEDIENTE</th><th style="display:none;"></th><th style="display:none;"></th><th>INSTANCIA</th><th style="display:none;"></th><th style="display:none;"></th><th>DELITO</th><th>TIPO</th><th style="display:none;"></th><th>HORA</th><th>MODALIDAD</th><th>ESTADO</th><th>ENLACE</th></tr>';
+			         	for (var i = 0; i < data.length; i++) {
+			         		var delito = '';
+			         		if(data[i].delito != null)
+			         			delito = data[i].delito;
+							html+='<tr class="filaAudiencia"><td>'+data[i].expediente+'</td><td style="display:none;">'+data[i].idInstancia+'</td><td style="display:none;">'+
+							data[i].idSede+'</td><td>'+data[i].instancia+'</td><td style="display:none;">'+data[i].parte1+'</td><td style="display:none;">'+data[i].parte2+'</td><td>'+delito+'</td><td>'+
+							data[i].tipo+'</td><td style="display:none;">'+data[i].fechaHora +'</td><td>'+data[i].hora +'</td><td><select><option value="V">VIRTUAL</option><option value="P">PRESENCIAL</option></select>'+
+							'<td><select><option value="P">PUBLICAR</option><option value="R">RESERVAR</option><option value="O">OMITIR</option></select></td><td><input type="text" size="40px" value="'+data[i].enlace+'"></td></tr>';
+			         	}
+			         	html += '</tbody>';
+		         	}
+		         	else{
+		         		html += '<tbody><tr><th>EXPEDIENTE</th><th style="display:none;"></th><th style="display:none;"></th><th>INSTANCIA</th><th style="display:none;"></th><th style="display:none;"></th><th>TIPO</th><th style="display:none;"></th><th>HORA</th><th>ENLACE</th><th>ESTADO</th><th>EDITAR</th></tr>';
+			         	for (var i = 0; i < data.length; i++) {
+							html+='<tr class="filaAudiencia"><td>'+data[i].expediente+'</td><td style="display:none;">'+data[i].instancia.id+'</td><td style="display:none;">'+
+							data[i].idSede+'</td><td>'+data[i].instancia.denominacion+'</td><td style="display:none;">'+data[i].parte1+'</td><td style="display:none;">'+data[i].parte2+'</td><td>'+
+							data[i].tipo+'</td><td style="display:none;">'+data[i].fechaHora +'</td><td>'+data[i].hora +'</td><td>'+data[i].enlace+'</td><td>'+data[i].estado+'</td><td>'+
+							"<button type='button' class='btn btn-warning btn-sm' onclick='editarAudiencia(" + data[i].id + ")'><i class='fas fa-edit'></i></button></td></tr>";
+			         	}
+			         	html += '</tbody>';
+		         	}
+		         	
+			        $("#tablaAudiencias").html(html);
+		        },
+	        	error : function(e) {
+	        	 	Swal.fire({
+					  	icon: 'error',
+					  	title: 'ATENCIÓN',
+					  	text: 'No se pudo cargar los registros!!',
+					});
+		     	}
+	      	});
+	    };
+	    
+		function editarAudiencia(id){
+			$.ajax({
+	       		type : "GET",
+	       		url : "getAudiencia?id=" + id,
+		        dataType : 'json',
+		        success : function(data) {
+					$("#modalEditarAudiencia").modal('show');
+					$("#txtIdAudiencia").val(data.id);
+					$("#txtExpediente").val(data.expediente);
+					$("#txtHora").val(data.hora);
+					$("#txtEnlace").val(data.enlace);
+					$("#lstEditarEstado").val(data.estado);
+		        },
+	        	error : function(e) {
+	        	 	Swal.fire({
+					  	icon: 'error',
+					  	title: 'ATENCIÓN',
+					  	text: 'No se pudo cargar los datos!!',
+					});
+		     	}
+	      	});
+		}
+	</script>
+
+</body>
+</html>

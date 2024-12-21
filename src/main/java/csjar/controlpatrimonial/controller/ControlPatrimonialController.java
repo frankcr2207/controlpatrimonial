@@ -1,24 +1,37 @@
 package csjar.controlpatrimonial.controller;
 
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.Base64;
-
+import org.apache.tomcat.util.net.openssl.ciphers.Authentication;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
 
-@RequestMapping("/controlPatrimonial")
+import csjar.controlpatrimonial.domain.Usuario;
+import csjar.controlpatrimonial.service.UsuarioService;
+
 @Controller
 public class ControlPatrimonialController {
 	
-	@GetMapping("/")
-	public String login(){
-		return "vistas/login";
-	}
+    @GetMapping("/")
+    public String loginForm() {
+        return "login";
+    }
+    
+    @GetMapping("/principal")
+    public String formPrincipal() {
+        return "vistas/principal";
+    }
+    
+	/*@GetMapping("/usuarios")
+	public String usuarios(){
+		return "vistas/usuarios";
+	}*/
 
-	@GetMapping(value = "/abc")
+	/*@GetMapping(value = "/abc")
 	public String getToken() throws NoSuchAlgorithmException {
 		String userId = "12345";
         String secretKey = "mi_clave_secreta";
@@ -67,5 +80,5 @@ public class ControlPatrimonialController {
         // Compara el hash recibido con el generado
         return generatedHash.equals(receivedHash);
     }
-	
+	*/
 }

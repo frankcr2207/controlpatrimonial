@@ -52,7 +52,7 @@ public class UsuarioServiceImpl implements UsuarioService {
 		if(Objects.nonNull(usuarioDTO.getIdPerfil())){
 			Perfil perfil = this.perfilService.obtenerEntidad(usuarioDTO.getIdPerfil());
 			usuario.setPerfil(perfil);
-			usuario.setClave(EncriptarClave.generar());
+			//usuario.setClave(EncriptarClave.generar());
 			usuario.setEstado("ACTIVO");
 			this.usuarioRepository.save(usuario);
 		}
@@ -72,7 +72,7 @@ public class UsuarioServiceImpl implements UsuarioService {
 	@Override
 	public void restablecerUsuario(Integer id) {
 		Usuario usuario = this.usuarioRepository.findById(id).get();
-		usuario.setClave(EncriptarClave.generar());
+		//usuario.setClave(EncriptarClave.generar());
 	}
 
 }

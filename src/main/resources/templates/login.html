@@ -1,15 +1,19 @@
 <!DOCTYPE html>
-<html>
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
 <head>
 <meta charset="utf-8">
 <title></title>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.3.1/css/all.min.css">
+
+<!-- <link rel="stylesheet" href="../css/style.css"> -->
 <link rel="stylesheet" href="../css/style.css">
 <style type="text/css">
 body {
-	background-image: url("../img/corte.jpg");
+	background-image: url("img/corte.jpg");
 	background-size: cover;
 }
 </style>
@@ -18,7 +22,7 @@ body {
 	<div>
 		<div class="form-inline">
 			<div class="form-group mb-2">
-				<img style="padding: 10px; margin: auto;" src="../img/pj_color.png"
+				<img style="padding: 10px; margin: auto;" src="img/pj_color.png"
 					width="90px">
 			</div>
 			<div class="form-group mx-sm-3 mb-2"
@@ -42,21 +46,24 @@ body {
 
 
 			<div class="wrap-login100 p-t-50 p-b-90 p-l-50 p-r-50">
-				<form class="login100-form flex-sb flex-w" action="" method="post">
+				<form class="login100-form flex-sb flex-w" th:action="@{/}"  method="post">
 					<span class="login100-form-title"> <a href=""
 						target="_blank"> <i class="fas fa-user"></i>
 					</a>
 					</span>
 					<div class="formGroup">
-						<input type="email" placeholder="Usuario" name="email" required
+						<input type="text" placeholder="Usuario" id="username" name="username" required
 							autocomplete="off">
 					</div>
 					<div class="formGroup">
-						<input type="password" id="password" placeholder="Contraseña"
+						<input type="password" id="password" name="password" placeholder="Contraseña"
 							required autocomplete="off">
 					</div>
+					<div th:if="${param.error}" role="alert" align="center">
+							<span style="font-size: 15px" class="badge badge-pill badge-danger">CREDENCIALES INCORRECTAS</span><br>&nbsp;
+						</div>
 					<div class="formGroup">
-						<button type="button" class="btn2">ACCEDER</button>
+						<button type="submit" class="btn2">ACCEDER</button>
 					</div>
 				</form>
 			</div>
