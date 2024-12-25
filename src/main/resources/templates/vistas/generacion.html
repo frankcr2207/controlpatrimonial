@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+
+	<style type="text/css">
+	 	.selected{ background-color: #E1E1E1; } tr:hover{ background-color: #E1E1E1; } 
+
+		input{
+	    	border:0;
+		    border-bottom: 1px solid #009CBF;
+		    font-size: 11px;
+	    }
+	    
+	    .modalLabel{
+	    	width: 100px;
+	    	font-weight: bold;
+	    }
+
+	</style>
+</head>
+<body>
+	
+	<div class="card card-body">
+		<div style="width:100%; height: 100%; font-size: 11px">
+			<h3>GESTIÓN DE BIENES</h3>
+			<hr>
+			<div class="form-row" style="width:80%; height: 100%; font-size: 11px">
+				<div style="width: 35%;">
+					<h6>BÚSQUEDA</h6><br>
+					<input type="text" id="txtAdquisicion"><button class="btn btn-info btn-sm" id="btnBuscar" type="button" onclick="buscarAdquisicion()"><i class="fas fa-search"></i></button><br><br>
+					<table id="tablaAdquisicion" class="table">
+						<thead class="thead-dark">
+				            <tr>
+				                <th>ID</th>
+				                <th>DOCUMENTO</th>
+				                <th>REGISTRO</th>
+				                <th>ESTADO</th>
+				                <th></th>
+				            </tr>
+				        </thead>
+				        <tbody>
+				        </tbody>
+					</table>
+				</div>
+				<div align="right" style="width: 65%;">
+					<h6>ADQUISICIÓN</h6>
+					<label>N° DOCUMENTO: </label><input type="text" id="txtDocumento"> <br>
+					<label>FECHA DOCUMENTO: </label><input type="text" id="txtFecAdquisicion"> <br>
+					<label>FECHA REGISTRO: </label><input type="text" id="txtFecRegistro"> <br>
+					<label>ESTADO: </label><input type="text" id="txtEstado"> <br>
+				</div>
+			</div>
+		</div>
+	</div>
+	
+	
+	
+	<script type="text/javascript">
+	   	$(document).ready(function() {
+	   		
+	   		
+	   		
+	   		$("#lstAccion").change(function() {
+	      		var accion = $(this).find(":selected").val();
+	      		$("#tablaAudiencias").empty();
+	 			if(accion=="N")
+	 				$("#btnPublicarAudiencias").show();
+	 			else 
+	 				$("#btnPublicarAudiencias").hide();
+	    	});
+	   		
+	    	$("#lstSede").change(function() {
+	      		var idSede = $(this).find(":selected").val();
+	      		var especialidad = $("#txtEspecialidad").val();
+	 
+		      	$.ajax({
+		       		type : "GET",
+		       		url : "getInstanciaAudiencia?sede=" + idSede + "&especialidad=" + especialidad,
+			        dataType : 'json',
+			        success : function(data) {
+			         	var html = '';
+			         	var len = data.length;
+			         	html += '<div class="row row-cols-2 row-cols-sm-2 row-cols-md-2">';
+			         	for (var i = 0; i < len; i++) {
+							html+='<div class="col"><label><input name="instancia" type="checkbox" id="cbox1" value="'+ data[i].id+'"> '+data[i].denominacion+'</label></div>';
+			         	}
+			         	html += ' </div>';
+				        $("#divInstancias").html(html);
+			        },
+		        	error : function(e) {
+		        	 	Swal.fire({
+						  	icon: 'error',
+						  	title: 'ATENCIÓN',
+						  	text: 'No se pudo cargar instancias.!!',
+						});
+			     	}
+		      	});
+	    	});
+
+	    	
+	    	$("#btnPublicarAudiencias").click(function(){
+	    		var html = '';
+	    		var audiencias = [];
+	    		$('#tablaAudiencias .filaAudiencia').each(function() {
+	    			var audiencia = {};
+	    			var modalidad = $(this).find("td:eq(10) select").val();
+	    			var estado = $(this).find("td:eq(11) select").val();
+	    			if(estado != 'O'){
+	    				audiencia["expediente"] = $(this).find("td:eq(0)").text();
+	    				audiencia["idInstancia"] = $(this).find("td:eq(1)").text();
+	    				audiencia["idSede"] = $(this).find("td:eq(2)").text();
+	    				audiencia["especialidad"] = $("#txtEspecialidad").val();
+	    				audiencia["parte1"] = $(this).find("td:eq(4)").text();
+	    				audiencia["parte2"] = $(this).find("td:eq(5)").text();
+	    				audiencia["delito"] = $(this).find("td:eq(6)").text();
+	    				audiencia["tipo"] = $(this).find("td:eq(7)").text();
+	    				audiencia["fechaHora"] = $(this).find("td:eq(8)").text();
+	    				audiencia["enlace"] = $(this).find("td:eq(12) input").val();
+	    				audiencia["modalidad"] = modalidad;
+	    				audiencia["estado"] = estado;
+	    				audiencias.push(audiencia);
+	    			}
+	    		});
+	    		if(audiencias.length == 0){
+					toastr.clear();
+					toastr.options = {
+						"closeButton":true,
+						"progressBar": true,
+						"positionClass":"toast-topcenter-right"
+					};
+					toastr.error("Debe seleccionar al menos una audiencia!!");
+	    		}
+	    		else{
+	    			$.ajax({
+	    				type: "POST",
+	    				url: "publicarAudiencias",
+	    				data: JSON.stringify(audiencias),
+	    				cache: false,
+	    				dataType: "json",
+	    				contentType: "application/json; charset=utf-8",
+	    				processData: false,
+	    				success:function(response) {
+	    					$("#tablaAudiencias").empty();
+	    					Swal.fire(
+	    						'AUDIENCIAS PUBLICADAS!!',
+	    						'Click en OK para continuar!',
+	    						'success'
+	    					);	
+	    				},
+	    		        error : function(response){
+	    		        	var r = jQuery.parseJSON(response.responseText);
+	    					toastr.clear();
+	    					toastr.options = {
+	    						"closeButton":true,
+	    						"progressBar": true,
+	    						"positionClass":"toast-topcenter-right"
+	    					};
+	    					toastr.warning(r.message);	
+	    		        }
+	    			});
+	    		}
+	        });
+	    	
+	    	$("#btnGuardar").click(function(){
+
+    			var audiencia = {};
+	    		audiencia["id"] = $("#id").val();
+	    		audiencia["login"] = $("#login").val();
+	    		audiencia["dni"] = $("#dni").val();
+	    		audiencia["nombres"] = $("#nombres").val();
+	    		audiencia["apellidos"] = $("#apellidos").val();
+	    		audiencia["estado"] = $("#estado").val();
+	    		audiencia["correo"] = $("#correo").val();
+	    		audiencia["perfil"] = $("#perfil").val();
+	    		
+	    		var method = $("#id").val() != '' ? "PUT" : "POST";
+	    		
+    			$.ajax({
+    				type: method,
+    				url: "usuario",
+    				data: JSON.stringify(audiencia),
+    				cache: false,
+    				dataType: "json",
+    				contentType: "application/json; charset=utf-8",
+    				processData: false,
+    				success:function(response) {
+    					$("#modalUsuario").modal('hide');
+    					$("#tablaUsuarios").empty();
+    					getAudiencias();
+    					Swal.fire(
+    						'CAMBIOS CORRECTOS!!',
+    						'Click en OK para continuar!',
+    						'success'
+    					);	
+    				},
+    		        error : function(response){
+    		        	var r = jQuery.parseJSON(response.responseText);
+    					toastr.clear();
+    					toastr.options = {
+    						"closeButton":true,
+    						"progressBar": true,
+    						"positionClass":"toast-topcenter-right"
+    					};
+    					toastr.warning(r.message);	
+    		        }
+    			});
+	        });
+	  	});
+  	</script>
+	
+    <script type="text/javascript">
+    
+	    function buscarAdquisicion(){
+	    	
+			var busqueda = $('#txtAdquisicion').val();
+			if(busqueda == '' || busqueda.length < 3){
+				toastr.clear();
+				toastr.options = {
+					"closeButton":true,
+					"progressBar": true,
+					"positionClass":"toast-topcenter-right"
+				};
+				toastr.warning("Debe ingresar parámetro correcto");	
+				return false;
+			}
+			
+			var tabla = document.getElementById("tablaAdquisicion");
+			
+			$.ajax({
+	       		type : "GET",
+	       		url : "adquisicion/buscar/" + busqueda,
+		        dataType : 'json',
+		        success : function(data) {
+		        	var len = data.length;
+		         	for (var i = 0; i < len; i++) {
+
+		                var fila = tabla.insertRow();
+
+		                var celda1 = fila.insertCell(0);
+		                var celda2 = fila.insertCell(1);
+		                var celda3 = fila.insertCell(2);
+		                var celda4 = fila.insertCell(3);
+		                var celda5 = fila.insertCell(4);
+		                
+		                celda1.innerHTML = data[i].id;
+		                celda2.innerHTML = data[i].documento;
+		                celda3.innerHTML = data[i].fecRegistro;
+		                var estado = data[i].estado == 'R' ? 'REGISTRADO' : 'GENERADO';
+		                celda4.innerHTML = estado;
+		                celda5.innerHTML = '<button type="button" class="btn btn-info btn-sm" onclick="verAdquisicion('+data[i].id+')"><i class="fas fa-eye"></i></button>';
+		               
+		         	}
+		        },
+		        error : function(response){
+		        	var r = jQuery.parseJSON(response.responseText);
+					toastr.clear();
+					toastr.options = {
+						"closeButton":true,
+						"progressBar": true,
+						"positionClass":"toast-topcenter-right"
+					};
+					toastr.warning(r.message);	
+		        }
+	      	});
+		}
+	    
+	    
+	    function verAdquisicion(id){
+
+	        $.ajax({
+	       		type : "GET",
+	       		url : "adquisicion/" + id,
+		        dataType : 'json',
+		        success : function(data) {
+		         	var html = '';
+					$('#txtDocumento').val(data.documento);
+
+		        },
+	        	error : function(e) {
+	        	 	Swal.fire({
+					  	icon: 'error',
+					  	title: 'ATENCIÓN',
+					  	text: 'No se pudo cargar los registros!!',
+					});
+		     	}
+	      	});
+	    };
+	    
+		function editarAudiencia(id){
+			$.ajax({
+	       		type : "GET",
+	       		url : "getAudiencia?id=" + id,
+		        dataType : 'json',
+		        success : function(data) {
+					$("#modalEditarAudiencia").modal('show');
+					$("#txtIdAudiencia").val(data.id);
+					$("#txtExpediente").val(data.expediente);
+					$("#txtHora").val(data.hora);
+					$("#txtEnlace").val(data.enlace);
+					$("#lstEditarEstado").val(data.estado);
+		        },
+	        	error : function(e) {
+	        	 	Swal.fire({
+					  	icon: 'error',
+					  	title: 'ATENCIÓN',
+					  	text: 'No se pudo cargar los datos!!',
+					});
+		     	}
+	      	});
+		}
+	</script>
+
+</body>
+</html>

@@ -23,7 +23,7 @@ public class Marca {
 	private Integer id;
 	
 	@Column(name="s_descripcion")
-	private String descripcion;
+	private String nombre;
 	
 	@OneToMany(mappedBy = "marca")
     private List<Modelo> modelos;

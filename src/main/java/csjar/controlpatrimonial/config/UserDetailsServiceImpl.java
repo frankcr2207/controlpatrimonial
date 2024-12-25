@@ -2,6 +2,8 @@ package csjar.controlpatrimonial.config;
 
 import java.util.Objects;
 
+import javax.transaction.Transactional;
+
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -20,9 +22,10 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         this.usuarioRepository = usuarioRepository;
     }
 
+    @Transactional
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        Usuario usuario = usuarioRepository.findByLoginAndEstado(username, "A");
+        Usuario usuario = usuarioRepository.findByLoginAndEstadoAndPerfilIsNotNull(username, "A");
         if(Objects.isNull(usuario))
               throw new UsernameNotFoundException("Usuario no encontrado");
 

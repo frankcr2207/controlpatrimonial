@@ -41,6 +41,9 @@ public class Adquisicion {
 	@Column(name="s_estado")
 	private String estado;
 	
+	@Column(name="s_login")
+	private String usuario;
+	
 	@ManyToOne
 	@JoinColumn(name = "n_id_tipo", nullable = false)
 	private TipoAdquisicion tipoAdquisicion;
@@ -108,6 +111,14 @@ public class Adquisicion {
         this.detalleAdquisicion.addAll(detalleAdquisicion);
 		if(CollectorUtils.isValidate(this.detalleAdquisicion))
 			this.detalleAdquisicion.stream().forEach(d -> d.setAdquisicion(this));
+	}
+
+	public String getUsuario() {
+		return usuario;
+	}
+
+	public void setUsuario(String usuario) {
+		this.usuario = usuario;
 	}
 	
 }

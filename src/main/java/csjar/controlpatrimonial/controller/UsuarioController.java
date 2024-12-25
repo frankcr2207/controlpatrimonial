@@ -1,6 +1,7 @@
 package csjar.controlpatrimonial.controller;
 
 import java.security.NoSuchAlgorithmException;
+import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,20 +18,30 @@ import csjar.controlpatrimonial.dto.RequestUsuarioDTO;
 import csjar.controlpatrimonial.dto.ResponseUsuarioDTO;
 import csjar.controlpatrimonial.service.UsuarioService;
 
-//@RestController
-//@RequestMapping("/usuario")
+@RestController
+@RequestMapping("/usuario")
 public class UsuarioController {
 
-	/*private UsuarioService usuarioService;
+	private UsuarioService usuarioService;
 	
 	public UsuarioController(UsuarioService usuarioService) {
 		super();
 		this.usuarioService = usuarioService;
 	}
 	
-	@GetMapping("/{dni}")
-	public ResponseEntity<ResponseUsuarioDTO> buscarUsuario(@PathVariable String dni) throws NoSuchAlgorithmException {
-		return new ResponseEntity<>(usuarioService.buscarUsuario(dni), HttpStatus.OK);
+	@GetMapping
+	public ResponseEntity<List<ResponseUsuarioDTO>> listarUsuarios() throws NoSuchAlgorithmException {
+		return new ResponseEntity<>(usuarioService.listarUsuario(), HttpStatus.OK);
+	}
+	
+	@GetMapping("/{id}")
+	public ResponseEntity<ResponseUsuarioDTO> buscarUsuario(@PathVariable Integer id) throws NoSuchAlgorithmException {
+		return new ResponseEntity<>(usuarioService.buscarUsuario(id), HttpStatus.OK);
+	}
+	
+	@GetMapping("/buscar/{dni}")
+	public ResponseEntity<ResponseUsuarioDTO> buscarEmpleado(@PathVariable String dni) throws NoSuchAlgorithmException {
+		return new ResponseEntity<>(usuarioService.buscarEmpleado(dni), HttpStatus.OK);
 	}
 
 	@PostMapping
@@ -45,10 +56,10 @@ public class UsuarioController {
 		return new ResponseEntity<>(HttpStatus.CREATED);
 	}
 	
-	@PatchMapping("/{id}")
-	public ResponseEntity<ResponseEntity<HttpStatus>> restablecerUsuario(@PathVariable Integer id) throws NoSuchAlgorithmException {
-		this.usuarioService.restablecerUsuario(id);
+	@PatchMapping
+	public ResponseEntity<ResponseEntity<HttpStatus>> restablecerUsuario(@PathVariable RequestUsuarioDTO usuario) throws NoSuchAlgorithmException {
+		this.usuarioService.cambiarClave(usuario);
 		return new ResponseEntity<>(HttpStatus.CREATED);
 	}
-	*/
+	
 }

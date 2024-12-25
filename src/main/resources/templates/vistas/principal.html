@@ -1,10 +1,181 @@
 <!DOCTYPE html>
-<html>
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
 <head>
-<meta charset="ISO-8859-1">
-<title>Insert title here</title>
+<meta charset="UTF-8">
+<title>PLATAFORMA DE ATENCION Y SERVICIOS</title>
+	<link rel="icon" type="img/jpg" href="img/pj.jpg" />
+	<script src="js/jquery.min.js"></script>
+	<script src="js/popper.min.js"></script>
+	<script src="js/bootstrap.min.js"></script>
+	<script src="js/icons.js"></script>
+	<script src="js/sweetalert2.all.min.js"></script>	
+	<script src="js/toastr.min.js"></script>
+		
+	<link rel="stylesheet" href="css/bootstrap.min.css">
+	<link rel="stylesheet" href="css/all.min.css">
+	<link rel="stylesheet" href="css/estilo.css" >
+	<link rel="stylesheet" href="css/toastr.min.css" >
+
+	<style type="text/css">
+		#divReporte {
+			display: none;
+		}
+		input{
+    		border:0;
+	    	border-bottom: 1px solid #009CBF; 
+    	}
+    	input:focus{
+			outline:none !important;
+	    	outline-width: 0 !important;
+	   		box-shadow: none;
+	    	-moz-box-shadow: none;
+	    	-webkit-box-shadow: none;
+	    }
+		.carousel-control-next, .carousel-control-prev {
+		    filter: invert(100%);
+		}
+
+	</style>
+	<style type="text/css" media="print">
+		@media print {
+			#camposBusqueda {display:none;}
+			#menu {display:none;}
+		}
+		table { 
+			border: 1px solid #000;
+		}
+		
+	</style>
 </head>
 <body>
+	<div  style="background-color: #4E0000;">
+		<div id="cabecera" style="padding-top: 10px;padding-bottom: 1px" align="center">
+			<a href="/" style="text-decoration:none;"><img alt="ayuda" src="img/pj.svg" width="20px">&nbsp;&nbsp;&nbsp;</a><a style="color:white;  text-decoration:none;" href="principal"><strong>CORTE SUPERIOR DE JUSTICIA DE AREQUIPA</strong></a>
+			<p style="color: white;font-size:15px;"><strong>PLATS - Plataforma de Atención y Servicios</strong></p>	
+		</div>
+	</div>
+	<div style="background-color: #790000; padding:0px; border-bottom: 5px solid #C4C4C4;">
+		<div class="form-row" id="menu"><input type="hidden" class="sesionRole" th:value="${sesionRole}">
+			 <div style="width: 75%;" class="form-row">
 
+				<div id="divOpcionesCDG" >
+				  	<a style="cursor: pointer" onclick="getRegistro()"><i class='fas fa-edit'></i>&nbsp; REGISTRO</a>
+				  	<a style="cursor: pointer" onclick="getGeneracion()"><i class='fas fa-pallet'></i>&nbsp; GENERAR</a>
+				  	<a style="cursor: pointer" onclick="getAsignacion()"><i class='fas fa-hand-holding'></i>&nbsp; ASIGNACIÓN</a>
+				  	<a style="cursor: pointer" onclick="getTrazabilidad()"><i class='fas fa-chart-line'></i>&nbsp; TRAZABILIDAD</a>
+				  	<a style="cursor: pointer" onclick="getReportes()"><i class='fas fa-layer-group'></i>&nbsp; REPORTES</a>
+				</div>
+				<div id="divOpcionesPenal" >
+				  	<a style="cursor: pointer" onclick="getUsuarios()"><i class='fas fa-user-friends'></i>&nbsp; USUARIOS</a>
+				  	<a style="cursor: pointer" onclick="getPerfiles()"><i class='fas fa-chalkboard-teacher'></i>&nbsp; PERFILES</a>
+				</div>
+
+		  	</div>
+		  	<div align="right" style="width: 25%;">
+		  		<button id="btnUsuario" type="button" class="btn btn-sm btn-outline-light btn-sm" sec:authorize="isAuthenticated()" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+	   			<span><i class="fas fa-user-circle"></i>&nbsp;&nbsp;&nbsp;<span th:text="${nombres}"></span></span>
+	  			</button>
+		  		<div style="margin-left: -15px" class="dropdown-menu">
+		    		<button style="color: black; font-size: 11px" type="button" class="dropdown-item" data-toggle="modal" data-target="#staticBackdrop"><i class='fas fa-key'></i>&nbsp;&nbsp;&nbsp;CAMBIAR CLAVE</button>
+		    		<div class="dropdown-divider"></div>
+			    	<form class="form-inline my-2 my-lg-0" th:action="@{/logout}" method="post"  sec:authorize="isAuthenticated()">
+			    		<button style="font-size: 11px; margin-left: 10px;" class="dropdown-item" type="submit"><i class='fas fa-power-off'></i>&nbsp;SALIR</button>
+			   	 	</form>
+		  		</div>
+			</div>
+		</div>
+	</div>
+	<div id="divContenido" style="width: 95%; height: 75%; margin: auto; overflow-y: scroll;">
+	</div>
+	
+	<div class="modal fade" id="staticBackdrop" data-backdrop="static" data-keyboard="false" tabindex="-1" role="dialog" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+		  <div class="modal-dialog modal-sm">
+		    <div class="modal-content">
+		      <div class="modal-header">
+		        <h5 class="modal-title" id="staticBackdropLabel">NUEVA CLAVE</h5>
+		        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+		          <span aria-hidden="true">&times;</span>
+		        </button>
+		      </div>
+		      <div class="modal-body">
+		        <input type="password" name="clave" id="clave" autocomplete="off" onfocus="this.removeAttribute('readonly');" readonly class="form-control form-control-sm">
+		        </div>
+		      <div class="modal-footer">
+		        <button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal"><i class='fas fa-times fa-lg'></i>&nbsp;CANCELAR</button>
+		        <button type="button" class="btn btn-success btnCamCla"><i class='fa fa-save'></i>&nbsp;ACEPTAR</button>
+		      </div>
+		    </div>
+		  </div>
+		</div>
+
+
+	
+		
+	<footer style="background-color: black;  left: 0;  bottom: 0;  width: 100%; position: fixed; color: white;  text-align: center;">		
+		<div style="margin:0px auto ;   width:100%;   overflow: hidden; padding-top: 5px" class="form-row">
+			<div style="width: 10%;font-size: 11px">Powered by Jorge F.C.R. <i class='fab fa-java' style='font-size:20px'></i><br>Cel. 999039040</div>
+			<div style="width: 80%">
+			<p style="color: white; font-size: 11px"> Corte Superior de Justicia de Arequipa  - Plaza España S/N - Arequipa - Perú<br> &copy; PLATS v2.7 - Todos los derechos reservados </p>
+			</div>
+			<div style="width: 10%"><i class="fas fa-tools"></i>&nbsp;<a id="btnUtilitarios" type="button">Utilitarios</a></div>
+		</div>
+	</footer>
+
+	<script type="text/javascript">
+	
+		function getRegistro(){	
+			$.ajax({
+				url: "formRegistro",
+		        type: 'GET',
+		        async : false,
+		        success: function (result) {
+		        	$("#divContenido").empty();
+		        	$("#divContenido").html(result); 
+		        },
+				error : function(e) {
+				 	Swal.fire({
+					  	icon: 'error', title: 'ATENCIÓN', text: 'No se pudo obtener la información, cierre sesión y vuelva a ingresar.!!',
+					});
+			 	}
+			});
+		};
+		
+		function getGeneracion(){	
+			$.ajax({
+				url: "formGeneracion",
+		        type: 'GET',
+		        async : false,
+		        success: function (result) {
+		        	$("#divContenido").empty();
+		        	$("#divContenido").html(result); 
+		        },
+				error : function(e) {
+				 	Swal.fire({
+					  	icon: 'error', title: 'ATENCIÓN', text: 'No se pudo obtener la información, cierre sesión y vuelva a ingresar.!!',
+					});
+			 	}
+			});
+		};
+		
+		function getUsuarios(){	
+			$.ajax({
+				url: "formUsuarios",
+		        type: 'GET',
+		        async : false,
+		        success: function (result) {
+		        	$("#divContenido").empty();
+		        	$("#divContenido").html(result); 
+		        },
+				error : function(e) {
+				 	Swal.fire({
+					  	icon: 'error', title: 'ATENCIÓN', text: 'No se pudo obtener la información, cierre sesión y vuelva a ingresar.!!',
+					});
+			 	}
+			});
+		};
+	
+	</script>
 </body>
 </html>

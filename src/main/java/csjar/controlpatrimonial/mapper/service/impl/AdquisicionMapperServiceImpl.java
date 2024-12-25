@@ -24,15 +24,15 @@ public class AdquisicionMapperServiceImpl implements AdquisicionMapperService {
 	}
 
 	@Override
-	public RequestAdquisicionDTO toEntity(Adquisicion adquisicion) {
-		modelMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
-		return modelMapper.map(adquisicion, RequestAdquisicionDTO.class);
-	}
-
-	@Override
 	public List<ResponseAdquisicionDTO> toDTO(List<Adquisicion> adquisicion) {
 		modelMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
 		return modelMapper.map(adquisicion, new TypeToken<List<ResponseAdquisicionDTO>>(){}.getType());
+	}
+
+	@Override
+	public ResponseAdquisicionDTO toDTO(Adquisicion adquisicion) {
+		modelMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
+		return modelMapper.map(adquisicion, ResponseAdquisicionDTO.class);
 	}
 
 }

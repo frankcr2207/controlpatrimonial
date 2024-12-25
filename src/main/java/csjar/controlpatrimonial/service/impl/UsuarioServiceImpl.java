@@ -1,8 +1,13 @@
 package csjar.controlpatrimonial.service.impl;
 
+import java.util.List;
 import java.util.Objects;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
+
+import com.mysql.cj.util.StringUtils;
 
 import csjar.controlpatrimonial.domain.Perfil;
 import csjar.controlpatrimonial.domain.Usuario;
@@ -31,9 +36,24 @@ public class UsuarioServiceImpl implements UsuarioService {
 		this.perfilService = perfilService;
 		this.usuarioMapperService = usuarioMapperService;
 	}
-
+	
 	@Override
-	public ResponseUsuarioDTO buscarUsuario(String dni) {
+	public ResponseUsuarioDTO buscarUsuario(Integer id) {
+		Usuario usuario = this.usuarioRepository.findById(id)
+			.orElse(null);
+		if(Objects.isNull(usuario))
+			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No se pudo encontrar usuario");
+		return this.usuarioMapperService.toDTO(usuario);
+	}
+	
+	@Override
+	public List<ResponseUsuarioDTO> listarUsuario() {
+		List<Usuario> usuarios = this.usuarioRepository.findByPerfilIsNotNull();
+		return this.usuarioMapperService.toDTO(usuarios);
+	}
+	
+	@Override
+	public ResponseUsuarioDTO buscarEmpleado(String dni) {
 		Usuario usuario = this.usuarioRepository.findByDni(dni);
 		ResponseUsuarioDTO response = new ResponseUsuarioDTO();
 		if(Objects.isNull(usuario)) {
@@ -52,27 +72,32 @@ public class UsuarioServiceImpl implements UsuarioService {
 		if(Objects.nonNull(usuarioDTO.getIdPerfil())){
 			Perfil perfil = this.perfilService.obtenerEntidad(usuarioDTO.getIdPerfil());
 			usuario.setPerfil(perfil);
-			//usuario.setClave(EncriptarClave.generar());
-			usuario.setEstado("ACTIVO");
+			usuario.setClave(EncriptarClave.generar(""));
+			usuario.setEstado("A");
+			usuario.setLogin(usuarioDTO.getLogin());
 			this.usuarioRepository.save(usuario);
 		}
 	}
 
 	@Override
 	public void modificarUsuario(RequestUsuarioDTO usuarioDTO) {
-		Usuario usuario = this.usuarioRepository.findById(usuarioDTO.getId()).get();
+		Usuario usuario = this.usuarioRepository.findById(usuarioDTO.getId()).orElse(null);
 		if(Objects.nonNull(usuarioDTO.getIdPerfil())){
 			Perfil perfil = this.perfilService.obtenerEntidad(usuarioDTO.getIdPerfil());
 			usuario.setPerfil(perfil);
 			usuario.setEstado(usuarioDTO.getEstado());
+			usuario.setCorreo(usuarioDTO.getCorreo());
+			usuario.setLogin(usuarioDTO.getLogin().toUpperCase());
+			if(StringUtils.isNullOrEmpty(usuario.getClave()))
+				usuario.setClave(EncriptarClave.generar(""));
 			this.usuarioRepository.save(usuario);
 		}
 	}
 
 	@Override
-	public void restablecerUsuario(Integer id) {
-		Usuario usuario = this.usuarioRepository.findById(id).get();
-		//usuario.setClave(EncriptarClave.generar());
+	public void cambiarClave(RequestUsuarioDTO usuarioDTO) {
+		Usuario usuario = this.usuarioRepository.findById(usuarioDTO.getId()).get();
+		usuario.setClave(EncriptarClave.generar(usuarioDTO.getClave()));
 	}
 
 }

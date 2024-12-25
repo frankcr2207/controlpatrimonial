@@ -26,7 +26,21 @@
 		<div style="width:100%; height: 100%; font-size: 11px" id=solicitud>
 			<h3>GESTIÓN DE USUARIOS</h3>
 			<hr>
-			<table id="tablaUsuarios" class="">
+			<button type="button" onclick="modalUsuario()" class="btn btn-info btn-sm">NUEVO</button><br><br>
+			<table id="tablaUsuarios" class="table">
+				<thead class="thead-dark">
+		            <tr>
+		                <th>ID</th>
+		                <th>DNI</th>
+		                <th>NOMBRES</th>
+		                <th>APELLIDOS</th>
+		                <th>PERFIL</th>
+		                <th>ESTADO</th>
+		                <th>EDITAR</th>
+		            </tr>
+		        </thead>
+		        <tbody>
+		        </tbody>
 			</table>
 
 		</div>
@@ -43,27 +57,27 @@
 	      </div>
 	      
 	      <div class="modal-body">
-	      
-	      	 <label>INGRESE DNI: </label>
-	        <input id="dniNuevoUsuario" size="10" class="dniNuevoUsuario" type="text" maxlength="8" onkeypress="return numbersonly(event)"/>
-	        <button type="button" class="btn btn-info btn-sm btnBuscar"><i class="fas fa-fingerprint fa-lg"></i></button>
-	      	
+	      	<div id="divBusqueda">
+		      	<label>INGRESE DNI: </label>
+		        <input id="dniNuevoUsuario" size="10" class="dniNuevoUsuario" type="text" maxlength="8" onkeypress="return numbersonly(event)"/>
+		        <button type="button" class="btn btn-info btn-sm btnBuscar" onclick="buscarDni()"><i class="fas fa-fingerprint fa-lg"></i></button>
+		    </div>
 	      	<hr style="height:1px" color="#911A00">
 	      	
-			<form id="formUsuario" class="formUsuario" action="" method="post" enctype="multipart/form-data">
-        	<div  class="form-row">
+
+        	<div id="divUsuario" class="form-row">
         		<input id="id" type="hidden">
                 <div class="form-group col-md-3">
                     <label>DNI </label>
-                	<input name="dni" id="dni" class="form-control form-control-sm">
+                	<input name="dni" id="dni" class="form-control form-control-sm" readonly="readonly">
                	</div>
                	<div class="form-group col-md-6">
                 	<label>NOMBRES </label>
-                     <input  value=""  type="text" name="nombres" id="nombres" class="form-control form-control-sm" >
+                     <input type="text" name="nombres" id="nombres" class="form-control form-control-sm" readonly="readonly">
                 </div>
                  <div class="form-group col-md-6">
                 	<label>APELLIDOS </label>
-                    <input value=""  type="text" name="apellidos" id="apellidos" class="form-control form-control-sm">
+                    <input type="text" name="apellidos" id="apellidos" class="form-control form-control-sm" readonly="readonly">
                 </div>
             </div>
 
@@ -74,28 +88,28 @@
               		</div>
 			  	<div class="form-group col-md-5">
 			  		<label>PERFIL </label>
-			      	<select name="perfil" class="form-control form-control-sm ">
+			      	<select id="perfil"  name="perfil" class="form-control form-control-sm ">
 			     	</select>
 			    </div> 
 			    <div class="form-group col-md-2">
 			  		<label>ESTADO</label>
-			      	<select name="estado" class="form-control form-control-sm ">
+			      	<select id="estado" class="form-control form-control-sm ">
 			      		<option value="A">ACTIVO</option>
 			      		<option value="I">INACTIVO</option>
 			     	</select>
 			    </div> 
 				<div class="form-group col-md-6">
                    	<label>CORREO</label>
-                    <input value=""  type="text" name="correo" class="form-control form-control-sm ">
+                    <input type="text" id="correo" name="correo" class="form-control form-control-sm ">
                 </div>
 
 			</div>
 			<hr style="height:1px" color="#911A00">
 			<div align="right">
 	        <button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">CERRAR</button>
-	        <button type="button" class="btn btn-primary btnGuardar"><i class="fas fa-save fa-lg"></i>&nbsp;GUARDAR</button>
+	        <button type="button" class="btn btn-primary btnGuardar" onclick="guardarUsuario()"><i class="fas fa-save fa-lg"></i>&nbsp;GUARDAR</button>
 	        </div>
-			</form>
+
 				      
 	      </div>
 	    </div>
@@ -104,248 +118,226 @@
 	
 	<script type="text/javascript">
 	   	$(document).ready(function() {
+	   		listarUsuarios();
 	   		
-	   		$("#lstAccion").change(function() {
-	      		var accion = $(this).find(":selected").val();
-	      		$("#tablaAudiencias").empty();
-	 			if(accion=="N")
-	 				$("#btnPublicarAudiencias").show();
-	 			else 
-	 				$("#btnPublicarAudiencias").hide();
-	    	});
-	   		
-	    	$("#lstSede").change(function() {
-	      		var idSede = $(this).find(":selected").val();
-	      		var especialidad = $("#txtEspecialidad").val();
-	 
-		      	$.ajax({
-		       		type : "GET",
-		       		url : "getInstanciaAudiencia?sede=" + idSede + "&especialidad=" + especialidad,
-			        dataType : 'json',
-			        success : function(data) {
-			         	var html = '';
-			         	var len = data.length;
-			         	html += '<div class="row row-cols-2 row-cols-sm-2 row-cols-md-2">';
-			         	for (var i = 0; i < len; i++) {
-							html+='<div class="col"><label><input name="instancia" type="checkbox" id="cbox1" value="'+ data[i].id+'"> '+data[i].denominacion+'</label></div>';
-			         	}
-			         	html += ' </div>';
-				        $("#divInstancias").html(html);
-			        },
-		        	error : function(e) {
-		        	 	Swal.fire({
-						  	icon: 'error',
-						  	title: 'ATENCIÓN',
-						  	text: 'No se pudo cargar instancias.!!',
-						});
-			     	}
-		      	});
-	    	});
-
-	    	
-	    	$("#btnPublicarAudiencias").click(function(){
-	    		var html = '';
-	    		var audiencias = [];
-	    		$('#tablaAudiencias .filaAudiencia').each(function() {
-	    			var audiencia = {};
-	    			var modalidad = $(this).find("td:eq(10) select").val();
-	    			var estado = $(this).find("td:eq(11) select").val();
-	    			if(estado != 'O'){
-	    				audiencia["expediente"] = $(this).find("td:eq(0)").text();
-	    				audiencia["idInstancia"] = $(this).find("td:eq(1)").text();
-	    				audiencia["idSede"] = $(this).find("td:eq(2)").text();
-	    				audiencia["especialidad"] = $("#txtEspecialidad").val();
-	    				audiencia["parte1"] = $(this).find("td:eq(4)").text();
-	    				audiencia["parte2"] = $(this).find("td:eq(5)").text();
-	    				audiencia["delito"] = $(this).find("td:eq(6)").text();
-	    				audiencia["tipo"] = $(this).find("td:eq(7)").text();
-	    				audiencia["fechaHora"] = $(this).find("td:eq(8)").text();
-	    				audiencia["enlace"] = $(this).find("td:eq(12) input").val();
-	    				audiencia["modalidad"] = modalidad;
-	    				audiencia["estado"] = estado;
-	    				audiencias.push(audiencia);
-	    			}
-	    		});
-	    		if(audiencias.length == 0){
+	   		$.ajax({
+	       		type : "GET",
+	       		url : "perfil",
+		        dataType : 'json',
+		        success : function(data) {
+		         	var html = '';
+		         	var len = data.length;
+		         	for (var i = 0; i < len; i++) {
+						html += '<option value="'+data[i].id+'">'+data[i].descripcion+'</option>';
+		         	}
+		         	$("#perfil").html(html);
+		        },
+		        error : function(response){
+		        	var r = jQuery.parseJSON(response.responseText);
 					toastr.clear();
 					toastr.options = {
 						"closeButton":true,
 						"progressBar": true,
 						"positionClass":"toast-topcenter-right"
 					};
-					toastr.error("Debe seleccionar al menos una audiencia!!");
-	    		}
-	    		else{
-	    			$.ajax({
-	    				type: "POST",
-	    				url: "publicarAudiencias",
-	    				data: JSON.stringify(audiencias),
-	    				cache: false,
-	    				dataType: "json",
-	    				contentType: "application/json; charset=utf-8",
-	    				processData: false,
-	    				success:function(response) {
-	    					$("#tablaAudiencias").empty();
-	    					Swal.fire(
-	    						'AUDIENCIAS PUBLICADAS!!',
-	    						'Click en OK para continuar!',
-	    						'success'
-	    					);	
-	    				},
-	    		        error : function(response){
-	    		        	var r = jQuery.parseJSON(response.responseText);
-	    					toastr.clear();
-	    					toastr.options = {
-	    						"closeButton":true,
-	    						"progressBar": true,
-	    						"positionClass":"toast-topcenter-right"
-	    					};
-	    					toastr.warning(r.message);	
-	    		        }
-	    			});
-	    		}
-	        });
-	    	
-	    	$("#btnGuardar").click(function(){
-
-    			var audiencia = {};
-	    		audiencia["id"] = $("#id").val();
-	    		audiencia["login"] = $("#login").val();
-	    		audiencia["dni"] = $("#dni").val();
-	    		audiencia["nombres"] = $("#nombres").val();
-	    		audiencia["apellidos"] = $("#apellidos").val();
-	    		audiencia["estado"] = $("#estado").val();
-	    		audiencia["correo"] = $("#correo").val();
-	    		audiencia["perfil"] = $("#perfil").val();
-	    		
-	    		var method = $("#id").val() != '' ? "PUT" : "POST";
-	    		
-    			$.ajax({
-    				type: method,
-    				url: "usuario",
-    				data: JSON.stringify(audiencia),
-    				cache: false,
-    				dataType: "json",
-    				contentType: "application/json; charset=utf-8",
-    				processData: false,
-    				success:function(response) {
-    					$("#modalUsuario").modal('hide');
-    					$("#tablaUsuarios").empty();
-    					getAudiencias();
-    					Swal.fire(
-    						'CAMBIOS CORRECTOS!!',
-    						'Click en OK para continuar!',
-    						'success'
-    					);	
-    				},
-    		        error : function(response){
-    		        	var r = jQuery.parseJSON(response.responseText);
-    					toastr.clear();
-    					toastr.options = {
-    						"closeButton":true,
-    						"progressBar": true,
-    						"positionClass":"toast-topcenter-right"
-    					};
-    					toastr.warning(r.message);	
-    		        }
-    			});
-	        });
+					toastr.warning(r.message);	
+		        }
+	      	});
 	  	});
+	   	
   	</script>
 	
     <script type="text/javascript">
-    
-	    function getAudiencias(){
-			var accion = $("#lstAccion").val();
-			var idSede = $("#lstSede").val();
-			var fecha = $("#txtFecha").val();
-			var especialidad = $("#txtEspecialidad").val();
-	        var instancias = [];
-	        $.each($("input[name='instancia']:checked"), function(){
-	        	instancias.push($(this).val());
-	        });
-	        
-			if(instancias.length == 0 || idSede == '0' || accion == '0' || fecha == ''){
+    	
+    	function modalUsuario(){
+    		limpiarControles();
+    		$('#login').prop('readonly', false);
+    		$('#divBusqueda').show();
+    		$('#modalUsuario').modal('show');
+    	}
+    	
+    	function buscarDni(){
+    		var dni = $('#dniNuevoUsuario').val();
+    		if(dni == '' || dni.length != 8){
 				toastr.clear();
 				toastr.options = {
 					"closeButton":true,
 					"progressBar": true,
 					"positionClass":"toast-topcenter-right"
 				};
-				toastr.warning("Debe completar todos los campos!!");
-				return false;
-			}
-			
-			var endPoint;
-			if(accion == "N")
-				endPoint = "getAgendaSij";
-			else
-				endPoint = "getAudienciasPublicadas";
-	        
-	        $.ajax({
+				toastr.warning("Debe ingresar DNI correcto");	
+    			return false;
+    		}
+    			
+    		$.ajax({
 	       		type : "GET",
-	       		url : endPoint + "?sede=" + idSede + "&instancias=" + instancias + "&fecha=" + fecha,
+	       		url : "usuario/buscar/" + $('#dniNuevoUsuario').val(),
+		        dataType : 'json',
+		        success : function(data) {
+		        	$("#id").val(data.id);
+					$("#dni").val(data.dni);
+					$("#nombres").val(data.nombres);
+					$("#apellidos").val(data.apellidos);
+					$("#correo").val(data.correo);
+		        },
+		        error : function(response){
+		        	var r = jQuery.parseJSON(response.responseText);
+					toastr.clear();
+					toastr.options = {
+						"closeButton":true,
+						"progressBar": true,
+						"positionClass":"toast-topcenter-right"
+					};
+					toastr.warning(r.message);	
+		        }
+	      	});
+    	}
+    
+    	function listarUsuarios(){
+    		var tabla = document.getElementById("tablaUsuarios");
+	   		$.ajax({
+	       		type : "GET",
+	       		url : "usuario",
 		        dataType : 'json',
 		        success : function(data) {
 		         	var html = '';
+		         	var len = data.length;
+		         	for (var i = 0; i < len; i++) {
 
-		         	if(accion=="N"){
-			         	html += '<tbody><tr><th>EXPEDIENTE</th><th style="display:none;"></th><th style="display:none;"></th><th>INSTANCIA</th><th style="display:none;"></th><th style="display:none;"></th><th>DELITO</th><th>TIPO</th><th style="display:none;"></th><th>HORA</th><th>MODALIDAD</th><th>ESTADO</th><th>ENLACE</th></tr>';
-			         	for (var i = 0; i < data.length; i++) {
-			         		var delito = '';
-			         		if(data[i].delito != null)
-			         			delito = data[i].delito;
-							html+='<tr class="filaAudiencia"><td>'+data[i].expediente+'</td><td style="display:none;">'+data[i].idInstancia+'</td><td style="display:none;">'+
-							data[i].idSede+'</td><td>'+data[i].instancia+'</td><td style="display:none;">'+data[i].parte1+'</td><td style="display:none;">'+data[i].parte2+'</td><td>'+delito+'</td><td>'+
-							data[i].tipo+'</td><td style="display:none;">'+data[i].fechaHora +'</td><td>'+data[i].hora +'</td><td><select><option value="V">VIRTUAL</option><option value="P">PRESENCIAL</option></select>'+
-							'<td><select><option value="P">PUBLICAR</option><option value="R">RESERVAR</option><option value="O">OMITIR</option></select></td><td><input type="text" size="40px" value="'+data[i].enlace+'"></td></tr>';
-			         	}
-			         	html += '</tbody>';
+		                var fila = tabla.insertRow();
+
+		                var celda1 = fila.insertCell(0);
+		                var celda2 = fila.insertCell(1);
+		                var celda3 = fila.insertCell(2);
+		                var celda4 = fila.insertCell(3);
+		                var celda5 = fila.insertCell(4);
+		                var celda6 = fila.insertCell(5);
+		                var celda7 = fila.insertCell(6);
+		                
+		                celda1.innerHTML = data[i].id;
+		                celda2.innerHTML = data[i].dni;
+		                celda3.innerHTML = data[i].nombres;
+		                celda4.innerHTML = data[i].apellidos;
+		                celda5.innerHTML = data[i].perfil.descripcion;
+		                var estado = data[i].estado == 'A' ? 'ACTIVO' : 'INACTIVO';
+		                celda6.innerHTML = estado;
+		                celda7.innerHTML = '<button type="button" class="btn btn-outline-warning btn-sm" onclick="editarUsuario('+data[i].id+')"><i class="fas fa-edit"></i></button>';
+		               
 		         	}
-		         	else{
-		         		html += '<tbody><tr><th>EXPEDIENTE</th><th style="display:none;"></th><th style="display:none;"></th><th>INSTANCIA</th><th style="display:none;"></th><th style="display:none;"></th><th>TIPO</th><th style="display:none;"></th><th>HORA</th><th>ENLACE</th><th>ESTADO</th><th>EDITAR</th></tr>';
-			         	for (var i = 0; i < data.length; i++) {
-							html+='<tr class="filaAudiencia"><td>'+data[i].expediente+'</td><td style="display:none;">'+data[i].instancia.id+'</td><td style="display:none;">'+
-							data[i].idSede+'</td><td>'+data[i].instancia.denominacion+'</td><td style="display:none;">'+data[i].parte1+'</td><td style="display:none;">'+data[i].parte2+'</td><td>'+
-							data[i].tipo+'</td><td style="display:none;">'+data[i].fechaHora +'</td><td>'+data[i].hora +'</td><td>'+data[i].enlace+'</td><td>'+data[i].estado+'</td><td>'+
-							"<button type='button' class='btn btn-warning btn-sm' onclick='editarAudiencia(" + data[i].id + ")'><i class='fas fa-edit'></i></button></td></tr>";
-			         	}
-			         	html += '</tbody>';
-		         	}
-		         	
-			        $("#tablaAudiencias").html(html);
 		        },
-	        	error : function(e) {
-	        	 	Swal.fire({
-					  	icon: 'error',
-					  	title: 'ATENCIÓN',
-					  	text: 'No se pudo cargar los registros!!',
-					});
-		     	}
+		        error : function(response){
+		        	var r = jQuery.parseJSON(response.responseText);
+					toastr.clear();
+					toastr.options = {
+						"closeButton":true,
+						"progressBar": true,
+						"positionClass":"toast-topcenter-right"
+					};
+					toastr.warning(r.message);	
+		        }
 	      	});
-	    };
-	    
-		function editarAudiencia(id){
-			$.ajax({
+    	}
+    	
+    	function editarUsuario(id){
+    		$('#login').prop('readonly', true);
+    		$('#divBusqueda').hide();
+    		$.ajax({
 	       		type : "GET",
-	       		url : "getAudiencia?id=" + id,
+	       		url : "usuario/"+id,
 		        dataType : 'json',
 		        success : function(data) {
-					$("#modalEditarAudiencia").modal('show');
-					$("#txtIdAudiencia").val(data.id);
-					$("#txtExpediente").val(data.expediente);
-					$("#txtHora").val(data.hora);
-					$("#txtEnlace").val(data.enlace);
-					$("#lstEditarEstado").val(data.estado);
+					$('#modalUsuario').modal('show');
+					$('#id').val(data.id);
+					$('#dni').val(data.dni);
+					$('#nombres').val(data.nombres);
+					$('#apellidos').val(data.apellidos);
+					$('#login').val(data.login);
+					$('#correo').val(data.correo);
+					const selectElement = document.getElementById("perfil");
+		            selectElement.value = data.perfil.id;
+						
 		        },
-	        	error : function(e) {
-	        	 	Swal.fire({
-					  	icon: 'error',
-					  	title: 'ATENCIÓN',
-					  	text: 'No se pudo cargar los datos!!',
-					});
+		        error : function(response){
+		        	var r = jQuery.parseJSON(response.responseText);
+					toastr.clear();
+					toastr.options = {
+						"closeButton":true,
+						"progressBar": true,
+						"positionClass":"toast-topcenter-right"
+					};
+					toastr.warning(r.message);	
+		        }
+    		});
+    	}
+	   
+	    
+		function guardarUsuario(){
+			if($("#correo").val() == '' || $("#login").val() == ''){
+				toastr.clear();
+				toastr.options = {
+					"closeButton":true,
+					"progressBar": true,
+					"positionClass":"toast-topcenter-right"
+				};
+				toastr.warning("Debe completar todos los campos");
+				return;
+			}
+			
+			var usuario = {
+				id : $("#id").val(),
+				correo : $("#correo").val(),
+				idPerfil : $("#perfil").val(),
+				estado : $("#estado").val(),
+				login : $('#login').val()
+			}
+			
+			$.ajax({
+	       		type : "PUT",
+	       		url : "usuario",
+		        dataType : 'json',
+				data: JSON.stringify(usuario),
+				cache: false,
+				dataType: "json",
+				contentType: "application/json; charset=utf-8",
+				processData: false,
+		        success : function(data) {
+					$("#modalUsuario").modal('hide');
+					var tabla = document.getElementById("tablaUsuarios");
+					var filas = tabla.getElementsByTagName("tr");
+					for (var i = filas.length - 1; i > 0; i--) {
+					    tabla.deleteRow(i);
+					}
+					limpiarControles();
+					listarUsuarios();
+					Swal.fire(
+						'USUARIO REGISTRADO CORRECTAMENTE!!',
+						'Click en OK para continuar!',
+						'success'
+					);	
+		        },
+		        error : function(response){
+		        	var r = jQuery.parseJSON(response.responseText);
+					toastr.clear();
+					toastr.options = {
+						"closeButton":true,
+						"progressBar": true,
+						"positionClass":"toast-topcenter-right"
+					};
+					toastr.warning(r.message);
 		     	}
 	      	});
+		}
+		
+		function limpiarControles(){
+			const cajasTexto = document.querySelectorAll('#modalUsuario input');
+    		cajasTexto.forEach(function(caja) {
+    		    caja.value = '';
+    		});
+    		
+    		const selects = document.querySelectorAll('#modalUsuario select');
+    		selects.forEach(function(select) {
+    			select.selectedIndex = 0;
+    		});
 		}
 	</script>
 

@@ -4,10 +4,11 @@
 <head>
 <meta charset="utf-8">
 <title></title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.min.js"></script>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.3.1/css/all.min.css">
+<script src="js/jquery.min.js"></script>
+<script src="js/bootstrap.min.js"></script>
+<script src="js/icons.js"></script>
+<link rel="stylesheet" href="css/bootstrap.min.css">
+<link rel="stylesheet" href="css/all.min.css">
 
 <!-- <link rel="stylesheet" href="../css/style.css"> -->
 <link rel="stylesheet" href="../css/style.css">
@@ -48,11 +49,11 @@ body {
 			<div class="wrap-login100 p-t-50 p-b-90 p-l-50 p-r-50">
 				<form class="login100-form flex-sb flex-w" th:action="@{/}"  method="post">
 					<span class="login100-form-title"> <a href=""
-						target="_blank"> <i class="fas fa-user"></i>
+						target="_blank"> <i class="fas fa-user fa-lg"></i>
 					</a>
 					</span>
 					<div class="formGroup">
-						<input type="text" placeholder="Usuario" id="username" name="username" required
+						<input type="text" placeholder="Usuario" id="username" name="username" autofocus="autofocus" style="text-transform:uppercase;" required
 							autocomplete="off">
 					</div>
 					<div class="formGroup">

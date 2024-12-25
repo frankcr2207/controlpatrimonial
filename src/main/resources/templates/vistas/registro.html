@@ -23,17 +23,29 @@
 <body>
 	
 	<div class="card card-body">
-		<div style="width:100%; height: 100%; font-size: 11px" id=solicitud>
+		<div  style="width:60%; height: 100%; font-size: 11px; margin: auto">
 			<h3>REGISTRO NUEVA ADQUISICIÓN</h3>
-			<label>N° DOCUMENTO: </label><input type="text" id="txtNumDocumento"> <br>
-			<label>FECHA DOCUMENTO: </label><input type="date" id="txtNumDocumento"> <br>
-			<label>TIPO ADQUISICIÓN: </label><select id="listTipo"></select> <button id="btnAgregar" type="button">+</button><button id="btnAgregar" type="button">GUARDAR</button>
+			<label>N° DOCUMENTO: </label><input type="text" id="txtDocumento"> <br>
+			<label>FECHA DOCUMENTO: </label><input type="date" id="txtFecAdquisicion"> <br>
+			<label>TIPO ADQUISICIÓN: </label><select id="listTipo"></select> <button id="btnAgregar" type="button" class="btn btn-info btn-sm"><i class="fas fa-plus"></i></button>
+			<button id="btnAgregar" type="button" class="btn btn-primary" onclick="guardarAdquisicion()"><i class="fas fa-save"></i>&nbsp;GUARDAR</button>
 			<hr>
 			<label>GRUPO: </label><select id="listGrupo"></select>&nbsp;<label>CLASE: </label><select id="listClase"></select>
-			<label>DENOMINACIÓN: </label><select id="listDenominacion"></select>&nbsp;<label>CANTIDAD: </label><input type="number" id="txtCantidad">
-			<button id="btnAgregar" type="button">AGREGAR</button>
+			<button id="btnBuscar" onclick="obtenerCatalogo()" type="button" class="btn btn-info btn-sm"><i class="fas fa-search"></i></button><br>
+			<label>DENOMINACIÓN: </label><select id="listCatalogo"></select>&nbsp;<label>CANTIDAD: </label><input type="number" id="txtCantidad">
+			<button id="btnAgregar" type="button" class="btn btn-info btn-sm" onclick="insertarProducto()"><i class="fas fa-download"></i>&nbsp;AGREGAR</button>
 			<hr>
-			<table id="tablaCatalogo">
+			<table id="tablaCatalogo" class="table">
+				<thead class="thead-dark">
+		            <tr>
+		                <th>ID</th>
+		                <th>DENOMINACIÓN</th>
+		                <th>CANTIDAD</th>
+		                <th>ELIMINAR</th>
+		            </tr>
+		        </thead>
+		        <tbody>
+		        </tbody>
 			</table>
 
 		</div>
@@ -41,246 +53,253 @@
 	
 	<script type="text/javascript">
 	   	$(document).ready(function() {
-	   		
-	   		$("#lstAccion").change(function() {
-	      		var accion = $(this).find(":selected").val();
-	      		$("#tablaAudiencias").empty();
-	 			if(accion=="N")
-	 				$("#btnPublicarAudiencias").show();
-	 			else 
-	 				$("#btnPublicarAudiencias").hide();
-	    	});
-	   		
-	    	$("#lstSede").change(function() {
-	      		var idSede = $(this).find(":selected").val();
-	      		var especialidad = $("#txtEspecialidad").val();
-	 
-		      	$.ajax({
-		       		type : "GET",
-		       		url : "getInstanciaAudiencia?sede=" + idSede + "&especialidad=" + especialidad,
-			        dataType : 'json',
-			        success : function(data) {
-			         	var html = '';
-			         	var len = data.length;
-			         	html += '<div class="row row-cols-2 row-cols-sm-2 row-cols-md-2">';
-			         	for (var i = 0; i < len; i++) {
-							html+='<div class="col"><label><input name="instancia" type="checkbox" id="cbox1" value="'+ data[i].id+'"> '+data[i].denominacion+'</label></div>';
-			         	}
-			         	html += ' </div>';
-				        $("#divInstancias").html(html);
-			        },
-		        	error : function(e) {
-		        	 	Swal.fire({
-						  	icon: 'error',
-						  	title: 'ATENCIÓN',
-						  	text: 'No se pudo cargar instancias.!!',
-						});
-			     	}
-		      	});
-	    	});
-
-	    	
-	    	$("#btnPublicarAudiencias").click(function(){
-	    		var html = '';
-	    		var audiencias = [];
-	    		$('#tablaAudiencias .filaAudiencia').each(function() {
-	    			var audiencia = {};
-	    			var modalidad = $(this).find("td:eq(10) select").val();
-	    			var estado = $(this).find("td:eq(11) select").val();
-	    			if(estado != 'O'){
-	    				audiencia["expediente"] = $(this).find("td:eq(0)").text();
-	    				audiencia["idInstancia"] = $(this).find("td:eq(1)").text();
-	    				audiencia["idSede"] = $(this).find("td:eq(2)").text();
-	    				audiencia["especialidad"] = $("#txtEspecialidad").val();
-	    				audiencia["parte1"] = $(this).find("td:eq(4)").text();
-	    				audiencia["parte2"] = $(this).find("td:eq(5)").text();
-	    				audiencia["delito"] = $(this).find("td:eq(6)").text();
-	    				audiencia["tipo"] = $(this).find("td:eq(7)").text();
-	    				audiencia["fechaHora"] = $(this).find("td:eq(8)").text();
-	    				audiencia["enlace"] = $(this).find("td:eq(12) input").val();
-	    				audiencia["modalidad"] = modalidad;
-	    				audiencia["estado"] = estado;
-	    				audiencias.push(audiencia);
-	    			}
-	    		});
-	    		if(audiencias.length == 0){
+	   		$.ajax({
+	       		type : "GET",
+	       		url : "grupoClase/grupos",
+		        dataType : 'json',
+		        success : function(data) {
+		         	var html = '';
+		         	var len = data.length;
+		         	for (var i = 0; i < len; i++) {
+						html+='<option value="' + data[i].id +'">'+data[i].descripcion+'</option>';
+		         	}
+			        $("#listGrupo").html(html);
+		        },
+		        error : function(response){
+		        	var r = jQuery.parseJSON(response.responseText);
 					toastr.clear();
 					toastr.options = {
 						"closeButton":true,
 						"progressBar": true,
 						"positionClass":"toast-topcenter-right"
 					};
-					toastr.error("Debe seleccionar al menos una audiencia!!");
-	    		}
-	    		else{
-	    			$.ajax({
-	    				type: "POST",
-	    				url: "publicarAudiencias",
-	    				data: JSON.stringify(audiencias),
-	    				cache: false,
-	    				dataType: "json",
-	    				contentType: "application/json; charset=utf-8",
-	    				processData: false,
-	    				success:function(response) {
-	    					$("#tablaAudiencias").empty();
-	    					Swal.fire(
-	    						'AUDIENCIAS PUBLICADAS!!',
-	    						'Click en OK para continuar!',
-	    						'success'
-	    					);	
-	    				},
-	    		        error : function(response){
-	    		        	var r = jQuery.parseJSON(response.responseText);
-	    					toastr.clear();
-	    					toastr.options = {
-	    						"closeButton":true,
-	    						"progressBar": true,
-	    						"positionClass":"toast-topcenter-right"
-	    					};
-	    					toastr.warning(r.message);	
-	    		        }
-	    			});
-	    		}
-	        });
+					toastr.warning(r.message);	
+		        }
+	      	});
+	   		
+	      	$.ajax({
+	       		type : "GET",
+	       		url : "grupoClase/clases",
+		        dataType : 'json',
+		        success : function(data) {
+		         	var html = '';
+		         	var len = data.length;
+		         	for (var i = 0; i < len; i++) {
+						html+='<option value="' + data[i].id +'">'+data[i].descripcion+'</option>';
+		         	}
+			        $("#listClase").html(html);
+		        },
+   		        error : function(response){
+   		        	var r = jQuery.parseJSON(response.responseText);
+   					toastr.clear();
+   					toastr.options = {
+   						"closeButton":true,
+   						"progressBar": true,
+   						"positionClass":"toast-topcenter-right"
+   					};
+   					toastr.warning(r.message);	
+   		        }
+	      	});
+	      	
+	      	$.ajax({
+	       		type : "GET",
+	       		url : "tipoAdquisicion",
+		        dataType : 'json',
+		        success : function(data) {
+		         	var html = '';
+		         	var len = data.length;
+		         	for (var i = 0; i < len; i++) {
+						html+='<option value="' + data[i].id +'">'+data[i].denominacion+'</option>';
+		         	}
+			        $("#listTipo").html(html);
+		        },
+   		        error : function(response){
+   		        	var r = jQuery.parseJSON(response.responseText);
+   					toastr.clear();
+   					toastr.options = {
+   						"closeButton":true,
+   						"progressBar": true,
+   						"positionClass":"toast-topcenter-right"
+   					};
+   					toastr.warning(r.message);	
+   		        }
+	      	});
 	    	
-	    	$("#btnGuardarModificacionAudiencia").click(function(){
-	    		
-	    		var enlace = $("#txtEnlace").val();
-	    		var estado = $("#lstEditarEstado").val();
-	    		
-
-    			var audiencia = {};
-	    		audiencia["id"] = $("#txtIdAudiencia").val();
-	    		audiencia["enlace"] = $("#txtEnlace").val();
-	    		audiencia["estado"] = $("#lstEditarEstado").val();
-	    		
-    			$.ajax({
-    				type: "PUT",
-    				url: "modificarAudiencia",
-    				data: JSON.stringify(audiencia),
-    				cache: false,
-    				dataType: "json",
-    				contentType: "application/json; charset=utf-8",
-    				processData: false,
-    				success:function(response) {
-    					$("#modalEditarAudiencia").modal('hide');
-    					$("#tablaAudiencias").empty();
-    					getAudiencias();
-    					Swal.fire(
-    						'AUDIENCIA MODIFICADA!!',
-    						'Click en OK para continuar!',
-    						'success'
-    					);	
-    				},
-    		        error : function(response){
-    		        	var r = jQuery.parseJSON(response.responseText);
-    					toastr.clear();
-    					toastr.options = {
-    						"closeButton":true,
-    						"progressBar": true,
-    						"positionClass":"toast-topcenter-right"
-    					};
-    					toastr.warning(r.message);	
-    		        }
-    			});
-	        });
 	  	});
   	</script>
 	
-    <script type="text/javascript">
-    
-	    function getAudiencias(){
-			var accion = $("#lstAccion").val();
-			var idSede = $("#lstSede").val();
-			var fecha = $("#txtFecha").val();
-			var especialidad = $("#txtEspecialidad").val();
-	        var instancias = [];
-	        $.each($("input[name='instancia']:checked"), function(){
-	        	instancias.push($(this).val());
-	        });
-	        
-			if(instancias.length == 0 || idSede == '0' || accion == '0' || fecha == ''){
+    <script type="text/javascript"> 
+		function obtenerCatalogo(){
+			var idGrupo = $('#listGrupo').val();
+			var idClase = $('#listClase').val();
+			
+			$.ajax({
+	       		type : "GET",
+	       		url : "catalogo?idGrupo=" + idGrupo + "&idClase=" + idClase,
+		        dataType : 'json',
+		        success : function(data) {
+		         	var html = '';
+		         	var len = data.length;
+		         	for (var i = 0; i < len; i++) {
+						html+='<option value="' + data[i].id +'">'+data[i].denominacion+'</option>';
+		         	}
+			        $("#listCatalogo").html(html);
+		        },
+		        error : function(response){
+		        	var r = jQuery.parseJSON(response.responseText);
+					toastr.clear();
+					toastr.options = {
+						"closeButton":true,
+						"progressBar": true,
+						"positionClass":"toast-topcenter-right"
+					};
+					toastr.warning(r.message);	
+		        }
+	      	});
+		}
+		
+		function insertarProducto(){
+			var idCatalogo = $('#listCatalogo').val();
+			var textoSeleccionado = $('#listCatalogo option:selected').text();
+			var cantidad = $('#txtCantidad').val();
+			
+            if(idCatalogo == '' || cantidad == '' || cantidad < 0){
 				toastr.clear();
 				toastr.options = {
 					"closeButton":true,
 					"progressBar": true,
 					"positionClass":"toast-topcenter-right"
 				};
-				toastr.warning("Debe completar todos los campos!!");
-				return false;
-			}
-			
-			var endPoint;
-			if(accion == "N")
-				endPoint = "getAgendaSij";
-			else
-				endPoint = "getAudienciasPublicadas";
-	        
-	        $.ajax({
-	       		type : "GET",
-	       		url : endPoint + "?sede=" + idSede + "&instancias=" + instancias + "&fecha=" + fecha,
-		        dataType : 'json',
-		        success : function(data) {
-		         	var html = '';
+				toastr.warning("Debe completar los datos necesarios");	
+            	return;
+            }
 
-		         	if(accion=="N"){
-			         	html += '<tbody><tr><th>EXPEDIENTE</th><th style="display:none;"></th><th style="display:none;"></th><th>INSTANCIA</th><th style="display:none;"></th><th style="display:none;"></th><th>DELITO</th><th>TIPO</th><th style="display:none;"></th><th>HORA</th><th>MODALIDAD</th><th>ESTADO</th><th>ENLACE</th></tr>';
-			         	for (var i = 0; i < data.length; i++) {
-			         		var delito = '';
-			         		if(data[i].delito != null)
-			         			delito = data[i].delito;
-							html+='<tr class="filaAudiencia"><td>'+data[i].expediente+'</td><td style="display:none;">'+data[i].idInstancia+'</td><td style="display:none;">'+
-							data[i].idSede+'</td><td>'+data[i].instancia+'</td><td style="display:none;">'+data[i].parte1+'</td><td style="display:none;">'+data[i].parte2+'</td><td>'+delito+'</td><td>'+
-							data[i].tipo+'</td><td style="display:none;">'+data[i].fechaHora +'</td><td>'+data[i].hora +'</td><td><select><option value="V">VIRTUAL</option><option value="P">PRESENCIAL</option></select>'+
-							'<td><select><option value="P">PUBLICAR</option><option value="R">RESERVAR</option><option value="O">OMITIR</option></select></td><td><input type="text" size="40px" value="'+data[i].enlace+'"></td></tr>';
-			         	}
-			         	html += '</tbody>';
-		         	}
-		         	else{
-		         		html += '<tbody><tr><th>EXPEDIENTE</th><th style="display:none;"></th><th style="display:none;"></th><th>INSTANCIA</th><th style="display:none;"></th><th style="display:none;"></th><th>TIPO</th><th style="display:none;"></th><th>HORA</th><th>ENLACE</th><th>ESTADO</th><th>EDITAR</th></tr>';
-			         	for (var i = 0; i < data.length; i++) {
-							html+='<tr class="filaAudiencia"><td>'+data[i].expediente+'</td><td style="display:none;">'+data[i].instancia.id+'</td><td style="display:none;">'+
-							data[i].idSede+'</td><td>'+data[i].instancia.denominacion+'</td><td style="display:none;">'+data[i].parte1+'</td><td style="display:none;">'+data[i].parte2+'</td><td>'+
-							data[i].tipo+'</td><td style="display:none;">'+data[i].fechaHora +'</td><td>'+data[i].hora +'</td><td>'+data[i].enlace+'</td><td>'+data[i].estado+'</td><td>'+
-							"<button type='button' class='btn btn-warning btn-sm' onclick='editarAudiencia(" + data[i].id + ")'><i class='fas fa-edit'></i></button></td></tr>";
-			         	}
-			         	html += '</tbody>';
-		         	}
-		         	
-			        $("#tablaAudiencias").html(html);
-		        },
-	        	error : function(e) {
-	        	 	Swal.fire({
-					  	icon: 'error',
-					  	title: 'ATENCIÓN',
-					  	text: 'No se pudo cargar los registros!!',
-					});
-		     	}
-	      	});
-	    };
-	    
-		function editarAudiencia(id){
-			$.ajax({
-	       		type : "GET",
-	       		url : "getAudiencia?id=" + id,
-		        dataType : 'json',
-		        success : function(data) {
-					$("#modalEditarAudiencia").modal('show');
-					$("#txtIdAudiencia").val(data.id);
-					$("#txtExpediente").val(data.expediente);
-					$("#txtHora").val(data.hora);
-					$("#txtEnlace").val(data.enlace);
-					$("#lstEditarEstado").val(data.estado);
-		        },
-	        	error : function(e) {
-	        	 	Swal.fire({
-					  	icon: 'error',
-					  	title: 'ATENCIÓN',
-					  	text: 'No se pudo cargar los datos!!',
-					});
-		     	}
-	      	});
+            // Obtener la tabla por su ID
+            var tabla = document.getElementById("tablaCatalogo");
+            
+            if (cantidad === "") {
+				toastr.clear();
+				toastr.options = {
+					"closeButton":true,
+					"progressBar": true,
+					"positionClass":"toast-topcenter-right"
+				};
+				toastr.warning("Debe ingresar cantidad");	
+                return false;
+            }
+
+            // Verificar si la fila ya existe en la tabla
+            var filas = tabla.getElementsByTagName("tr");
+            
+            for (var i = 1; i < filas.length; i++) { // Empezamos desde 1 para omitir el encabezado
+                var celdas = filas[i].getElementsByTagName("td");
+                if (celdas[0].innerHTML === idCatalogo) {
+    				toastr.clear();
+    				toastr.options = {
+    					"closeButton":true,
+    					"progressBar": true,
+    					"positionClass":"toast-topcenter-right"
+    				};
+    				toastr.warning("Ya existe un elemento en la tabla");	
+                    return false; // Salir de la función si se encuentra un duplicado
+                }
+            }
+
+            // Crear una nueva fila
+            var fila = tabla.insertRow();
+
+            // Crear celdas (columnas) en la fila
+            var celda1 = fila.insertCell(0); // Primera columna
+            var celda2 = fila.insertCell(1); // Segunda columna
+            var celda3 = fila.insertCell(2); // Tercera columna
+            var celda4 = fila.insertCell(3);
+            
+            // Asignar valores a las celdas
+            celda1.innerHTML = idCatalogo;
+            celda2.innerHTML = textoSeleccionado;
+            celda3.innerHTML = cantidad;
+            celda4.innerHTML = '<button type="button" class="btn btn-outline-danger btn-sm" onclick="eliminarFila(this)"><i class="fas fa-minus"></i></button>';
+            
 		}
+		
+        function eliminarFila(boton) {
+            // Obtener la fila más cercana al botón
+            var fila = boton.parentNode.parentNode;
+            // Eliminar la fila
+            fila.parentNode.removeChild(fila);
+        }
+        
+        function guardarAdquisicion(){
+    		var detalle = [];
+    		var tabla = document.getElementById("tablaCatalogo");
+            var filas = tabla.getElementsByTagName("tr");
+            var documento = $('#txtDocumento').val();
+            var fecAdquisicion = $('#txtFecAdquisicion').val();
+            
+            if(documento == '' || fecAdquisicion == '' || filas.length == 1){
+				toastr.clear();
+				toastr.options = {
+					"closeButton":true,
+					"progressBar": true,
+					"positionClass":"toast-topcenter-right"
+				};
+				toastr.warning("Debe completar los datos necesarios");	
+            	return;
+            }
+
+            for (var i = 1; i < filas.length; i++) {
+                var celdas = filas[i].getElementsByTagName("td");
+                
+                var idCatalogo = celdas[0].innerHTML;
+                var cantidad = celdas[2].innerHTML;
+
+                detalle.push({
+                	idCatalogo: idCatalogo,
+                    cantidad: cantidad
+                });
+            }
+            
+            var adquisicion = {
+            	documento: documento,
+                fecAdquisicion: fecAdquisicion,
+                idTipoAdquisicion: $('#listTipo').val(),
+                detalle: detalle
+            };
+            
+            $.ajax({
+				type: "POST",
+				url: "adquisicion",
+				data: JSON.stringify(adquisicion),
+				cache: false,
+				dataType: "json",
+				contentType: "application/json; charset=utf-8",
+				processData: false,
+				success:function() {
+					for (var i = filas.length - 1; i > 0; i--) {
+					    tabla.deleteRow(i);
+					}
+					$('$txtDocumento').val('');
+					$('$txtFecAdquisicion').val('');
+					$('$txtCantidad').val('');
+					
+					Swal.fire(
+						'ADQUISICION REGISTRADA CORRECTAMENTE!!',
+						'Click en OK para continuar!',
+						'success'
+					);	
+				},
+		        error : function(response){
+		        	var r = jQuery.parseJSON(response.responseText);
+					toastr.clear();
+					toastr.options = {
+						"closeButton":true,
+						"progressBar": true,
+						"positionClass":"toast-topcenter-right"
+					};
+					toastr.warning(r.message);	
+		        }
+			});
+        }
 	</script>
 
 </body>

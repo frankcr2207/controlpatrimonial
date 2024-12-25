@@ -9,7 +9,7 @@ import csjar.controlpatrimonial.dto.ResponseAdquisicionDTO;
 public interface AdquisicionMapperService {
 
 	Adquisicion toEntity(RequestAdquisicionDTO requestAdquisicionDTO);
-	RequestAdquisicionDTO toEntity(Adquisicion adquisicion);
 	List<ResponseAdquisicionDTO> toDTO(List<Adquisicion> adquisicion);
+	ResponseAdquisicionDTO toDTO(Adquisicion adquisicion);
 	
 }

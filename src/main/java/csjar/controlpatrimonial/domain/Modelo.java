@@ -22,7 +22,7 @@ public class Modelo {
 	private Integer id;
 	
 	@Column(name="s_descripcion")
-	private String descripcion;
+	private String nombre;
 	
 	@ManyToOne
 	@JoinColumn(name = "n_id_marca", nullable = false)

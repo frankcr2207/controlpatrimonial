@@ -1,10 +1,14 @@
 package csjar.controlpatrimonial.mapper.service.impl;
 
+import java.util.List;
+
 import org.modelmapper.ModelMapper;
+import org.modelmapper.TypeToken;
 import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.stereotype.Service;
 
 import csjar.controlpatrimonial.domain.Usuario;
+import csjar.controlpatrimonial.dto.ResponsePerfilDTO;
 import csjar.controlpatrimonial.dto.ResponseUsuarioDTO;
 import csjar.controlpatrimonial.mapper.service.UsuarioMapperService;
 
@@ -23,6 +27,12 @@ public class UsuarioMapperServiceImpl implements UsuarioMapperService{
 	public Usuario toEntity(ResponseUsuarioDTO responseUsuarioDTO) {
 		modelMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
 		return modelMapper.map(responseUsuarioDTO, Usuario.class);
+	}
+
+	@Override
+	public List<ResponseUsuarioDTO> toDTO(List<Usuario> usuario) {
+		modelMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
+		return modelMapper.map(usuario, new TypeToken<List<ResponseUsuarioDTO>>(){}.getType());
 	}
 	
 }

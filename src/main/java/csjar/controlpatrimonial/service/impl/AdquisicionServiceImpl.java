@@ -1,5 +1,8 @@
 package csjar.controlpatrimonial.service.impl;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -8,6 +11,11 @@ import java.util.stream.Collectors;
 import javax.transaction.Transactional;
 
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.User;
 
 import csjar.controlpatrimonial.domain.Adquisicion;
 import csjar.controlpatrimonial.domain.Bien;
@@ -53,6 +61,12 @@ public class AdquisicionServiceImpl implements AdquisicionService {
 	}
 	
 	@Override
+	public ResponseAdquisicionDTO verAdquisicion(Integer id) {
+		Adquisicion adquisicion = this.adquisicionRepository.findById(id).get();
+		return this.adquisicionMapperService.toDTO(adquisicion);
+	}
+	
+	@Override
 	public List<ResponseAdquisicionDTO> buscarAdquisicion(String documento) {
 		List<Adquisicion> lista = this.adquisicionRepository.findByDocumentoContains(documento);
 		return this.adquisicionMapperService.toDTO(lista);
@@ -66,7 +80,13 @@ public class AdquisicionServiceImpl implements AdquisicionService {
 			adquisicion = this.adquisicionRepository.findById(requestAdquisicionDTO.getId()).get();
 		}
 		else{
-			adquisicion = this.adquisicionMapperService.toEntity(requestAdquisicionDTO);	
+			adquisicion = this.adquisicionMapperService.toEntity(requestAdquisicionDTO);
+			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+			LocalDate fecha = LocalDate.parse(requestAdquisicionDTO.getFecAdquisicion(), formatter);
+		    LocalDateTime fechaHora = fecha.atStartOfDay();
+	        adquisicion.setFecAdquisicion(fechaHora);
+	        adquisicion.setEstado("R");
+	        adquisicion.setUsuario(this.obtenerUsuario());
 		}
 		TipoAdquisicion tipoAdquisicion = tipoAdquisicionService.obtenerEntidad(requestAdquisicionDTO.getIdTipoAdquisicion());
 		adquisicion.setTipoAdquisicion(tipoAdquisicion);
@@ -127,5 +147,16 @@ public class AdquisicionServiceImpl implements AdquisicionService {
 			});
 		}
 	}
+	
+	public String obtenerUsuario() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        
+        if (authentication != null) {
+            String usuario = authentication.getName();
+            return usuario;
+        }
+        
+        throw new ResponseStatusException(HttpStatus.FORBIDDEN, "La sesión ha finalizado");
+    }
 	
 }

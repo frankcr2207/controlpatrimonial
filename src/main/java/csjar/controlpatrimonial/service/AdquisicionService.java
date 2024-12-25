@@ -8,6 +8,7 @@ import csjar.controlpatrimonial.dto.ResponseAdquisicionDTO;
 
 public interface AdquisicionService {
 
+	ResponseAdquisicionDTO verAdquisicion(Integer id);
 	List<ResponseAdquisicionDTO> buscarAdquisicion(String documento);
 	void guardarAdquisicion(RequestAdquisicionDTO requestAdquisicionDTO);
 	void generarBienes(List<RequestBienesDTO> requestAdquisicionDTO);
