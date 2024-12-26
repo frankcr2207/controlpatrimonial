@@ -7,6 +7,7 @@ import csjar.controlpatrimonial.dto.ResponseUsuarioDTO;
 
 public interface UsuarioService {
 
+	String obtenerNombreSesion();
 	ResponseUsuarioDTO buscarUsuario(Integer id);
 	List<ResponseUsuarioDTO> listarUsuario();
 	ResponseUsuarioDTO buscarEmpleado(String dni);

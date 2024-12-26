@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Objects;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -99,5 +101,22 @@ public class UsuarioServiceImpl implements UsuarioService {
 		Usuario usuario = this.usuarioRepository.findById(usuarioDTO.getId()).get();
 		usuario.setClave(EncriptarClave.generar(usuarioDTO.getClave()));
 	}
+
+	@Override
+	public String obtenerNombreSesion() {
+		Usuario usuario = this.usuarioRepository.findByLogin(obtenerUsuario());
+		return usuario.getNombres();
+	}
+	
+	public String obtenerUsuario() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        
+        if (authentication != null) {
+            String usuario = authentication.getName();
+            return usuario;
+        }
+        
+        throw new ResponseStatusException(HttpStatus.FORBIDDEN, "La sesión ha finalizado");
+    }
 
 }
