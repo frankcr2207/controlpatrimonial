@@ -78,6 +78,7 @@
 						</div> 
 					</div>
 					<hr>
+					<button id="btnReplicar" onclick="replicar()" class="btn btn-info btn-sm">REPLICAR</button><br>
 					<table id="tablaProductos" class="table">
 						<thead class="thead-dark">
 				            <tr>
@@ -206,7 +207,7 @@
 					$('#txtDocumento').val(data.documento);
 					$('#txtFecAdquisicion').val(data.fecAdquisicion);
 					$('#txtFecRegistro').val(data.fecRegistro);
-					$('#txtEstado').val(data.estado);
+					$('#txtEstado').val(data.estado == 'R' ? 'REGISTRADO' : 'GENERADO');
 					
 					for (var i = 0; i < data.detalleAdquisicion.length; i++) { 
 						for (var j = 0; j < data.detalleAdquisicion[i].cantidad; j++) {
@@ -282,6 +283,80 @@
                 });
             }
         }
+		
+		function replicar() {
+			  // Obtener la primera fila de la tabla
+			  
+			var rows = 1;
+			var tabla = document.getElementById('tablaProductos');
+		  	var filaBase = tabla.rows[1];
+	    	var primeraCeldaBase = filaBase.cells[0];
+	    	var valorCeldaFilaBase = primeraCeldaBase.textContent || primeraCeldaBase.innerText;
+		 	 
+		  	// Obtener todos los inputs y el select de la primera fila
+		  	var inputsBase = filaBase.getElementsByTagName('input');
+		  	var selectBase = filaBase.getElementsByTagName('select')[0];
+		  	var selectModeloBase = filaBase.getElementsByTagName('select')[1];
+		  	
+		  	var valorSeleccionadoBase = selectBase.value;
+		  	var valorModeloBase = selectModeloBase.value;
+		  
+		  	// Iterar sobre todas las filas de la tabla (empezando desde la segunda)
+		  	for (var i = 2; i < tabla.rows.length; i++) {
+		    	var filaActual = tabla.rows[i];
+				alert(valorCeldaFilaBase);
+		    	var primeraCeldaActual = filaActual.cells[0];
+		    	var valorCeldaFilaActual = primeraCeldaActual.textContent || primeraCeldaActual.innerText;
+		    	
+		    	if(valorCeldaFilaBase != valorCeldaFilaActual){
+		    		primeraCeldaBase = filaActual.cells[0];
+			    	valorCeldaFilaBase = primeraCeldaBase.textContent || primeraCeldaBase.innerText;
+			    	
+				  	inputsBase = filaActual.getElementsByTagName('input');
+				  	selectBase = filaActual.getElementsByTagName('select')[0];
+				  	selectModeloBase = filaActual.getElementsByTagName('select')[1];
+				  	
+				  	valorSeleccionadoBase = selectBase.value;
+					valorModeloBase = selectModeloBase.value;
+				  	continue;
+		    	}
+		    	
+		    	// Obtener todos los inputs y el select de la fila actual
+		    	var inputsActual = filaActual.getElementsByTagName('input');
+		    	var selectActual = filaActual.getElementsByTagName('select')[0];
+		    	var selectModeloActual = filaActual.getElementsByTagName('select')[1];
+		    
+		    	actualizarModelosReplica(selectBase, selectModeloActual);
+		    	
+		    	// Replicar los valores de los inputs
+		    	for (var j = 0; j < inputsBase.length; j++) {
+		      		inputsActual[j].value = inputsBase[j].value;
+		    	}
+		    
+		    	// Establecer el valor seleccionado en el select de la fila actual
+		    	selectActual.value = valorSeleccionadoBase;
+		    	selectModeloActual.value = valorModeloBase;
+			}
+		}
+		
+		function actualizarModelosReplica(selectMarca, selectModeloActual){
+            const marcaId = parseInt(selectMarca.value);
+            const marcaSeleccionada = dataGlobal.find(marca => marca.id === marcaId);
+
+            // Limpiar los modelos anteriores
+            selectModeloActual.innerHTML = '';
+
+            // Crear una opción por cada modelo disponible
+            if (marcaSeleccionada) {
+                marcaSeleccionada.modelos.forEach(modelo => {
+                    const option = document.createElement('option');
+                    option.value = modelo.id;
+                    option.textContent = modelo.nombre;
+                    selectModeloActual.appendChild(option);
+                });
+            }
+		}
+		
 	</script>
 
 </body>

@@ -1,10 +1,5 @@
 package csjar.controlpatrimonial.controller;
 
-import java.util.Collection;
-
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -29,13 +24,6 @@ public class ControlPatrimonialController {
     @GetMapping("/principal")
     public String formPrincipal(Model model) {
     	model.addAttribute("sesion", this.usuarioService.obtenerNombreSesion());
-    	Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication != null) {
-            Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
-            authorities.forEach(authority -> {
-                System.out.println("Rol: " + authority.getAuthority());
-            });
-        }
         return "vistas/principal";
     }
     
