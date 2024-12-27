@@ -79,7 +79,7 @@
 						</div> 
 					</div>
 					<hr>
-					<button id="btnReplicar" onclick="replicar()" class="btn btn-info btn-sm">REPLICAR</button><br>
+					<button id="btnReplicar" onclick="replicar()" class="btn btn-info btn-sm">REPLICAR</button><br><br>
 					<table id="tablaProductos" class="table">
 						<thead class="thead-dark">
 				            <tr>
@@ -97,6 +97,17 @@
 				        <tbody>
 				        </tbody>
 					</table>
+					<table id="tablaProductosGenerados" class="table">
+						<thead class="thead-dark">
+				            <tr>
+				            	<th>CATALOGO</th>
+				            	<th>CODIGO PATRIMONIAL</th>
+				                <th>DESCRIPCION</th>
+				            </tr>
+				        </thead>
+				        <tbody>
+				        </tbody>
+					</table>
 				</div>
 			</div>
 		</div>
@@ -108,6 +119,10 @@
 		var dataSelect;
 		var dataGlobal;
 	   	$(document).ready(function() {
+	   		
+	   		$('#tablaProductos').hide();
+	   		$('#tablaProductosGenerados').hide();
+	   		
 	   		$.ajax({
 	       		type : "GET",
 	       		url : "marca",
@@ -204,12 +219,7 @@
 	    
 	    
 	    function verAdquisicion(id){
-    		var tabla = document.getElementById("tablaProductos");
-    		var tbody = tabla.querySelector('tbody');
-            var filas = tabla.getElementsByTagName("tr");
-			for (var i = filas.length - 1; i > 0; i--) {
-			    tabla.deleteRow(i);
-			}
+
 	        $.ajax({
 	       		type : "GET",
 	       		url : "adquisicion/" + id,
@@ -221,38 +231,69 @@
 					$('#txtFecAdquisicion').val(data.fecAdquisicion);
 					$('#txtFecRegistro').val(data.fecRegistro);
 					$('#txtEstado').val(data.estado == 'R' ? 'REGISTRADO' : 'GENERADO');
+					
 					if(data.estado == 'R'){
 						$('#btnEtiqueta').hide();
 						$('#btnGuardar').show();
+				   		$('#tablaProductos').show();
+				   		$('#tablaProductosGenerados').hide();
+				   		
+			    		var tabla = document.getElementById("tablaProductos");
+			    		var tbody = tabla.querySelector('tbody');
+			            var filas = tabla.getElementsByTagName("tr");
+						for (var i = filas.length - 1; i > 0; i--) {
+						    tabla.deleteRow(i);
+						}
+						
+						for (var i = 0; i < data.detalleAdquisicion.length; i++) { 
+							for (var j = 0; j < data.detalleAdquisicion[i].cantidad; j++) {
+								var fila = tbody.insertRow();
+		
+					            var celda1 = fila.insertCell(0);
+					            var celda2 = fila.insertCell(1);
+					            var celda3 = fila.insertCell(2);
+					            var celda4 = fila.insertCell(3);
+					            var celda5 = fila.insertCell(4);
+					            var celda6 = fila.insertCell(5);
+					            var celda7 = fila.insertCell(6);
+					            var celda8 = fila.insertCell(7);
+					            var celda9 = fila.insertCell(8);
+					            
+					            celda1.innerHTML = data.detalleAdquisicion[i].catalogo.id;
+					            celda2.innerHTML = data.detalleAdquisicion[i].catalogo.codigo;
+					            celda3.innerHTML = data.detalleAdquisicion[i].catalogo.denominacion;
+					            celda4.innerHTML = '<input type="text">';
+					            celda5.innerHTML = dataSelect;
+					            celda6.innerHTML = '<select class="modelos"><option value="0">Selecciona un modelo</option></select>';
+					            celda7.innerHTML = '<input type="text">';
+					            celda8.innerHTML = '<input type="text">';
+					            celda9.innerHTML = '<input type="text">';
+							}
+						}
 					}
 					else{
+						var data = obtenerProductosGenerados(id);
+						
 						$('#btnEtiqueta').show();
 						$('#btnGuardar').hide();
-					}
-					
-					for (var i = 0; i < data.detalleAdquisicion.length; i++) { 
-						for (var j = 0; j < data.detalleAdquisicion[i].cantidad; j++) {
+				   		$('#tablaProductos').hide();
+				   		$('#tablaProductosGenerados').show();
+				   		
+				   		var tabla = document.getElementById("tablaProductosGenerados");
+			    		var tbody = tabla.querySelector('tbody');
+			            var filas = tabla.getElementsByTagName("tr");
+						for (var i = filas.length - 1; i > 0; i--) {
+						    tabla.deleteRow(i);
+						}
+						
+						for (var i = 0; i < data.length; i++) { 
 							var fila = tbody.insertRow();
-	
 				            var celda1 = fila.insertCell(0);
 				            var celda2 = fila.insertCell(1);
 				            var celda3 = fila.insertCell(2);
-				            var celda4 = fila.insertCell(3);
-				            var celda5 = fila.insertCell(4);
-				            var celda6 = fila.insertCell(5);
-				            var celda7 = fila.insertCell(6);
-				            var celda8 = fila.insertCell(7);
-				            var celda9 = fila.insertCell(8);
-				            
-				            celda1.innerHTML = data.detalleAdquisicion[i].catalogo.id;
-				            celda2.innerHTML = data.detalleAdquisicion[i].catalogo.codigo;
-				            celda3.innerHTML = data.detalleAdquisicion[i].catalogo.denominacion;
-				            celda4.innerHTML = '<input type="text">';
-				            celda5.innerHTML = dataSelect;
-				            celda6.innerHTML = '<select class="modelos"><option value="0">Selecciona un modelo</option></select>';
-				            celda7.innerHTML = '<input type="text">';
-				            celda8.innerHTML = '<input type="text">';
-				            celda9.innerHTML = '<input type="text">';
+				            celda1.innerHTML = data[i].codigo;
+				            celda2.innerHTML = data[i].codigoPatrimonial;
+				            celda3.innerHTML = data[i].descripcion;
 						}
 					}
 					 
@@ -429,6 +470,28 @@
     		        }
     			});
     		}
+		}
+		
+		function obtenerProductosGenerados(idAdquisicion){
+			
+			var response;
+			$.ajax({
+	       		type : "GET",
+	       		url : "bien/" + idAdquisicion,
+		        dataType : 'json',
+		        success : function(data) {
+		        	response = data;
+		        }
+		        ,
+	        	error : function(e) {
+	        	 	Swal.fire({
+					  	icon: 'error',
+					  	title: 'ATENCIÓN',
+					  	text: 'No se pudo obtener los registros!!',
+					});
+		     	}
+	      	});
+			return response;
 		}
 		
 	</script>

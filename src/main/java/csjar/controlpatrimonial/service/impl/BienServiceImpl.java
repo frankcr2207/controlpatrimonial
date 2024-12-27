@@ -16,6 +16,7 @@ import csjar.controlpatrimonial.domain.Catalogo;
 import csjar.controlpatrimonial.domain.Modelo;
 import csjar.controlpatrimonial.dto.RequestBienesDTO;
 import csjar.controlpatrimonial.dto.RequestDetalleBienesDTO;
+import csjar.controlpatrimonial.dto.ResponseBienesDTO;
 import csjar.controlpatrimonial.repository.BienRepository;
 import csjar.controlpatrimonial.service.AdquisicionService;
 import csjar.controlpatrimonial.service.BienService;
@@ -86,6 +87,28 @@ public class BienServiceImpl implements BienService {
 			adquisicionService.actualizarEntidad(adquisicion);
 		}
 		
+	}
+
+	@Override
+	public List<ResponseBienesDTO> obtenerBienes(Integer idAdquisicion) {
+		List<Bien> bienes = this.repository.findByIdAdquisicion(idAdquisicion);
+		List<ResponseBienesDTO> responseBienes = new ArrayList<>();
+		
+		List<Integer> idsCatalogo = bienes.stream() 
+	            .map(Bien::getIdCatalogo).distinct().collect(Collectors.toList());
+		
+		Map<Integer, String> mapCatalogos = this.catalogoService.obtenerCatalogo(idsCatalogo)
+				.stream().collect(Collectors.toMap(Catalogo::getId, Catalogo::getDenominacion));
+		
+		bienes.stream().forEach(b -> {
+			ResponseBienesDTO bien = new ResponseBienesDTO();
+			bien.setCatalogo(mapCatalogos.get(b.getIdCatalogo()));
+			bien.setCodigoPatrinonial(b.getCodigoPatrimonial());
+			bien.setDescripcion(b.getDescripcion());
+			responseBienes.add(bien);
+		});
+		
+		return responseBienes;
 	}
 
 }
