@@ -10,30 +10,23 @@ import java.util.stream.Collectors;
 
 import javax.transaction.Transactional;
 
-import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.User;
+import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import csjar.controlpatrimonial.domain.Adquisicion;
-import csjar.controlpatrimonial.domain.Bien;
 import csjar.controlpatrimonial.domain.Catalogo;
 import csjar.controlpatrimonial.domain.DetalleAdquisicion;
-import csjar.controlpatrimonial.domain.Modelo;
 import csjar.controlpatrimonial.domain.TipoAdquisicion;
 import csjar.controlpatrimonial.dto.RequestAdquisicionDTO;
-import csjar.controlpatrimonial.dto.RequestBienesDTO;
 import csjar.controlpatrimonial.dto.RequestDetalleAdquisicionDTO;
-import csjar.controlpatrimonial.dto.RequestDetalleBienesDTO;
 import csjar.controlpatrimonial.dto.ResponseAdquisicionDTO;
 import csjar.controlpatrimonial.mapper.service.AdquisicionMapperService;
 import csjar.controlpatrimonial.repository.AdquisicionRepository;
 import csjar.controlpatrimonial.service.AdquisicionService;
 import csjar.controlpatrimonial.service.CatalogoService;
-import csjar.controlpatrimonial.service.DetalleAdquisicionService;
-import csjar.controlpatrimonial.service.ModeloService;
 import csjar.controlpatrimonial.service.TipoAdquisicionService;
 import csjar.controlpatrimonial.utils.CollectorUtils;
 
@@ -44,20 +37,15 @@ public class AdquisicionServiceImpl implements AdquisicionService {
 	private AdquisicionMapperService adquisicionMapperService;
 	private TipoAdquisicionService tipoAdquisicionService;
 	private CatalogoService catalogoService;
-	private DetalleAdquisicionService detalleAdquisicionService;
-	private ModeloService modeloService;
 	
 	public AdquisicionServiceImpl(AdquisicionRepository adquisicionRepository,
 		AdquisicionMapperService adquisicionMapperService, TipoAdquisicionService tipoAdquisicionService,
-		CatalogoService catalogoService, DetalleAdquisicionService detalleAdquisicionService,
-		ModeloService modeloService) {
+		CatalogoService catalogoService) {
 		super();
 		this.adquisicionRepository = adquisicionRepository;
 		this.adquisicionMapperService = adquisicionMapperService;
 		this.tipoAdquisicionService = tipoAdquisicionService;
 		this.catalogoService = catalogoService;
-		this.detalleAdquisicionService = detalleAdquisicionService;
-		this.modeloService = modeloService;
 	}
 	
 	@Override
@@ -110,43 +98,6 @@ public class AdquisicionServiceImpl implements AdquisicionService {
 		this.adquisicionRepository.save(adquisicion);
 				
 	}
-
-	@Override
-	public void generarBienes(List<RequestBienesDTO> requestAdquisicionDTO) {
-		if(CollectorUtils.isValidate(requestAdquisicionDTO)) {
-			
-			List<Integer> ids = requestAdquisicionDTO.stream()  
-		            .flatMap(a -> a.getBienes().stream())  
-		            .map(RequestDetalleBienesDTO::getIdModelo) 
-		            .collect(Collectors.toList()); 
-			List<Modelo> modelos = this.modeloService.obtenerEntidades(ids);
-			
-			List<Integer> idsDetalle = requestAdquisicionDTO.stream().map(r -> r.getIdDetalleAdquisicion()).collect(Collectors.toList());
-			List<DetalleAdquisicion> detalles = this.detalleAdquisicionService.obtenerEntidades(idsDetalle);
-			
-			requestAdquisicionDTO.stream().forEach(request -> {
-				DetalleAdquisicion detalle = detalles.stream()
-					.filter(d -> d.getId() == request.getIdDetalleAdquisicion()).findFirst().get();
-				
-				Integer secuencia = detalle.getCatalogo().getSecuencia();
-				for(RequestDetalleBienesDTO b : request.getBienes()){
-					Bien bien = new Bien();
-					bien.setIdDetalleAdquisicion(detalle.getId());
-					bien.setColor(b.getColor());
-					bien.setDescripcion(b.getDescripcion());
-					bien.setSerie(b.getSerie());
-					bien.setObservacion(b.getObservacion());
-					bien.setModelo(modelos.stream().filter(m -> m.getId()==b.getIdModelo()).findFirst().get());
-					bien.setCodigoPatrimonial(
-						detalle.getCatalogo().getCodigo()
-							.concat(String.format("%0d", secuencia)));
-					secuencia++;
-				};
-				detalle.getCatalogo().setSecuencia(secuencia);
-				
-			});
-		}
-	}
 	
 	public String obtenerUsuario() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -158,5 +109,16 @@ public class AdquisicionServiceImpl implements AdquisicionService {
         
         throw new ResponseStatusException(HttpStatus.FORBIDDEN, "La sesión ha finalizado");
     }
+
+	@Override
+	public Adquisicion obtenerEntidad(Integer id) {
+		return this.adquisicionRepository.findById(id).get();
+	}
+
+	@Override
+	public void actualizarEntidad(Adquisicion request) {
+		Adquisicion adquisicion = adquisicionRepository.findById(request.getId()).get();
+		adquisicion.setEstado(request.getEstado());
+	}
 	
 }

@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import csjar.controlpatrimonial.dto.RequestAdquisicionDTO;
-import csjar.controlpatrimonial.dto.RequestBienesDTO;
 import csjar.controlpatrimonial.dto.ResponseAdquisicionDTO;
 import csjar.controlpatrimonial.service.AdquisicionService;
 
@@ -42,12 +41,6 @@ public class AdquisicionController {
 	public ResponseEntity<ResponseEntity<HttpStatus>> gestionarAdquisicion(@RequestBody RequestAdquisicionDTO request) throws NoSuchAlgorithmException {
 		this.adquisicionService.guardarAdquisicion(request);
 		return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-	}
-	
-	@PostMapping("/generar")
-	public ResponseEntity<ResponseEntity<HttpStatus>> generarBienes(@RequestBody List<RequestBienesDTO> request) throws NoSuchAlgorithmException {
-		this.adquisicionService.generarBienes(request);
-		return new ResponseEntity<>(HttpStatus.CREATED);
 	}
 	
 }

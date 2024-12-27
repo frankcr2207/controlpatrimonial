@@ -7,7 +7,7 @@ import lombok.Data;
 @Data
 public class RequestBienesDTO {
 
-	private Integer idDetalleAdquisicion;
+	private Integer idAdquisicion;
 	private List<RequestDetalleBienesDTO> bienes;
 	
 }

@@ -46,7 +46,10 @@ public class Bien {
 	@Column(name="s_observacion")
 	private String observacion;
 	
-	@Column(name="n_id_detalle_adquisicion")
-	private Integer idDetalleAdquisicion;
+	@Column(name="n_id_adquisicion")
+	private Integer idAdquisicion;
+	
+	@Column(name="n_id_catalogo")
+	private Integer idCatalogo;
 	
 }

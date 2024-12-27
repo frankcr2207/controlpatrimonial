@@ -73,7 +73,8 @@
 							<label>ESTADO: </label><input type="text" id="txtEstado">
 						</div>
 						<div style="width: 50%; margin: auto" align="center">
-							<button id="btnGuardar" type="button" class="btn btn-primary">GUARDAR</button><br><br>
+							<button id="btnGuardar" type="button" class="btn btn-primary" onclick="guardarBienes()">GUARDAR</button><br><br>
+							<button id="btnEtiquetas" type="button" style="display: none" class="btn btn-success" onclick="generarEtiquetas()">ETIQUETAS</button><br><br>
 							<button id="btnCancelar" onclick="animacion(false)" type="button" class="btn btn-secondary btn-sm">CANCELAR</button>
 						</div> 
 					</div>
@@ -82,6 +83,7 @@
 					<table id="tablaProductos" class="table">
 						<thead class="thead-dark">
 				            <tr>
+				            	<th>ID</th>
 				            	<th>CODIGO</th>
 				                <th>BIEN</th>
 				                <th>DESCRIPCION</th>
@@ -160,6 +162,16 @@
 		        dataType : 'json',
 		        success : function(data) {
 		        	var len = data.length;
+		        	if(len == 0){
+						toastr.clear();
+						toastr.options = {
+							"closeButton":true,
+							"progressBar": true,
+							"positionClass":"toast-topcenter-right"
+						};
+						toastr.warning("No se obtuvo resultados");	
+		        	}
+		        	
 		         	for (var i = 0; i < len; i++) {
 
 		                var fila = tabla.insertRow();
@@ -193,6 +205,7 @@
 	    
 	    function verAdquisicion(id){
     		var tabla = document.getElementById("tablaProductos");
+    		var tbody = tabla.querySelector('tbody');
             var filas = tabla.getElementsByTagName("tr");
 			for (var i = filas.length - 1; i > 0; i--) {
 			    tabla.deleteRow(i);
@@ -208,10 +221,18 @@
 					$('#txtFecAdquisicion').val(data.fecAdquisicion);
 					$('#txtFecRegistro').val(data.fecRegistro);
 					$('#txtEstado').val(data.estado == 'R' ? 'REGISTRADO' : 'GENERADO');
+					if(data.estado == 'R'){
+						$('#btnEtiqueta').hide();
+						$('#btnGuardar').show();
+					}
+					else{
+						$('#btnEtiqueta').show();
+						$('#btnGuardar').hide();
+					}
 					
 					for (var i = 0; i < data.detalleAdquisicion.length; i++) { 
 						for (var j = 0; j < data.detalleAdquisicion[i].cantidad; j++) {
-							var fila = tabla.insertRow();
+							var fila = tbody.insertRow();
 	
 				            var celda1 = fila.insertCell(0);
 				            var celda2 = fila.insertCell(1);
@@ -221,15 +242,17 @@
 				            var celda6 = fila.insertCell(5);
 				            var celda7 = fila.insertCell(6);
 				            var celda8 = fila.insertCell(7);
+				            var celda9 = fila.insertCell(8);
 				            
-				            celda1.innerHTML = data.detalleAdquisicion[i].catalogo.codigo;
-				            celda2.innerHTML = data.detalleAdquisicion[i].catalogo.denominacion;
-				            celda3.innerHTML = '<input type="text">';
-				            celda4.innerHTML = dataSelect;
-				            celda5.innerHTML = '<select class="modelos"><option value="0">Selecciona un modelo</option></select>';
-				            celda6.innerHTML = '<input type="text">';
+				            celda1.innerHTML = data.detalleAdquisicion[i].catalogo.id;
+				            celda2.innerHTML = data.detalleAdquisicion[i].catalogo.codigo;
+				            celda3.innerHTML = data.detalleAdquisicion[i].catalogo.denominacion;
+				            celda4.innerHTML = '<input type="text">';
+				            celda5.innerHTML = dataSelect;
+				            celda6.innerHTML = '<select class="modelos"><option value="0">Selecciona un modelo</option></select>';
 				            celda7.innerHTML = '<input type="text">';
 				            celda8.innerHTML = '<input type="text">';
+				            celda9.innerHTML = '<input type="text">';
 						}
 					}
 					 
@@ -270,10 +293,8 @@
             const marcaId = parseInt(selectMarca.value);
             const marcaSeleccionada = dataGlobal.find(marca => marca.id === marcaId);
 
-            // Limpiar los modelos anteriores
             selectModelos.innerHTML = '';
 
-            // Crear una opción por cada modelo disponible
             if (marcaSeleccionada) {
                 marcaSeleccionada.modelos.forEach(modelo => {
                     const option = document.createElement('option');
@@ -285,7 +306,6 @@
         }
 		
 		function replicar() {
-			  // Obtener la primera fila de la tabla
 			  
 			var rows = 1;
 			var tabla = document.getElementById('tablaProductos');
@@ -293,7 +313,6 @@
 	    	var primeraCeldaBase = filaBase.cells[0];
 	    	var valorCeldaFilaBase = primeraCeldaBase.textContent || primeraCeldaBase.innerText;
 		 	 
-		  	// Obtener todos los inputs y el select de la primera fila
 		  	var inputsBase = filaBase.getElementsByTagName('input');
 		  	var selectBase = filaBase.getElementsByTagName('select')[0];
 		  	var selectModeloBase = filaBase.getElementsByTagName('select')[1];
@@ -301,10 +320,8 @@
 		  	var valorSeleccionadoBase = selectBase.value;
 		  	var valorModeloBase = selectModeloBase.value;
 		  
-		  	// Iterar sobre todas las filas de la tabla (empezando desde la segunda)
 		  	for (var i = 2; i < tabla.rows.length; i++) {
 		    	var filaActual = tabla.rows[i];
-				alert(valorCeldaFilaBase);
 		    	var primeraCeldaActual = filaActual.cells[0];
 		    	var valorCeldaFilaActual = primeraCeldaActual.textContent || primeraCeldaActual.innerText;
 		    	
@@ -321,19 +338,16 @@
 				  	continue;
 		    	}
 		    	
-		    	// Obtener todos los inputs y el select de la fila actual
 		    	var inputsActual = filaActual.getElementsByTagName('input');
 		    	var selectActual = filaActual.getElementsByTagName('select')[0];
 		    	var selectModeloActual = filaActual.getElementsByTagName('select')[1];
 		    
 		    	actualizarModelosReplica(selectBase, selectModeloActual);
 		    	
-		    	// Replicar los valores de los inputs
 		    	for (var j = 0; j < inputsBase.length; j++) {
 		      		inputsActual[j].value = inputsBase[j].value;
 		    	}
 		    
-		    	// Establecer el valor seleccionado en el select de la fila actual
 		    	selectActual.value = valorSeleccionadoBase;
 		    	selectModeloActual.value = valorModeloBase;
 			}
@@ -343,10 +357,8 @@
             const marcaId = parseInt(selectMarca.value);
             const marcaSeleccionada = dataGlobal.find(marca => marca.id === marcaId);
 
-            // Limpiar los modelos anteriores
             selectModeloActual.innerHTML = '';
 
-            // Crear una opción por cada modelo disponible
             if (marcaSeleccionada) {
                 marcaSeleccionada.modelos.forEach(modelo => {
                     const option = document.createElement('option');
@@ -355,6 +367,68 @@
                     selectModeloActual.appendChild(option);
                 });
             }
+		}
+		
+		function guardarBienes(){
+			var bienes = [];
+			$('#tablaProductos tbody tr').each(function() {
+				var bien = {};
+				bien["idCatalogo"] = $(this).find("td:eq(0)").text();
+				bien["descripcion"] = $(this).find("td:eq(3) input").val();
+				bien["idModelo"] = $(this).find("td:eq(5) select").val();
+				bien["serie"] = $(this).find("td:eq(6) input").val();
+				bien["color"] = $(this).find("td:eq(7) input").val();
+				bien["observacion"] = $(this).find("td:eq(8) input").val();
+				bienes.push(bien);
+			});
+			var generaBienes = {
+				idAdquisicion : $('#txtId').val(),
+				bienes : bienes
+			};
+			
+			if(2 == 0){
+				toastr.clear();
+				toastr.options = {
+					"closeButton":true,
+					"progressBar": true,
+					"positionClass":"toast-topcenter-right"
+				};
+				toastr.error("Debe completar todos los campos!!");
+    		}
+    		else{
+    			$.ajax({
+    				type: "POST",
+    				url: "bien/generar",
+    				data: JSON.stringify(generaBienes),
+    				cache: false,
+    				dataType: "json",
+    				contentType: "application/json; charset=utf-8",
+    				processData: false,
+    				success:function(response) {
+    					var tabla = document.getElementById("tablaProductos");
+    		            var filas = tabla.getElementsByTagName("tr");
+    					for (var i = filas.length - 1; i > 0; i--) {
+    					    tabla.deleteRow(i);
+    					}
+    					$('#txtEstado').val('GENNERADO');
+    					Swal.fire(
+    						'BIENES GENERADOS CORRECTAMENTE!!',
+    						'Click en OK para continuar!',
+    						'success'
+    					);	
+    				},
+    		        error : function(response){
+    		        	var r = jQuery.parseJSON(response.responseText);
+    					toastr.clear();
+    					toastr.options = {
+    						"closeButton":true,
+    						"progressBar": true,
+    						"positionClass":"toast-topcenter-right"
+    					};
+    					toastr.warning(r.message);	
+    		        }
+    			});
+    		}
 		}
 		
 	</script>
