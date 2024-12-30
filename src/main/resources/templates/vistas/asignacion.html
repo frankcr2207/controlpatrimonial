@@ -1,10 +1,241 @@
 <!DOCTYPE html>
-<html>
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
 <head>
-<meta charset="ISO-8859-1">
-<title>Insert title here</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+	<style type="text/css">
+	 	.selected{ background-color: #E1E1E1; } tr:hover{ background-color: #E1E1E1; } 
+
+		input{
+	    	border:0;
+		    border-bottom: 1px solid #009CBF;
+		    font-size: 11px;
+	    }
+	    
+	    .modalLabel{
+	    	width: 100px;
+	    	font-weight: bold;
+	    }
+
+	</style>
 </head>
 <body>
 
+	<div class="card card-body">
+		<div  style="width:60%; height: 100%; font-size: 11px; margin: auto">
+			<h3>GESTIÓN DE ACTAS</h3>
+			<label>DNI: </label><input type="text" id="txtDni" onkeydown="handleEnterDni(event)"> <br>
+			<input type="hidden" id="txtIdEmpleado">
+			<label>NOMBRES: </label><input type="text" id="txtNombres"> <br>
+			<label>APELLIDOS: </label><input type="text" id="txtApellidos"> <br>
+			<label>CORREO: </label><input type="text" id="txtCorreo"> <br>
+			<label>TIPO: </label><select id="listTipo"><option value="A">ASIGNACIÓN</option><option value="D">DEVOLUCIÓN</option></select>
+			<button id="btnGuardar" type="button" class="btn btn-primary" onclick="guardarActa()"><i class="fas fa-save"></i>&nbsp;GUARDAR</button>
+			<hr>
+			<label>SEDE: </label><select id="listSede"></select>&nbsp;<label>DIRECCIÓN: </label><input type="text" id="txtDireccion">
+			<label>ÁREA INTERNA: </label><select id="listArea"></select>
+			<hr>
+			<label>CÓDIGO PATRIMONIAL: </label><input type="text" id="txtCodigo" onkeydown="handleEnterCodigo(event)"><br>
+			<table id="tablaBienes" class="table">
+				<thead class="thead-dark">
+		            <tr>
+		                <th>CÓDIGO</th>
+		                <th>DESCRIPCIÓN</th>
+		                <th>ESTADO</th>
+		                <th>OBSERVACIÓN</th>
+		                <th>ELIMINAR</th>
+		            </tr>
+		        </thead>
+		        <tbody>
+		        </tbody>
+			</table>
+
+		</div>
+	</div>
+	<script type="text/javascript">
+	   	$(document).ready(function() {
+	   		$.ajax({
+	       		type : "GET",
+	       		url : "sede",
+		        dataType : 'json',
+		        success : function(data) {
+		         	var html = '';
+		         	var len = data.length;
+		         	for (var i = 0; i < len; i++) {
+						html+='<option value="' + data[i].id +'">'+data[i].denominacion+'</option>';
+		         	}
+			        $("#listSede").html(html);
+		        },
+		        error : function(response){
+		        	var r = jQuery.parseJSON(response.responseText);
+					toastr.clear();
+					toastr.options = {
+						"closeButton":true,
+						"progressBar": true,
+						"positionClass":"toast-topcenter-right"
+					};
+					toastr.warning(r.message);	
+		        }
+	      	});
+	   	});
+	 </script>
+	 
+	 <script>
+	 
+		 function handleEnterCodigo(event) {
+	         if (event.key === "Enter") {
+	         	var codigo = $('#txtCodigo').val();
+	         	$('#txtCodigo').val('');
+	         	if(codigo.length != 12){
+						toastr.clear();
+						toastr.options = {
+							"closeButton":true,
+							"progressBar": true,
+							"positionClass":"toast-topcenter-right"
+						};
+						toastr.warning("Código no es correcto!!");
+						return;
+	         	}
+	         	
+	         	var tabla = document.getElementById("tablaBienes");
+	    		var tbody = tabla.querySelector('tbody');
+	            var filas = tabla.getElementsByTagName("tr");
+	         	
+	             for (var i = 1; i < filas.length; i++) {
+	                 var celdas = filas[i].getElementsByTagName("td");
+	                 if (celdas[0].innerHTML === codigo) {
+	     				toastr.clear();
+	     				toastr.options = {
+	     					"closeButton":true,
+	     					"progressBar": true,
+	     					"positionClass":"toast-topcenter-right"
+	     				};
+	     				toastr.warning("Ya existe un bien con el mismo codigo");	
+	                     return false;
+	                 }
+	             }
+	             
+	         	$.ajax({
+	 	       		type : "GET",
+	 	       		url : "bien/buscar/" + codigo,
+	 		        dataType : 'json',
+	 		        success : function(data) {
+	 		        	var fila = tbody.insertRow();
+	
+	 		            var celda1 = fila.insertCell(0);
+	 		            var celda2 = fila.insertCell(1);
+	 		            var celda3 = fila.insertCell(2);
+	 		            var celda4 = fila.insertCell(3);
+	 		           	var celda5 = fila.insertCell(4);
+	 		            
+	 		            // Asignar valores a las celdas
+	 		            celda1.innerHTML = data.codigoPatrimonial;
+	 		            celda2.innerHTML = data.descripcion;
+	 		            celda3.innerHTML = '<select id="listEstado"><option value="B">BUENO</option><option value="R">REGULAR</option><option value="M">MALO</option></select>';
+	 		            celda4.innerHTML = '<input type="text" id="txtObservacion" />';
+	 		           	celda5.innerHTML = '<button type="button" class="btn btn-outline-danger btn-sm" onclick="eliminarFila(this)"><i class="fas fa-minus"></i></button>';
+	
+	 		        },
+	 		        error : function(response){
+	 		        	var r = jQuery.parseJSON(response.responseText);
+	 					toastr.clear();
+	 					toastr.options = {
+	 						"closeButton":true,
+	 						"progressBar": true,
+	 						"positionClass":"toast-topcenter-right"
+	 					};
+	 					toastr.warning(r.message);	
+	 		        }
+	 	      	});
+	         }
+	     }
+		 
+        function handleEnterDni(event) {
+            if (event.key === "Enter") {
+            	var dni = $('#txtDni').val(); 
+            	if(dni.length != 8){
+					toastr.clear();
+					toastr.options = {
+						"closeButton":true,
+						"progressBar": true,
+						"positionClass":"toast-topcenter-right"
+					};
+					toastr.warning("Dni no es correcto!!");
+					return;
+            	}
+            	
+            	$.ajax({
+    	       		type : "GET",
+    	       		url : "usuario/buscar/" + dni,
+    		        dataType : 'json',
+    		        success : function(data) {
+						$('#txtIdEmpleado').val(data.id);
+						$('#txtNombres').val(data.nombres);
+						$('#txtApellidos').val(data.apellidos);
+						$('#txtCorreo').val(data.correo);
+    		        },
+    		        error : function(response){
+    		        	var r = jQuery.parseJSON(response.responseText);
+    					toastr.clear();
+    					toastr.options = {
+    						"closeButton":true,
+    						"progressBar": true,
+    						"positionClass":"toast-topcenter-right"
+    					};
+    					toastr.warning(r.message);	
+    		        }
+    	      	});
+            }
+        }
+        
+        function guardarMovimiento() {
+         	var tabla = document.getElementById("tablaBienes");
+            var filas = tabla.getElementsByTagName("tr");
+            
+            var bienes = [];
+            
+        	var id = $('#txtIdEmpleado').val();
+        	if(id == '' || filas < 2 || $('#listArea').val() == '0'){
+				toastr.clear();
+				toastr.options = {
+					"closeButton":true,
+					"progressBar": true,
+					"positionClass":"toast-topcenter-right"
+				};
+				toastr.warning("Debe completar toda información requerida");
+				return;
+        	}
+        	
+            for (var i = 1; i < filas.length; i++) {
+                var celdas = filas[i].getElementsByTagName("td");
+                
+                var codigopatrimonial = celdas[0].innerHTML;
+                var estado = celdas[2].innerHTML;
+                var observacion = celdas[3].innerHTML;
+
+                bienes.push({
+                	codigopatrimonial: codigopatrimonial,
+                    estado: estado,
+                    observacion: observacion
+                });
+            }
+            
+            var movimiento = {
+            	idEmpleado : $('#txtIdEmpleado'),
+            	correo : $('#txtCorreo'),
+            	tipo : $('#listTipo'),
+            	idSede : $('#listSede'),
+            	idArea : $('#listArea'),
+            	bienes: bienes
+            };
+        	
+        }
+        
+        function eliminarFila(boton) {
+            var fila = boton.parentNode.parentNode;
+            fila.parentNode.removeChild(fila);
+        }
+        
+    </script>
 </body>
 </html>

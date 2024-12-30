@@ -41,6 +41,11 @@ public class ControlPatrimonialController {
 	public String formGeneracion(){
 		return "vistas/generacion";
 	}
+	
+	@GetMapping("/formAsignacion")
+	public String formAsignacion(){
+		return "vistas/asignacion";
+	}
 
 	/*@GetMapping(value = "/abc")
 	public String getToken() throws NoSuchAlgorithmException {

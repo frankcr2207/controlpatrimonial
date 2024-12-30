@@ -168,6 +168,23 @@
 			 	}
 			});
 		};
+		
+		function getAsignacion(){	
+			$.ajax({
+				url: "formAsignacion",
+		        type: 'GET',
+		        async : false,
+		        success: function (result) {
+		        	$("#divContenido").empty();
+		        	$("#divContenido").html(result); 
+		        },
+				error : function(e) {
+				 	Swal.fire({
+					  	icon: 'error', title: 'ATENCIÓN', text: 'No se pudo obtener la información, cierre sesión y vuelva a ingresar.!!',
+					});
+			 	}
+			});
+		};
 	
 	</script>
 </body>

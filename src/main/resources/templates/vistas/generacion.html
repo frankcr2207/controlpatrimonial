@@ -122,6 +122,7 @@
 	   		
 	   		$('#tablaProductos').hide();
 	   		$('#tablaProductosGenerados').hide();
+	   		$('#btnReplicar').hide();
 	   		
 	   		$.ajax({
 	       		type : "GET",
@@ -233,8 +234,9 @@
 					$('#txtEstado').val(data.estado == 'R' ? 'REGISTRADO' : 'GENERADO');
 					
 					if(data.estado == 'R'){
-						$('#btnEtiqueta').hide();
+						$('#btnEtiquetas').hide();
 						$('#btnGuardar').show();
+						$('#btnReplicar').show();
 				   		$('#tablaProductos').show();
 				   		$('#tablaProductosGenerados').hide();
 				   		
@@ -272,29 +274,34 @@
 						}
 					}
 					else{
-						var data = obtenerProductosGenerados(id);
-						
-						$('#btnEtiqueta').show();
-						$('#btnGuardar').hide();
-				   		$('#tablaProductos').hide();
-				   		$('#tablaProductosGenerados').show();
-				   		
-				   		var tabla = document.getElementById("tablaProductosGenerados");
-			    		var tbody = tabla.querySelector('tbody');
-			            var filas = tabla.getElementsByTagName("tr");
-						for (var i = filas.length - 1; i > 0; i--) {
-						    tabla.deleteRow(i);
-						}
-						
-						for (var i = 0; i < data.length; i++) { 
-							var fila = tbody.insertRow();
-				            var celda1 = fila.insertCell(0);
-				            var celda2 = fila.insertCell(1);
-				            var celda3 = fila.insertCell(2);
-				            celda1.innerHTML = data[i].codigo;
-				            celda2.innerHTML = data[i].codigoPatrimonial;
-				            celda3.innerHTML = data[i].descripcion;
-						}
+						obtenerProductosGenerados(id)
+						    .then(function(data) {
+						    	$('#btnEtiquetas').show();
+								$('#btnGuardar').hide();
+								$('#btnReplicar').hide();
+						   		$('#tablaProductos').hide();
+						   		$('#tablaProductosGenerados').show();
+						   		
+						   		var tabla = document.getElementById("tablaProductosGenerados");
+					    		var tbody = tabla.querySelector('tbody');
+					            var filas = tabla.getElementsByTagName("tr");
+								for (var i = filas.length - 1; i > 0; i--) {
+								    tabla.deleteRow(i);
+								}
+								
+								for (var i = 0; i < data.length; i++) { 
+									var fila = tbody.insertRow();
+						            var celda1 = fila.insertCell(0);
+						            var celda2 = fila.insertCell(1);
+						            var celda3 = fila.insertCell(2);
+						            celda1.innerHTML = data[i].catalogo;
+						            celda2.innerHTML = data[i].codigoPatrimonial;
+						            celda3.innerHTML = data[i].descripcion;
+								}
+						    })
+						    .catch(function(error) {
+						        console.log("Error:", error);
+						    });
 					}
 					 
 		        },
@@ -451,7 +458,7 @@
     					for (var i = filas.length - 1; i > 0; i--) {
     					    tabla.deleteRow(i);
     					}
-    					$('#txtEstado').val('GENNERADO');
+    					$('#txtEstado').val('GENERADO');
     					Swal.fire(
     						'BIENES GENERADOS CORRECTAMENTE!!',
     						'Click en OK para continuar!',
@@ -472,26 +479,67 @@
     		}
 		}
 		
-		function obtenerProductosGenerados(idAdquisicion){
+		function obtenerProductosGenerados(idAdquisicion) {
+		    return new Promise(function(resolve, reject) {
+		        $.ajax({
+		            type : "GET",
+		            url : "bien/" + idAdquisicion,
+		            dataType : 'json',
+		            success : function(data) {
+		                resolve(data); // Resolvemos la promesa con los datos
+		            },
+		            error : function(e) {
+		                reject(e); // Rechazamos la promesa con el error
+		                Swal.fire({
+		                    icon: 'error',
+		                    title: 'ATENCIÓN',
+		                    text: 'No se pudo obtener los registros!!',
+		                });
+		            }
+		        });
+		    });
+		}
+		
+		function generarEtiquetas() {
+			var etiquetas = [];
+			$('#tablaProductosGenerados tbody tr').each(function() {
+				var etiqueta = {};
+				etiqueta["documento"] = $("#txtDocumento").val();
+				etiqueta["catalogo"] = $(this).find("td:eq(0)").text();
+				etiqueta["codigoPatrimonial"] = $(this).find("td:eq(1)").text();
+				etiquetas.push(etiqueta);
+			});
 			
-			var response;
-			$.ajax({
-	       		type : "GET",
-	       		url : "bien/" + idAdquisicion,
-		        dataType : 'json',
-		        success : function(data) {
-		        	response = data;
-		        }
-		        ,
-	        	error : function(e) {
-	        	 	Swal.fire({
-					  	icon: 'error',
-					  	title: 'ATENCIÓN',
-					  	text: 'No se pudo obtener los registros!!',
-					});
-		     	}
-	      	});
-			return response;
+   			$.ajax({
+   				type: "POST",
+   				url: "bien/etiqueta",
+   				data: JSON.stringify(etiquetas),
+   				contentType: "application/json; charset=utf-8",
+   		        xhrFields: {
+   		            responseType: 'blob'   // Indicamos que la respuesta será un archivo (blob)
+   		        },
+   		        success: function(response) {
+	   		         var blob = response;
+	                 var url = URL.createObjectURL(blob);
+	
+	                 // Crear un objeto para abrir el PDF en una nueva pestaña
+	                 var newTab = window.open(url, '_blank');
+	
+	                 // Intentar que la nueva pestaña tenga un nombre adecuado
+	                 newTab.document.title = 'Etiquetas.pdf'; // Asignar el título de la pestaña como el nombre del archivo
+	            
+   		        },
+   		        error : function(response){
+   		        	var r = jQuery.parseJSON(response.responseText);
+   					toastr.clear();
+   					toastr.options = {
+   						"closeButton":true,
+   						"progressBar": true,
+   						"positionClass":"toast-topcenter-right"
+   					};
+   					toastr.warning(r.message);	
+   		        }
+   			});
 		}
 		
 	</script>

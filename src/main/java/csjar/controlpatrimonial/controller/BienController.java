@@ -1,8 +1,12 @@
 package csjar.controlpatrimonial.controller;
 
+import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
 
+import javax.servlet.http.HttpServletResponse;
+
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -12,7 +16,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.google.zxing.WriterException;
+import com.itextpdf.text.DocumentException;
+
 import csjar.controlpatrimonial.dto.RequestBienesDTO;
+import csjar.controlpatrimonial.dto.RequestEtiquetaDTO;
 import csjar.controlpatrimonial.dto.ResponseBienesDTO;
 import csjar.controlpatrimonial.service.BienService;
 
@@ -27,6 +35,11 @@ public class BienController {
 		this.bienService = bienService;
 	}
 	
+	@GetMapping("buscar/{codigo}")
+	public ResponseEntity<ResponseBienesDTO> obtenerBien(@PathVariable String codigo) throws NoSuchAlgorithmException {
+		return new ResponseEntity<>(this.bienService.obtenerBien(codigo), HttpStatus.OK);
+	}
+	
 	@GetMapping("/{idAdquisicion}")
 	public ResponseEntity<List<ResponseBienesDTO>> obtenerBienes(@PathVariable Integer idAdquisicion) throws NoSuchAlgorithmException {
 		return new ResponseEntity<>(this.bienService.obtenerBienes(idAdquisicion), HttpStatus.OK);
@@ -38,4 +51,19 @@ public class BienController {
 		return new ResponseEntity<>(HttpStatus.NO_CONTENT);
 	}
 	
+	@PostMapping("/etiqueta")
+	public ResponseEntity<byte[]> generarBienes( @RequestBody List<RequestEtiquetaDTO> requestEtiquetaDTO) throws DocumentException, IOException, WriterException {
+
+		try {
+            byte[] pdfBytes = bienService.generarEtiquetas(requestEtiquetaDTO);
+
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_TYPE, "application/pdf")
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"output.pdf\"")
+                    .body(pdfBytes);
+
+        } catch (IOException e) {
+            return ResponseEntity.status(500).body(null);
+        }
+	}
 }
