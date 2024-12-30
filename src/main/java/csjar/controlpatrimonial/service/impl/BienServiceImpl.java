@@ -21,6 +21,7 @@ import org.apache.commons.io.FileUtils;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.google.zxing.BarcodeFormat;
@@ -67,7 +68,7 @@ public class BienServiceImpl implements BienService {
 	@Override
 	public ResponseBienesDTO obtenerBien(String codigo) {
 		Bien bien = this.repository.findByCodigoPatrimonial(codigo);
-		if(Objects.isNull(bien)) {
+		if(Objects.nonNull(bien)) {
 			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No se encontró resultado con el código " + codigo);
 		}
 		ResponseBienesDTO response = new ResponseBienesDTO();
@@ -198,6 +199,11 @@ public class BienServiceImpl implements BienService {
 			htmlBuilder.append("</html>");
 		};
 		return htmlBuilder.toString();
+	}
+
+	@Override
+	public Bien obtenerEntidad(String codigo) {
+		return this.repository.findByCodigoPatrimonial(codigo);
 	}
 
 }

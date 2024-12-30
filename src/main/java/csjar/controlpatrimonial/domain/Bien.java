@@ -1,11 +1,14 @@
 package csjar.controlpatrimonial.domain;
 
+import java.util.List;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.ManyToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
@@ -40,6 +43,9 @@ public class Bien {
 	@Column(name="s_serie")
 	private String serie;
 	
+	@Column(name="s_estado_conservacion")
+	private String estadoConservacion;
+	
 	@Column(name="s_estado")
 	private String estado;
 	
@@ -51,5 +57,8 @@ public class Bien {
 	
 	@Column(name="n_id_catalogo")
 	private Integer idCatalogo;
+	
+    @ManyToMany(mappedBy = "bienes")
+    private List<Acta> actas;
 	
 }

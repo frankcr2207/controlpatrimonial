@@ -8,7 +8,6 @@ import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.stereotype.Service;
 
 import csjar.controlpatrimonial.domain.Usuario;
-import csjar.controlpatrimonial.dto.ResponsePerfilDTO;
 import csjar.controlpatrimonial.dto.ResponseUsuarioDTO;
 import csjar.controlpatrimonial.mapper.service.UsuarioMapperService;
 

@@ -119,4 +119,9 @@ public class UsuarioServiceImpl implements UsuarioService {
         throw new ResponseStatusException(HttpStatus.FORBIDDEN, "La sesión ha finalizado");
     }
 
+	@Override
+	public Usuario buscarRntidad(String login) {
+		return this.usuarioRepository.findByLogin(login);
+	}
+
 }

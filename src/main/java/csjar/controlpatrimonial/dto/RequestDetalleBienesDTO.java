@@ -12,4 +12,8 @@ public class RequestDetalleBienesDTO {
 	private String color;
 	private String observacion;
 	
+	private String codigoPatrimonial;
+	private String estadoConservacion;
+	
+	
 }

@@ -210,18 +210,18 @@
                 var celdas = filas[i].getElementsByTagName("td");
                 
                 var codigopatrimonial = celdas[0].innerHTML;
-                var estado = celdas[2].innerHTML;
+                var estadoConservacion = celdas[2].innerHTML;
                 var observacion = celdas[3].innerHTML;
 
                 bienes.push({
                 	codigopatrimonial: codigopatrimonial,
-                    estado: estado,
+                	estadoConservacion: estadoConservacion,
                     observacion: observacion
                 });
             }
             
             var movimiento = {
-            	idEmpleado : $('#txtIdEmpleado'),
+            	idUsuario : $('#txtIdEmpleado'),
             	correo : $('#txtCorreo'),
             	tipo : $('#listTipo'),
             	idSede : $('#listSede'),
