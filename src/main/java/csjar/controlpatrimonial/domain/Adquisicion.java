@@ -17,7 +17,7 @@ import javax.persistence.Table;
 
 import org.hibernate.annotations.CreationTimestamp;
 
-import csjar.controlpatrimonial.utils.CollectorUtils;
+import csjar.controlpatrimonial.utils.CollectionUtils;
 
 @Table(name="cp_adquisicion")
 @Entity
@@ -109,7 +109,7 @@ public class Adquisicion {
         }
         this.detalleAdquisicion.clear();
         this.detalleAdquisicion.addAll(detalleAdquisicion);
-		if(CollectorUtils.isValidate(this.detalleAdquisicion))
+		if(CollectionUtils.isValidate(this.detalleAdquisicion))
 			this.detalleAdquisicion.stream().forEach(d -> d.setAdquisicion(this));
 	}
 

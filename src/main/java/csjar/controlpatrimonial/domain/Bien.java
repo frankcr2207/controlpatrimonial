@@ -58,6 +58,9 @@ public class Bien {
 	@Column(name="n_id_catalogo")
 	private Integer idCatalogo;
 	
+	@Column(name = "n_id_empleado")
+	private Integer idEmpleado;
+	
     @ManyToMany(mappedBy = "bienes")
     private List<Acta> actas;
 	

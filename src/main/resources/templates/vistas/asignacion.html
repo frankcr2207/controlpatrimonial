@@ -30,7 +30,7 @@
 			<label>APELLIDOS: </label><input type="text" id="txtApellidos"> <br>
 			<label>CORREO: </label><input type="text" id="txtCorreo"> <br>
 			<label>TIPO: </label><select id="listTipo"><option value="A">ASIGNACIÓN</option><option value="D">DEVOLUCIÓN</option></select>
-			<button id="btnGuardar" type="button" class="btn btn-primary" onclick="guardarActa()"><i class="fas fa-save"></i>&nbsp;GUARDAR</button>
+			<button id="btnGuardar" type="button" class="btn btn-primary" onclick="guardarMovimiento()"><i class="fas fa-save"></i>&nbsp;GUARDAR</button>
 			<hr>
 			<label>SEDE: </label><select id="listSede"></select>&nbsp;<label>DIRECCIÓN: </label><input type="text" id="txtDireccion">
 			<label>ÁREA INTERNA: </label><select id="listArea"></select>
@@ -53,14 +53,17 @@
 		</div>
 	</div>
 	<script type="text/javascript">
+		var sedes;
 	   	$(document).ready(function() {
 	   		$.ajax({
 	       		type : "GET",
 	       		url : "sede",
 		        dataType : 'json',
 		        success : function(data) {
+		        	sedes = data;
 		         	var html = '';
 		         	var len = data.length;
+		         	html+='<option value="0">SELECCIONE ...</option>';
 		         	for (var i = 0; i < len; i++) {
 						html+='<option value="' + data[i].id +'">'+data[i].denominacion+'</option>';
 		         	}
@@ -82,6 +85,27 @@
 	 
 	 <script>
 	 
+	 		$("#listSede").change(function() {
+	 				
+	 			var	instanciaSelect = document.getElementById("listArea");
+				const sedeId = parseInt($(this).find(":selected").val());
+				const sedeSeleccionada = sedes.find((sede) => sede.id === sedeId);
+		
+				  // Limpiar las instancias anteriores
+				  instanciaSelect.innerHTML = '<option value="" disabled selected>Selecciona un area</option>';
+		
+				  // Cargar nuevas instancias
+				  if (sedeSeleccionada) {
+					  $('#txtDireccion').val(sedeSeleccionada.direccion);
+				    	sedeSeleccionada.areas.forEach((area) => {
+				      		const option = document.createElement("option");
+						    option.value = area.id;
+						    option.textContent = area.denominacion;
+						    instanciaSelect.appendChild(option);
+				    	});
+				  }
+			});
+			 
 		 function handleEnterCodigo(event) {
 	         if (event.key === "Enter") {
 	         	var codigo = $('#txtCodigo').val();
@@ -194,8 +218,8 @@
             
             var bienes = [];
             
-        	var id = $('#txtIdEmpleado').val();
-        	if(id == '' || filas < 2 || $('#listArea').val() == '0'){
+        	var idEmpleado = $('#txtIdEmpleado').val();
+        	if(idEmpleado == '' || filas < 2 || $('#listArea').val() == ''){
 				toastr.clear();
 				toastr.options = {
 					"closeButton":true,
@@ -206,29 +230,55 @@
 				return;
         	}
         	
-            for (var i = 1; i < filas.length; i++) {
-                var celdas = filas[i].getElementsByTagName("td");
-                
-                var codigopatrimonial = celdas[0].innerHTML;
-                var estadoConservacion = celdas[2].innerHTML;
-                var observacion = celdas[3].innerHTML;
-
-                bienes.push({
-                	codigopatrimonial: codigopatrimonial,
-                	estadoConservacion: estadoConservacion,
-                    observacion: observacion
-                });
-            }
+			$('#tablaBienes tbody tr').each(function() {
+				var bien = {};
+				bien["codigoPatrimonial"] = $(this).find("td:eq(0)").text();
+				bien["estadoConservacion"] = $(this).find("td:eq(2) select").val();
+				bien["observacion"] = $(this).find("td:eq(3)").text();
+				bienes.push(bien);
+			});
+			alert($('#listArea').val());
             
             var movimiento = {
-            	idUsuario : $('#txtIdEmpleado'),
-            	correo : $('#txtCorreo'),
-            	tipo : $('#listTipo'),
-            	idSede : $('#listSede'),
-            	idArea : $('#listArea'),
+            	idEmpleado : idEmpleado,
+            	correo : $('#txtCorreo').val(),
+            	tipo : $('#listTipo').val(),
+            	idArea : $('#listArea').val(),
             	bienes: bienes
             };
         	
+            $.ajax({
+				type: "POST",
+				url: "acta",
+				data: JSON.stringify(movimiento),
+				cache: false,
+				dataType: "json",
+				contentType: "application/json; charset=utf-8",
+				processData: false,
+				success:function(response) {
+					var tabla = document.getElementById("tablaBienes");
+		            var filas = tabla.getElementsByTagName("tr");
+					for (var i = filas.length - 1; i > 0; i--) {
+					    tabla.deleteRow(i);
+					}
+					Swal.fire(
+						'MOVIMIENTO REGISTRADO CORRECTAMENTE!!',
+						'Click en OK para continuar!',
+						'success'
+					);	
+				},
+		        error : function(response){
+		        	var r = jQuery.parseJSON(response.responseText);
+					toastr.clear();
+					toastr.options = {
+						"closeButton":true,
+						"progressBar": true,
+						"positionClass":"toast-topcenter-right"
+					};
+					toastr.warning(r.message);	
+		        }
+			});
+            
         }
         
         function eliminarFila(boton) {

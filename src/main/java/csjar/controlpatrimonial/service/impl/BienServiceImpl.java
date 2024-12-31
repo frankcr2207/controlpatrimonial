@@ -2,11 +2,8 @@ package csjar.controlpatrimonial.service.impl;
 
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -21,7 +18,6 @@ import org.apache.commons.io.FileUtils;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.google.zxing.BarcodeFormat;
@@ -29,9 +25,7 @@ import com.google.zxing.MultiFormatWriter;
 import com.google.zxing.WriterException;
 import com.google.zxing.common.BitMatrix;
 import com.itextpdf.html2pdf.HtmlConverter;
-import com.itextpdf.text.Document;
 import com.itextpdf.text.DocumentException;
-import com.itextpdf.text.pdf.PdfWriter;
 
 import csjar.controlpatrimonial.domain.Adquisicion;
 import csjar.controlpatrimonial.domain.Bien;
@@ -46,7 +40,7 @@ import csjar.controlpatrimonial.service.AdquisicionService;
 import csjar.controlpatrimonial.service.BienService;
 import csjar.controlpatrimonial.service.CatalogoService;
 import csjar.controlpatrimonial.service.ModeloService;
-import csjar.controlpatrimonial.utils.CollectorUtils;
+import csjar.controlpatrimonial.utils.CollectionUtils;
 
 @Service
 public class BienServiceImpl implements BienService {
@@ -68,7 +62,7 @@ public class BienServiceImpl implements BienService {
 	@Override
 	public ResponseBienesDTO obtenerBien(String codigo) {
 		Bien bien = this.repository.findByCodigoPatrimonial(codigo);
-		if(Objects.nonNull(bien)) {
+		if(Objects.isNull(bien)) {
 			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No se encontró resultado con el código " + codigo);
 		}
 		ResponseBienesDTO response = new ResponseBienesDTO();
@@ -81,7 +75,7 @@ public class BienServiceImpl implements BienService {
 	@Override
 	public void generarBienes(RequestBienesDTO requestBienesDTO) {
 		
-		if(CollectorUtils.isValidate(requestBienesDTO.getBienes())) {
+		if(CollectionUtils.isValidate(requestBienesDTO.getBienes())) {
 			
 			List<Integer> idsModelo = requestBienesDTO.getBienes().stream() 
 		            .map(RequestDetalleBienesDTO::getIdModelo).distinct().collect(Collectors.toList());

@@ -2,6 +2,7 @@ package csjar.controlpatrimonial.domain;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -24,7 +25,7 @@ public class Modelo {
 	@Column(name="s_descripcion")
 	private String nombre;
 	
-	@ManyToOne
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "n_id_marca", nullable = false)
 	private Marca marca;
 	

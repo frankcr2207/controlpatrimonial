@@ -28,7 +28,7 @@ import csjar.controlpatrimonial.repository.AdquisicionRepository;
 import csjar.controlpatrimonial.service.AdquisicionService;
 import csjar.controlpatrimonial.service.CatalogoService;
 import csjar.controlpatrimonial.service.TipoAdquisicionService;
-import csjar.controlpatrimonial.utils.CollectorUtils;
+import csjar.controlpatrimonial.utils.CollectionUtils;
 
 @Service
 public class AdquisicionServiceImpl implements AdquisicionService {
@@ -79,7 +79,7 @@ public class AdquisicionServiceImpl implements AdquisicionService {
 		TipoAdquisicion tipoAdquisicion = tipoAdquisicionService.obtenerEntidad(requestAdquisicionDTO.getIdTipoAdquisicion());
 		adquisicion.setTipoAdquisicion(tipoAdquisicion);
 		
-		if(CollectorUtils.isValidate(requestAdquisicionDTO.getDetalle())){
+		if(CollectionUtils.isValidate(requestAdquisicionDTO.getDetalle())){
 			
 			List<Integer> idsCatalogo = requestAdquisicionDTO.getDetalle().stream()
 				.map(RequestDetalleAdquisicionDTO::getIdCatalogo).collect(Collectors.toList());
