@@ -23,7 +23,7 @@ public class NotificacionExternalServiceImpl implements NotificacionExternalServ
 	}
 
 	@Override
-	public boolean enviarEmal(RequestEmailDTO requestEmailDTO) {
+	public boolean enviarEmail(RequestEmailDTO requestEmailDTO) {
 		try {
 			StringBuilder sb = new StringBuilder();
 			sb.append("http://localhost:8082/enviarEmail/");

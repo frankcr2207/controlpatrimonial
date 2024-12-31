@@ -1,15 +1,27 @@
 package csjar.controlpatrimonial.service.impl;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Base64;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 
+import javax.servlet.http.HttpServletResponse;
+
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.jxls.common.Context;
 import org.jxls.util.JxlsHelper;
 import org.springframework.http.HttpStatus;
@@ -17,6 +29,10 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
+
+import com.itextpdf.text.Document;
+import com.itextpdf.text.pdf.PdfPTable;
+import com.itextpdf.text.pdf.PdfWriter;
 
 import csjar.controlpatrimonial.domain.Acta;
 import csjar.controlpatrimonial.domain.Bien;
@@ -101,6 +117,84 @@ public class ActaServiceImpl implements ActaService {
 	private void enviarEmail() {
 		RequestEmailDTO requestEmailDTO = new RequestEmailDTO();
 		this.notificacionExternalService.enviarEmail(requestEmailDTO);
+	}
+	
+	public static String convertExcelToPdfAndBase64(ByteArrayOutputStream excelFile) throws Exception {
+        // Leer el archivo Excel
+        try (XSSFWorkbook workbook = new XSSFWorkbook(new ByteArrayInputStream(excelFile.toByteArray()))) {
+            // Crear un documento PDF
+            ByteArrayOutputStream pdfOutStream = new ByteArrayOutputStream();
+            Document document = new Document();
+            PdfWriter.getInstance(document, pdfOutStream);
+            document.open();
+
+            // Recorrer todas las hojas del archivo Excel
+            Iterator<Sheet> sheetIterator = workbook.iterator();
+            while (sheetIterator.hasNext()) {
+                Sheet sheet = sheetIterator.next();
+                document.newPage();
+                PdfPTable table = new PdfPTable(sheet.getRow(0).getPhysicalNumberOfCells()); // Número de columnas
+
+                // Recorrer todas las filas y columnas del Excel
+                for (Row row : sheet) {
+                    for (Cell cell : row) {
+                        String cellValue = cell.toString();  // Obtener valor de la celda
+                        table.addCell(cellValue);
+                    }
+                }
+
+                // Agregar la tabla al documento PDF
+                document.add(table);
+            }
+
+            document.close();
+
+            // Convertir el archivo PDF a Base64
+            byte[] pdfBytes = pdfOutStream.toByteArray();
+            return Base64.getEncoder().encodeToString(pdfBytes);  // Convertir a Base64
+        }
+    }
+	
+	@Override
+	public void convertExcelToPdf(ByteArrayOutputStream excelFile, HttpServletResponse response) throws Exception {
+        // Leer el archivo Excel
+        try (XSSFWorkbook workbook = new XSSFWorkbook(new ByteArrayInputStream(excelFile.toByteArray()))) {
+            // Crear un documento PDF
+            Document document = new Document();
+            ByteArrayOutputStream pdfOutStream = new ByteArrayOutputStream();
+            PdfWriter.getInstance(document, pdfOutStream);
+            document.open();
+
+            // Recorrer todas las hojas del archivo Excel
+            Iterator<Sheet> sheetIterator = workbook.iterator();
+            while (sheetIterator.hasNext()) {
+                Sheet sheet = sheetIterator.next();
+                document.newPage();
+                PdfPTable table = new PdfPTable(sheet.getRow(0).getPhysicalNumberOfCells()); // Número de columnas
+
+                // Recorrer todas las filas y columnas
+                for (Row row : sheet) {
+                    for (Cell cell : row) {
+                        String cellValue = cell.toString();  // Obtener valor de la celda
+                        table.addCell(cellValue);
+                    }
+                }
+
+                // Agregar la tabla al documento PDF
+                document.add(table);
+            }
+
+            document.close();
+            
+            // Establecer los encabezados de respuesta para la descarga del archivo PDF
+            response.setContentType("application/pdf");
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss");
+            response.setHeader("Content-Disposition", "attachment; filename=Resultado_concurso_" + LocalDateTime.now().format(formatter) + ".pdf");
+
+            // Escribir el contenido PDF al OutputStream de la respuesta
+            InputStream inputStream = new ByteArrayInputStream(pdfOutStream.toByteArray());
+            IOUtils.copy(inputStream, response.getOutputStream());
+        }
 	}
 	
 }
