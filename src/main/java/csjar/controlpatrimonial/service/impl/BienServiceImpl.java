@@ -60,11 +60,23 @@ public class BienServiceImpl implements BienService {
 	}
 
 	@Override
-	public ResponseBienesDTO obtenerBien(String codigo) {
+	public ResponseBienesDTO obtenerBien(String codigo, Integer idEmpleado, String tipoActa) {
 		Bien bien = this.repository.findByCodigoPatrimonial(codigo);
 		if(Objects.isNull(bien)) {
 			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No se encontró resultado con el código " + codigo);
 		}
+		
+		if(tipoActa.equals("A")) {
+			if(Objects.nonNull(bien.getIdEmpleado()) && !bien.getIdEmpleado().equals(idEmpleado)) 
+				throw new ResponseStatusException(HttpStatus.CONFLICT, "El código " + codigo + " se encuentra asignado a otro empleado");
+			if(Objects.nonNull(bien.getIdEmpleado()) && bien.getIdEmpleado().equals(idEmpleado)) 
+				throw new ResponseStatusException(HttpStatus.CONFLICT, "El código " + codigo + " ya se está asignado a este empleado");
+		}
+		else {
+			if(Objects.isNull(bien.getIdEmpleado()) || !bien.getIdEmpleado().equals(idEmpleado))
+				throw new ResponseStatusException(HttpStatus.CONFLICT, "El código " + codigo + " no se encuentra asignado a este empleado para devolución.");
+		}
+		
 		ResponseBienesDTO response = new ResponseBienesDTO();
 		response.setCodigoPatrimonial(bien.getCodigoPatrimonial());
 		response.setDescripcion(bien.getDescripcion());

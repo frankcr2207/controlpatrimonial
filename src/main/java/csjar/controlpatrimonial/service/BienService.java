@@ -14,7 +14,7 @@ import csjar.controlpatrimonial.dto.ResponseBienesDTO;
 public interface BienService {
 
 	Bien obtenerEntidad(String codigo);
-	ResponseBienesDTO obtenerBien(String codigo);
+	ResponseBienesDTO obtenerBien(String codigo, Integer idEmpleado, String tipoActa);
 	List<ResponseBienesDTO> obtenerBienes(Integer idAdquisicion);
 	void generarBienes(RequestBienesDTO requestBienesnDTO);
 	byte[] generarEtiquetas(List<RequestEtiquetaDTO> requestEtiquetaDTO) throws DocumentException, IOException, WriterException ;

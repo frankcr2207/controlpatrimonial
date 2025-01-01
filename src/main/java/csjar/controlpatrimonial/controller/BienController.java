@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.google.zxing.WriterException;
@@ -35,9 +36,10 @@ public class BienController {
 		this.bienService = bienService;
 	}
 	
-	@GetMapping("buscar/{codigo}")
-	public ResponseEntity<ResponseBienesDTO> obtenerBien(@PathVariable String codigo) throws NoSuchAlgorithmException {
-		return new ResponseEntity<>(this.bienService.obtenerBien(codigo), HttpStatus.OK);
+	@GetMapping("/buscar")
+	public ResponseEntity<ResponseBienesDTO> obtenerBien(@RequestParam String codigo, 
+		@RequestParam Integer idEmpleado, @RequestParam String tipoActa) throws NoSuchAlgorithmException {
+		return new ResponseEntity<>(this.bienService.obtenerBien(codigo, idEmpleado, tipoActa), HttpStatus.OK);
 	}
 	
 	@GetMapping("/{idAdquisicion}")

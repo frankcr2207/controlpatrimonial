@@ -25,32 +25,35 @@ public class FtpServiceImpl implements FtpService {
 	@Value("${ftp.server.usuario}")
 	private String FTP_SERVER_USUARIO;
 	
-	@Value("${ftp.server.clave}}")
+	@Value("${ftp.server.clave}")
 	private String FTP_SERVER_CLAVE;
 	
 	private FTPClient ftpClient = new FTPClient();
 	
 	@Override
 	public void conectarFTP() {
-		 try {
+		try {
 	        ftpClient.connect(FTP_SERVER_IP, FTP_SERVER_PUERTO);
-	        ftpClient.login(FTP_SERVER_USUARIO, FTP_SERVER_CLAVE);
-	        ftpClient.enterLocalPassiveMode();
-			ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
+	        if(ftpClient.login(FTP_SERVER_USUARIO, FTP_SERVER_CLAVE)) {
+	        	ftpClient.enterLocalPassiveMode();
+				ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
+	        }
+	        else
+	        	throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "Error de credenciales FTP");
 		} catch (IOException e) {
-			throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "No se pudo conectar al servidor FTP");
+			throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "Error de conexion al servidor FTP");
 		}
 	}
 
 	@Override
 	public void cargarArchivo(String nombreFinal, String directorio, byte[] fileBytes) {
 		try {
-			/*if (!ftpClient.changeWorkingDirectory(directorio)) {
+			if (!ftpClient.changeWorkingDirectory(directorio)) {
                 if (!ftpClient.makeDirectory(directorio)) {
                 	throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "No se pudo crear el directorio");
                 }
             }
-			*/
+			
 			ByteArrayInputStream inputStream = new ByteArrayInputStream(fileBytes);
 			ftpClient.changeWorkingDirectory(directorio);
             ftpClient.storeFile(nombreFinal, inputStream);

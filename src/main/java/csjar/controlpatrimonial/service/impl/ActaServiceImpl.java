@@ -94,17 +94,24 @@ public class ActaServiceImpl implements ActaService {
 		List<Bien> bienes = new ArrayList<>();
 		requestActaDTO.getBienes().stream().forEach(b -> {
 			Bien bien = bienService.obtenerEntidad(b.getCodigoPatrimonial());
-			
-			if(requestActaDTO.getTipo().equals("D") && bien.getIdEmpleado() != requestActaDTO.getIdEmpleado())
-				throw new ResponseStatusException(HttpStatus.CONFLICT, "El código " + b.getCodigoPatrimonial() + " no se encuentra asignado a este empleado para devolución.");
+
 			if(requestActaDTO.getTipo().equals("A")) {
+				if(Objects.nonNull(bien.getIdEmpleado()) && !bien.getIdEmpleado().equals(requestActaDTO.getIdEmpleado())) 
+					throw new ResponseStatusException(HttpStatus.CONFLICT, "El código " + b.getCodigoPatrimonial() + " se encuentra asignado a otro empleado");
+				if(Objects.nonNull(bien.getIdEmpleado()) && bien.getIdEmpleado().equals(requestActaDTO.getIdEmpleado())) 
+					throw new ResponseStatusException(HttpStatus.CONFLICT, "El código " + b.getCodigoPatrimonial() + " ya se está asignado a este empleado");
+				
 				bien.setEstado("A");
 				bien.setIdEmpleado(requestActaDTO.getIdEmpleado());
 			}
 			else {
+				if(Objects.isNull(bien.getIdEmpleado()) || !bien.getIdEmpleado().equals(requestActaDTO.getIdEmpleado()))
+					throw new ResponseStatusException(HttpStatus.CONFLICT, "El código " + b.getCodigoPatrimonial() + " no se encuentra asignado a este empleado para devolución.");
+				
 				bien.setIdEmpleado(null);
 				bien.setEstado("D");
 			}
+			
 			bien.setEstadoConservacion(b.getEstadoConservacion());
 			bien.setObservacion(b.getObservacion());
 			
@@ -160,11 +167,11 @@ public class ActaServiceImpl implements ActaService {
 		Map<Integer, Catalogo> mapCatalogos = this.catalogoService.obtenerCatalogo(idsCatalogo).stream()
 				.collect(Collectors.toMap(Catalogo::getId, Function.identity()));
 
-		int orden = 0;
+		int orden = 1;
 		List<ResponseBienesDTO> bienes = new ArrayList<>();
 		for(Bien b : listaBienes){
 			ResponseBienesDTO bien = new ResponseBienesDTO();
-			bien.setOrden(orden++);
+			bien.setOrden(orden);
 			bien.setCodigoPatrimonial(b.getCodigoPatrimonial());
 			bien.setDenominacion(mapCatalogos.get(b.getIdCatalogo()).getDenominacion());
 			bien.setMarca(b.getModelo().getMarca().getNombre());
@@ -172,6 +179,7 @@ public class ActaServiceImpl implements ActaService {
 			bien.setSerie(b.getSerie());
 			bien.setColor(b.getColor());
 			bien.setObservaciones(b.getObservacion());
+			orden++;
 			bienes.add(bien);
 		}
 
@@ -231,7 +239,7 @@ public class ActaServiceImpl implements ActaService {
 
 		String libreOfficePath = "C:\\Program Files\\LibreOffice\\program\\soffice.exe";
 																							
-		String pdfDirectory = "E:\\temp\\pdf_output";
+		String pdfDirectory = "F:\\temp\\pdf_output";
 		File pdfDir = new File(pdfDirectory);
 
 		if (!pdfDir.exists()) {

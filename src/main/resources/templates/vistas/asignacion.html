@@ -85,30 +85,37 @@
 	 
 	 <script>
 	 
-	 		$("#listSede").change(function() {
-	 				
+			$("#listTipo").change(function() {	 				
+				var tabla = document.getElementById("tablaBienes");
+	            var filas = tabla.getElementsByTagName("tr");
+				for (var i = filas.length - 1; i > 0; i--) {
+				    tabla.deleteRow(i);
+				}
+			});
+			
+	 		$("#listSede").change(function() {	 				
 	 			var	instanciaSelect = document.getElementById("listArea");
 				const sedeId = parseInt($(this).find(":selected").val());
 				const sedeSeleccionada = sedes.find((sede) => sede.id === sedeId);
 		
-				  // Limpiar las instancias anteriores
-				  instanciaSelect.innerHTML = '<option value="" disabled selected>Selecciona un area</option>';
+				instanciaSelect.innerHTML = '<option value="" disabled selected>Selecciona un area</option>';
 		
-				  // Cargar nuevas instancias
-				  if (sedeSeleccionada) {
-					  $('#txtDireccion').val(sedeSeleccionada.direccion);
-				    	sedeSeleccionada.areas.forEach((area) => {
-				      		const option = document.createElement("option");
-						    option.value = area.id;
-						    option.textContent = area.denominacion;
-						    instanciaSelect.appendChild(option);
-				    	});
-				  }
+				if (sedeSeleccionada) {
+				$('#txtDireccion').val(sedeSeleccionada.direccion);
+				    sedeSeleccionada.areas.forEach((area) => {
+				      	const option = document.createElement("option");
+						option.value = area.id;
+						option.textContent = area.denominacion;
+						instanciaSelect.appendChild(option);
+					});
+				}
 			});
 			 
-		 function handleEnterCodigo(event) {
+		function handleEnterCodigo(event) {
 	         if (event.key === "Enter") {
 	         	var codigo = $('#txtCodigo').val();
+	         	var idEmpleado = $('#txtIdEmpleado').val();
+	         	var tipoActa = $('#listTipo').val();
 	         	$('#txtCodigo').val('');
 	         	if(codigo.length != 12){
 						toastr.clear();
@@ -141,7 +148,7 @@
 	             
 	         	$.ajax({
 	 	       		type : "GET",
-	 	       		url : "bien/buscar/" + codigo,
+	 	       		url : "bien/buscar?codigo=" + codigo + "&idEmpleado=" + idEmpleado + "&tipoActa=" + tipoActa,
 	 		        dataType : 'json',
 	 		        success : function(data) {
 	 		        	var fila = tbody.insertRow();
