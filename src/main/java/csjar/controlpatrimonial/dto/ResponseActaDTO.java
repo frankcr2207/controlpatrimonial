@@ -13,4 +13,9 @@ public class ResponseActaDTO {
 	private String sede;
 	private String direccion;
 	
+	private Integer idActa;
+	private String status;
+	private String mensaje;
+	private String numeroActa;
+	
 }

@@ -16,6 +16,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import csjar.controlpatrimonial.constants.GeneralConstants;
 import csjar.controlpatrimonial.dto.RequestAdquisicionDTO;
 import csjar.controlpatrimonial.dto.RequestDetalleAdquisicionDTO;
 import csjar.controlpatrimonial.dto.ResponseAdquisicionDTO;
@@ -73,7 +74,7 @@ public class AdquisicionServiceImpl implements AdquisicionService {
 			LocalDate fecha = LocalDate.parse(requestAdquisicionDTO.getFecAdquisicion(), formatter);
 		    LocalDateTime fechaHora = fecha.atStartOfDay();
 	        adquisicion.setFecAdquisicion(fechaHora);
-	        adquisicion.setEstado("R");
+	        adquisicion.setEstado(GeneralConstants.ADQUISICION_ESTADO_REGISTRADO);
 	        adquisicion.setUsuario(this.obtenerUsuario());
 		}
 		TipoAdquisicion tipoAdquisicion = tipoAdquisicionService.obtenerEntidad(requestAdquisicionDTO.getIdTipoAdquisicion());

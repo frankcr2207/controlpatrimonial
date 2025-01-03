@@ -23,7 +23,7 @@ public class BienVerServiceImpl implements BienVerService {
 	}
 
 	@Override
-	public void generarVersion(List<Bien> bienes) {
+	public void generarVersion(List<Bien> bienes, Integer idActa) {
 		
 		List<Integer> idsBienes = bienes.stream().map(Bien::getId).distinct()
 				.collect(Collectors.toList());
@@ -43,6 +43,7 @@ public class BienVerServiceImpl implements BienVerService {
 			version.setObservacion(b.getObservacion());
 			version.setVersion(mapaPorIdBien.containsKey(b.getId()) ? mapaPorIdBien.get(b.getId()).size() + 1 : 1);
 			version.setIdBien(b.getId());
+			version.setIdActa(idActa);
 			nuevos.add(version);
 		});
 		

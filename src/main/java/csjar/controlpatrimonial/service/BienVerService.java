@@ -6,6 +6,6 @@ import csjar.controlpatrimonial.entity.Bien;
 
 public interface BienVerService {
 
-	void generarVersion(List<Bien> bienes);
+	void generarVersion(List<Bien> bienes, Integer idActa);
 	
 }

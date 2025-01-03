@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head>
+<meta charset="UTF-8">
+<title>PLATAFORMA DE ATENCION Y SERVICIOS</title>
+	<link rel="icon" type="img/jpg" href="img/pj.jpg" />
+	<script src="../js/jquery.min.js"></script>
+	<script src="../js/popper.min.js"></script>
+	<script src="../js/bootstrap.min.js"></script>
+	<script src="../js/icons.js"></script>
+	<script src="../js/sweetalert2.all.min.js"></script>	
+	<script src="../js/toastr.min.js"></script>
+		
+	<link rel="stylesheet" href="../css/bootstrap.min.css">
+	<link rel="stylesheet" href="../css/all.min.css">
+	<link rel="stylesheet" href="../css/estilo.css" >
+	<link rel="stylesheet" href="../css/toastr.min.css" >
+
+	<style type="text/css">
+		#divReporte {
+			display: none;
+		}
+		input{
+    		border:0;
+	    	border-bottom: 1px solid #009CBF; 
+    	}
+    	input:focus{
+			outline:none !important;
+	    	outline-width: 0 !important;
+	   		box-shadow: none;
+	    	-moz-box-shadow: none;
+	    	-webkit-box-shadow: none;
+	    }
+		.carousel-control-next, .carousel-control-prev {
+		    filter: invert(100%);
+		}
+
+	</style>
+</head>
+<body>
+	<div  style="background-color: #4E0000;">
+		<div id="cabecera" style="padding-top: 10px;padding-bottom: 1px" align="center">
+			<a href="/" style="text-decoration:none;"><img alt="ayuda" src="../img/pj.svg" width="20px">&nbsp;&nbsp;&nbsp;</a><a style="color:white;  text-decoration:none;" href="principal"><strong>CORTE SUPERIOR DE JUSTICIA DE AREQUIPA</strong></a>
+			<p style="color: white;font-size:15px;"><strong>PLATS - Plataforma de Atención y Servicios</strong></p>	
+		</div>
+	</div>
+	<div style="background-color: #790000; padding:0px; border-bottom: 5px solid #C4C4C4;">
+	</div>
+	<div id="divContenido" style="width: 50%; height: 75%; margin: auto; padding: 40px">
+		<h2 th:text="${dto.mensaje}"></h2>
+		<hr>
+		<div th:if="${(dto.status == 'OK')}">	
+			<input th:value="${dto.idActa}" id="id" type="hidden" class="id">
+			<label style="width: 150px;"><strong>NÚMERO ACTA: </strong></label><input style="font-weight: bold" th:value="${dto.numeroActa}" id="nombres" readonly="readonly" size="40"><br>
+			<label style="width: 150px;"><strong>FECHA: </strong></label><input style="font-weight: bold" th:value="${#temporals.format(dto.fecha, 'dd-MM-yyyy hh:mm:ss a')}" id="nombres" readonly="readonly" size="20"><br>
+			<label style="width: 150px;"><strong>NOMBRES: </strong></label><input style="font-weight: bold" th:value="${dto.nombresApellidos}" id="nombres" readonly="readonly" size="40"><br>
+			<label style="width: 150px;"><strong>CARGUE EL ACTA: </strong></label><input type="file" >
+			<div style="width: 100%; margin: auto; padding: 40px" align="center">
+				<button class="btn btn-primary" type="button">ENVIAR</button>
+			</div>
+		</div>
+	</div>
+	
+
+
+	
+		
+	<footer style="background-color: black;  left: 0;  bottom: 0;  width: 100%; position: fixed; color: white;  text-align: center;">		
+		<div style="margin:0px auto ;   width:100%;   overflow: hidden; padding-top: 5px" class="form-row">
+			<div style="width: 10%;font-size: 11px">Powered by Jorge F.C.R. <i class='fab fa-java' style='font-size:20px'></i><br>Cel. 999039040</div>
+			<div style="width: 80%">
+			<p style="color: white; font-size: 11px"> Corte Superior de Justicia de Arequipa  - Plaza España S/N - Arequipa - Perú<br> &copy; PLATS v2.7 - Todos los derechos reservados </p>
+			</div>
+			<div style="width: 10%"><i class="fas fa-tools"></i>&nbsp;<a id="btnUtilitarios" type="button">Utilitarios</a></div>
+		</div>
+	</footer>
+
+	<script type="text/javascript">
+	
+		function getRegistro(){	
+			$.ajax({
+				url: "formRegistro",
+		        type: 'GET',
+		        async : false,
+		        success: function (result) {
+		        	$("#divContenido").empty();
+		        	$("#divContenido").html(result); 
+		        },
+				error : function(e) {
+				 	Swal.fire({
+					  	icon: 'error', title: 'ATENCIÓN', text: 'No se pudo obtener la información, cierre sesión y vuelva a ingresar.!!',
+					});
+			 	}
+			});
+		};
+		
+		function getGeneracion(){	
+			$.ajax({
+				url: "formGeneracion",
+		        type: 'GET',
+		        async : false,
+		        success: function (result) {
+		        	$("#divContenido").empty();
+		        	$("#divContenido").html(result); 
+		        },
+				error : function(e) {
+				 	Swal.fire({
+					  	icon: 'error', title: 'ATENCIÓN', text: 'No se pudo obtener la información, cierre sesión y vuelva a ingresar.!!',
+					});
+			 	}
+			});
+		};
+		
+		function getUsuarios(){	
+			$.ajax({
+				url: "formUsuarios",
+		        type: 'GET',
+		        async : false,
+		        success: function (result) {
+		        	$("#divContenido").empty();
+		        	$("#divContenido").html(result); 
+		        },
+				error : function(e) {
+				 	Swal.fire({
+					  	icon: 'error', title: 'ATENCIÓN', text: 'No se pudo obtener la información, cierre sesión y vuelva a ingresar.!!',
+					});
+			 	}
+			});
+		};
+		
+		function getAsignacion(){	
+			$.ajax({
+				url: "formAsignacion",
+		        type: 'GET',
+		        async : false,
+		        success: function (result) {
+		        	$("#divContenido").empty();
+		        	$("#divContenido").html(result); 
+		        },
+				error : function(e) {
+				 	Swal.fire({
+					  	icon: 'error', title: 'ATENCIÓN', text: 'No se pudo obtener la información, cierre sesión y vuelva a ingresar.!!',
+					});
+			 	}
+			});
+		};
+	
+	</script>
+</body>
+</html>

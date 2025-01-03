@@ -27,6 +27,7 @@ import com.google.zxing.common.BitMatrix;
 import com.itextpdf.html2pdf.HtmlConverter;
 import com.itextpdf.text.DocumentException;
 
+import csjar.controlpatrimonial.constants.GeneralConstants;
 import csjar.controlpatrimonial.dto.RequestBienesDTO;
 import csjar.controlpatrimonial.dto.RequestDetalleBienesDTO;
 import csjar.controlpatrimonial.dto.RequestEtiquetaDTO;
@@ -115,7 +116,7 @@ public class BienServiceImpl implements BienService {
 				bien.setColor(b.getColor());
 				bien.setDescripcion(b.getDescripcion());
 				bien.setSerie(b.getSerie());
-				bien.setEstado("G");
+				bien.setEstado(GeneralConstants.BIEN_ESTADO_GENERADO);
 				bien.setObservacion(b.getObservacion());
 				bien.setModelo(mapModelos.get(b.getIdModelo()));
 				bien.setCodigoPatrimonial(catalogo.getCodigo().concat(String.format("%04d", secuencia)));
@@ -127,10 +128,10 @@ public class BienServiceImpl implements BienService {
 			});
 			
 			List<Bien> result = this.repository.saveAll(bienes);
-			this.bienVerService.generarVersion(result);
+			this.bienVerService.generarVersion(result, null);
 			
 			Adquisicion adquisicion = this.adquisicionService.obtenerEntidad(requestBienesDTO.getIdAdquisicion());
-			adquisicion.setEstado("G");
+			adquisicion.setEstado(GeneralConstants.ADQUISICION_ESTADO_GENERADO);
 			adquisicionService.actualizarEntidad(adquisicion);
 		}
 		

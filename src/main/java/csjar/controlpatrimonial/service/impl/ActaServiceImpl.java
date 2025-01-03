@@ -9,9 +9,12 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,14 +31,17 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.jxls.common.Context;
 import org.jxls.util.JxlsHelper;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import csjar.controlpatrimonial.constants.GeneralConstants;
 import csjar.controlpatrimonial.dto.RequestActaDTO;
 import csjar.controlpatrimonial.dto.RequestEmailDTO;
+import csjar.controlpatrimonial.dto.ResponseActaDTO;
 import csjar.controlpatrimonial.dto.ResponseBienesDTO;
 import csjar.controlpatrimonial.dto.ResponseUsuarioDTO;
 import csjar.controlpatrimonial.entity.Acta;
@@ -56,6 +62,9 @@ import csjar.controlpatrimonial.service.UsuarioService;
 @Service
 public class ActaServiceImpl implements ActaService {
 
+	@Value("${secret.key}")
+	private static String SECRET_KEY;
+	
 	private ActaRepository repository;
 	private UsuarioService usuarioService;
 	private BienService bienService;
@@ -88,7 +97,7 @@ public class ActaServiceImpl implements ActaService {
 
 		Acta acta = new Acta();
 		acta.setIdEmpleado(requestActaDTO.getIdEmpleado());
-		acta.setEstado("R");
+		acta.setEstado(GeneralConstants.ACTA_ESTADO_REGISTRADO);
 		acta.setNumero(numero);
 		acta.setIdUsuario(usuario.getId());
 		acta.setIdArea(requestActaDTO.getIdArea());
@@ -97,21 +106,21 @@ public class ActaServiceImpl implements ActaService {
 		requestActaDTO.getBienes().stream().forEach(b -> {
 			Bien bien = bienService.obtenerEntidad(b.getCodigoPatrimonial());
 
-			if(requestActaDTO.getTipo().equals("A")) {
+			if(requestActaDTO.getTipo().equals(GeneralConstants.BIEN_ESTADO_ASIGNADO)) {
 				if(Objects.nonNull(bien.getIdEmpleado()) && !bien.getIdEmpleado().equals(requestActaDTO.getIdEmpleado())) 
 					throw new ResponseStatusException(HttpStatus.CONFLICT, "El código " + b.getCodigoPatrimonial() + " se encuentra asignado a otro empleado");
 				if(Objects.nonNull(bien.getIdEmpleado()) && bien.getIdEmpleado().equals(requestActaDTO.getIdEmpleado())) 
 					throw new ResponseStatusException(HttpStatus.CONFLICT, "El código " + b.getCodigoPatrimonial() + " ya se está asignado a este empleado");
 				
-				bien.setEstado("A");
+				bien.setEstado(GeneralConstants.BIEN_ESTADO_ASIGNADO);
 				bien.setIdEmpleado(requestActaDTO.getIdEmpleado());
 			}
-			else if(requestActaDTO.getTipo().equals("D")){
+			else if(requestActaDTO.getTipo().equals(GeneralConstants.BIEN_ESTADO_DEVUELTO)){
 				if(Objects.isNull(bien.getIdEmpleado()) || !bien.getIdEmpleado().equals(requestActaDTO.getIdEmpleado()))
 					throw new ResponseStatusException(HttpStatus.CONFLICT, "El código " + b.getCodigoPatrimonial() + " no se encuentra asignado a este empleado para devolución.");
 				
 				bien.setIdEmpleado(null);
-				bien.setEstado("D");
+				bien.setEstado(GeneralConstants.BIEN_ESTADO_DEVUELTO);
 			}
 			
 			bien.setEstadoConservacion(b.getEstadoConservacion());
@@ -120,21 +129,34 @@ public class ActaServiceImpl implements ActaService {
 			bienes.add(bien);
 		});
 		
-		this.bienVerService.generarVersion(bienes);
+		String nombreArchivo = GeneralConstants.NOMENCLATURA_ACTA_PDF + acta.getNumero() + GeneralConstants.EXTENSION_PDF;
+		String directorio = "/" + String.valueOf(LocalDateTime.now().getYear());
 		
 		acta.setBienes(bienes);
-		repository.save(acta);
+		acta.setNombrePdfOriginal(nombreArchivo);
+		acta.setRutaPdf(directorio);
+		
+		Acta newActa = repository.saveAndFlush(acta);
+		
+		String token = generateHash(newActa.getId().toString());
+		newActa.setToken(token);
+		
+		this.bienVerService.generarVersion(bienes, newActa.getId());
 
 		ByteArrayOutputStream jxlsOutStream = new ByteArrayOutputStream();
-		generarDatosActa(jxlsOutStream, numero, requestActaDTO, bienes);
+		
+		ResponseUsuarioDTO empleado = this.usuarioService.buscarUsuario(requestActaDTO.getIdEmpleado());
+		generarDatosActa(jxlsOutStream, numero, requestActaDTO, bienes, empleado);
 		
 		byte[] fileBytes = convertExcelToPdf(jxlsOutStream);
-		
-		String nombreArchivo = "CP_acta_" + acta.getNumero() + ".pdf";
-		String directorio = "/" + String.valueOf(LocalDateTime.now().getYear());
+
 		ftpService.conectarFTP();
 		ftpService.cargarArchivo(nombreArchivo, directorio, fileBytes);
-
+		
+		if(this.enviarEmail(newActa, empleado, token, fileBytes)) {
+			newActa.setEstado(GeneralConstants.ACTA_ESTADO_NOTIFICADO);
+			newActa.setFecNotificado(LocalDateTime.now());
+		}
 	}
 
 	public String obtenerUsuario() {
@@ -148,9 +170,9 @@ public class ActaServiceImpl implements ActaService {
 		throw new ResponseStatusException(HttpStatus.FORBIDDEN, "La sesión ha finalizado");
 	}
 
-	private void generarDatosActa(ByteArrayOutputStream jxlsOutStream, Integer numero, RequestActaDTO requestActaDTO, List<Bien> listaBienes) {
+	private void generarDatosActa(ByteArrayOutputStream jxlsOutStream, Integer numero, RequestActaDTO requestActaDTO, List<Bien> listaBienes, ResponseUsuarioDTO empleado) {
 
-		ResponseUsuarioDTO empleado = this.usuarioService.buscarUsuario(requestActaDTO.getIdEmpleado());
+
 		Area area = this.areaService.obtenerEntidad(requestActaDTO.getIdArea());
 
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
@@ -163,7 +185,7 @@ public class ActaServiceImpl implements ActaService {
 		data.put("area", area.getDenominacion());
 		data.put("sede", area.getSede().getDenominacion());
 		data.put("direccion", area.getSede().getDireccion());
-		data.put("tipo", requestActaDTO.getTipo().equals("A") ? "ASIGNACIÓN" : "DEVOLUCIÓN");
+		data.put("tipo", requestActaDTO.getTipo().equals("A") ? GeneralConstants.ACTA_TIPO_ASIGNACION : GeneralConstants.ACTA_TIPO_DEVOLUCION);
 		data.put("secuenciaActa", numero + "-" + LocalDateTime.now().getYear());
 
 		List<Integer> idsCatalogo = listaBienes.stream().map(Bien::getIdCatalogo).distinct()
@@ -190,11 +212,11 @@ public class ActaServiceImpl implements ActaService {
 
 		data.put("bienes", bienes);
 
-		this.generarExcel(jxlsOutStream, "plantilla_acta_v2", data);
+		this.generarExcel(jxlsOutStream, GeneralConstants.ACTA_PLANTILLA_EXCEL, data);
 	}
 
 	public void generarExcel(OutputStream outStream, String templateName, Map<String, Object> data) {
-		String pathTemplateName = ("/reports/").concat(templateName).concat(".xlsx");
+		String pathTemplateName = ("/reports/").concat(templateName).concat(GeneralConstants.EXTENSION_EXCEL);
 		try (InputStream input = this.getClass().getResourceAsStream(pathTemplateName)) {
 
 			Context context = new Context();
@@ -244,7 +266,7 @@ public class ActaServiceImpl implements ActaService {
 
 		String libreOfficePath = "C:\\Program Files\\LibreOffice\\program\\soffice.exe";
 																							
-		String pdfDirectory = "F:\\temp\\pdf_output";
+		String pdfDirectory = "E:\\temp\\pdf_output";
 		File pdfDir = new File(pdfDirectory);
 
 		if (!pdfDir.exists()) {
@@ -260,7 +282,7 @@ public class ActaServiceImpl implements ActaService {
 		Process process = Runtime.getRuntime().exec(command);
 		process.waitFor();
 
-		String outputPdfPath = pdfDirectory + "\\" + new File(inputExcelFilePath).getName().replace(".xlsx", ".pdf");
+		String outputPdfPath = pdfDirectory + "\\" + new File(inputExcelFilePath).getName().replace(GeneralConstants.EXTENSION_EXCEL, GeneralConstants.EXTENSION_PDF);
 
 		File pdfFile = new File(outputPdfPath);
 		if (!pdfFile.exists()) {
@@ -268,21 +290,66 @@ public class ActaServiceImpl implements ActaService {
 					"Error al convertir el archivo Excel a PDF.");
 		}
 
-		// Leer el archivo PDF y convertirlo a Base64
 		byte[] pdfBytes = Files.readAllBytes(Paths.get(outputPdfPath));
-		//String pdfBase64 = Base64.getEncoder().encodeToString(pdfBytes);
 
-		// Limpiar los archivos temporales
-		//tempExcelFile.delete();
-		//pdfFile.delete();
+		tempExcelFile.delete();
+		pdfFile.delete();
 
 		return pdfBytes;
 
 	}
 
-	private void enviarEmail() {
+	private boolean enviarEmail(Acta acta, ResponseUsuarioDTO empleado, String token, byte[] fileBytes) {
 		RequestEmailDTO requestEmailDTO = new RequestEmailDTO();
-		this.notificacionExternalService.enviarEmail(requestEmailDTO);
+		String mensaje = GeneralConstants.NOTIFICACION_CUERPO.replace("<nombres>", empleado.getNombres().concat(" ").concat(empleado.getApellidos()))
+				.replace("<numeroActa>", acta.getNumero().toString().concat("-").concat(String.valueOf(acta.getFecRegistro().getYear())))
+					.replace("<enlace>", GeneralConstants.MS_CONTROL_PATRIMONIAL_VERIFICAR.concat("?code=").concat(acta.getId().toString()).concat("&token=").concat(token));
+		
+		requestEmailDTO.setAsunto(GeneralConstants.NOTIFICACION_ASUNTO);
+		requestEmailDTO.setDestino(empleado.getCorreo());
+		requestEmailDTO.setMensaje(mensaje);
+		requestEmailDTO.setRemitente(GeneralConstants.NOTIFICACION_REMITENTE);
+		requestEmailDTO.setArchivo(Base64.getEncoder().encodeToString(fileBytes));
+		
+		return this.notificacionExternalService.enviarEmail(requestEmailDTO);
 	}
+	
+	public static String generateHash(String data) throws NoSuchAlgorithmException {
+        String input = data + SECRET_KEY;
+        MessageDigest digest = MessageDigest.getInstance("SHA-256");
+        byte[] hashBytes = digest.digest(input.getBytes());
+        return Base64.getEncoder().encodeToString(hashBytes);
+    }
+
+	@Override
+	public ResponseActaDTO validarActa(Integer code, String token) throws Exception {
+		
+		ResponseActaDTO response = new ResponseActaDTO();
+		boolean validation = this.validar(code, token);
+		response.setMensaje(validation ? "Validación de datos correcta" : "Validación de datos incorrecta");
+		response.setStatus(validation ? "OK" : "KO");
+		if(validation) {
+			Acta acta = this.repository.findById(code).orElse(null);
+			ResponseUsuarioDTO empleado = this.usuarioService.buscarUsuario(acta.getIdEmpleado());
+			response.setIdActa(acta.getId());
+			response.setNumeroActa(acta.getNumero().toString().concat("-").concat(String.valueOf(acta.getFecRegistro().getYear())));
+			response.setDni(empleado.getDni());
+			response.setNombresApellidos(empleado.getNombres().concat(" ").concat(empleado.getApellidos()));
+			response.setFecha(acta.getFecRegistro());
+		}
+		return response;
+	}
+	
+	public boolean validar(Integer code, String token) throws NoSuchAlgorithmException {
+		Integer id = code;
+        String secretKey = SECRET_KEY;
+        String receivedHash = token;
+        return verifyHash(receivedHash, id, secretKey);
+	}
+	
+	public static boolean verifyHash(String receivedHash, Integer data, String secretKey) throws NoSuchAlgorithmException {
+		String generatedHash = generateHash(data.toString());
+        return generatedHash.equals(receivedHash);
+    }
 
 }

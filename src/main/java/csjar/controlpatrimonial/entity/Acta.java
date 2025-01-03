@@ -55,4 +55,16 @@ public class Acta {
 		inverseJoinColumns = @JoinColumn(name = "n_id_bien"))
 	private List<Bien> bienes;
 
+	@Column(name = "s_pdf_original")
+	private String nombrePdfOriginal;
+	
+	@Column(name = "s_ruta_pdf")
+	private String rutaPdf;
+	
+	@Column(name = "f_notificado")
+	private LocalDateTime fecNotificado;
+	
+	@Column(name = "s_token")
+	private String token;
+	
 }
