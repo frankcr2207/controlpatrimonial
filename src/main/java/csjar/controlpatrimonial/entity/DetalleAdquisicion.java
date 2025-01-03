@@ -1,4 +1,4 @@
-package csjar.controlpatrimonial.domain;
+package csjar.controlpatrimonial.entity;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;

@@ -1,37 +1,35 @@
-package csjar.controlpatrimonial.domain;
-
-import java.util.List;
+package csjar.controlpatrimonial.entity;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.OneToMany;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 import lombok.Data;
 
-@Table(name="cp_sedes")
+@Table(name="cp_instancia")
 @Entity
 @Data
-public class Sede {
+public class Area {
 
 	@Id
 	@Column(name="n_id")
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
 	private Integer id;
-	
-	@Column(name="s_codigo")
+
+	@Column(name="c_instancia")	
 	private String codigo;
 	
-	@Column(name="s_denominacion")
+	@Column(name="s_instancia")
 	private String denominacion;
 	
-	@Column(name="s_direccion")
-	private String direccion;
-	
-	@OneToMany(mappedBy = "sede")
-	private List<Area> areas;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "n_id_sede", nullable = false)
+	private Sede sede;
 	
 }

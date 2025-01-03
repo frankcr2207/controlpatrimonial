@@ -1,4 +1,4 @@
-package csjar.controlpatrimonial.domain;
+package csjar.controlpatrimonial.entity;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -12,24 +12,21 @@ import javax.persistence.Table;
 
 import lombok.Data;
 
-@Table(name="cp_instancia")
+@Table(name="cp_modelo")
 @Entity
 @Data
-public class Area {
+public class Modelo {
 
 	@Id
 	@Column(name="n_id")
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
 	private Integer id;
-
-	@Column(name="c_instancia")	
-	private String codigo;
 	
-	@Column(name="s_instancia")
-	private String denominacion;
+	@Column(name="s_descripcion")
+	private String nombre;
 	
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "n_id_sede", nullable = false)
-	private Sede sede;
+	@JoinColumn(name = "n_id_marca", nullable = false)
+	private Marca marca;
 	
 }

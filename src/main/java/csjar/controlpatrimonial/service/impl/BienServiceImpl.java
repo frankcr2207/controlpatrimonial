@@ -27,17 +27,18 @@ import com.google.zxing.common.BitMatrix;
 import com.itextpdf.html2pdf.HtmlConverter;
 import com.itextpdf.text.DocumentException;
 
-import csjar.controlpatrimonial.domain.Adquisicion;
-import csjar.controlpatrimonial.domain.Bien;
-import csjar.controlpatrimonial.domain.Catalogo;
-import csjar.controlpatrimonial.domain.Modelo;
 import csjar.controlpatrimonial.dto.RequestBienesDTO;
 import csjar.controlpatrimonial.dto.RequestDetalleBienesDTO;
 import csjar.controlpatrimonial.dto.RequestEtiquetaDTO;
 import csjar.controlpatrimonial.dto.ResponseBienesDTO;
+import csjar.controlpatrimonial.entity.Adquisicion;
+import csjar.controlpatrimonial.entity.Bien;
+import csjar.controlpatrimonial.entity.Catalogo;
+import csjar.controlpatrimonial.entity.Modelo;
 import csjar.controlpatrimonial.repository.BienRepository;
 import csjar.controlpatrimonial.service.AdquisicionService;
 import csjar.controlpatrimonial.service.BienService;
+import csjar.controlpatrimonial.service.BienVerService;
 import csjar.controlpatrimonial.service.CatalogoService;
 import csjar.controlpatrimonial.service.ModeloService;
 import csjar.controlpatrimonial.utils.CollectionUtils;
@@ -49,14 +50,16 @@ public class BienServiceImpl implements BienService {
 	private ModeloService modeloService;
 	private CatalogoService catalogoService;
 	private AdquisicionService adquisicionService;
+	private BienVerService bienVerService;
 	
 	public BienServiceImpl(BienRepository repository, ModeloService modeloService, CatalogoService catalogoService,
-			AdquisicionService adquisicionService) {
+			AdquisicionService adquisicionService, BienVerService bienVerService) {
 		super();
 		this.repository = repository;
 		this.modeloService = modeloService;
 		this.catalogoService = catalogoService;
 		this.adquisicionService = adquisicionService;
+		this.bienVerService = bienVerService;
 	}
 
 	@Override
@@ -112,6 +115,7 @@ public class BienServiceImpl implements BienService {
 				bien.setColor(b.getColor());
 				bien.setDescripcion(b.getDescripcion());
 				bien.setSerie(b.getSerie());
+				bien.setEstado("G");
 				bien.setObservacion(b.getObservacion());
 				bien.setModelo(mapModelos.get(b.getIdModelo()));
 				bien.setCodigoPatrimonial(catalogo.getCodigo().concat(String.format("%04d", secuencia)));
@@ -122,7 +126,8 @@ public class BienServiceImpl implements BienService {
 				
 			});
 			
-			this.repository.saveAll(bienes);
+			List<Bien> result = this.repository.saveAll(bienes);
+			this.bienVerService.generarVersion(result);
 			
 			Adquisicion adquisicion = this.adquisicionService.obtenerEntidad(requestBienesDTO.getIdAdquisicion());
 			adquisicion.setEstado("G");
@@ -156,7 +161,7 @@ public class BienServiceImpl implements BienService {
 	@Override
 	public byte[] generarEtiquetas(List<RequestEtiquetaDTO> requestEtiquetaDTO) throws DocumentException, IOException, WriterException  {
 		
-		String htmlContent = this.buildHtml(requestEtiquetaDTO);
+		String htmlContent = this.construirHtml(requestEtiquetaDTO);
 		try (ByteArrayOutputStream pdfStream = new ByteArrayOutputStream()) {
             HtmlConverter.convertToPdf(htmlContent, pdfStream);
             return pdfStream.toByteArray();
@@ -164,7 +169,7 @@ public class BienServiceImpl implements BienService {
 	}
 
 	
-	public byte[] generateBarcode(String number) throws WriterException, IOException {
+	public byte[] generarBarcode(String number) throws WriterException, IOException {
         BitMatrix bitMatrix = new MultiFormatWriter().encode(number, BarcodeFormat.CODE_128, 200, 20);
 
         BufferedImage image = new BufferedImage(200, 20, BufferedImage.TYPE_INT_RGB);
@@ -179,7 +184,7 @@ public class BienServiceImpl implements BienService {
         return baos.toByteArray();
     }
 	
-	public String buildHtml(List<RequestEtiquetaDTO> requestEtiquetaDTO) throws IOException, WriterException {
+	public String construirHtml(List<RequestEtiquetaDTO> requestEtiquetaDTO) throws IOException, WriterException {
 		ClassPathResource resource = new ClassPathResource("static/img/pj.jpg");
 		byte[] logo = FileUtils.readFileToByteArray(resource.getFile());
 		String logoBase64 = "data:image/png;base64, " + Base64.encodeBase64String(logo);
@@ -188,13 +193,13 @@ public class BienServiceImpl implements BienService {
 		htmlBuilder.append("<html>");
 		
 		 for (RequestEtiquetaDTO etiqueta : requestEtiquetaDTO) {
-			byte[] barcodeImage = generateBarcode(etiqueta.getCodigoPatrimonial());
+			byte[] barcodeImage = generarBarcode(etiqueta.getCodigoPatrimonial());
 			String barcodeBase64 = Base64.encodeBase64String(barcodeImage);
 			
 			htmlBuilder.append("<div style='width: 200px; font-size: 8px'>")
 			.append("<div style='display: flex'>")
 			.append("<div style='width: 20%'><img width='30'src='" + logoBase64 + "'/></div>")
-			.append("<div style='width: 60%' align='center'><strong>CONTROL PATRIMONIAL</strong><br>" + etiqueta.getCatalogo() + "</div>")
+			.append("<div style='width: 60%; font-size: 7px;' align='center'><strong>CONTROL PATRIMONIAL</strong><br>" + etiqueta.getCatalogo() + "</div>")
 			.append("<div style='width: 20%'></div></div>")
 			.append("<div align='center'><img src='data:image/png;base64," + barcodeBase64 + "' />")
 			.append("<br>"+ etiqueta.getCodigoPatrimonial() +"</div>")

@@ -4,8 +4,8 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
-import csjar.controlpatrimonial.domain.Sede;
 import csjar.controlpatrimonial.dto.ResponseSedeDTO;
+import csjar.controlpatrimonial.entity.Sede;
 import csjar.controlpatrimonial.mapper.service.SedeMapperService;
 import csjar.controlpatrimonial.repository.SedeRepository;
 import csjar.controlpatrimonial.service.SedeService;

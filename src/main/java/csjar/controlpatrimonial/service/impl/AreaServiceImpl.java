@@ -3,7 +3,7 @@ package csjar.controlpatrimonial.service.impl;
 
 import org.springframework.stereotype.Service;
 
-import csjar.controlpatrimonial.domain.Area;
+import csjar.controlpatrimonial.entity.Area;
 import csjar.controlpatrimonial.repository.AreaRepository;
 import csjar.controlpatrimonial.service.AreaService;
 

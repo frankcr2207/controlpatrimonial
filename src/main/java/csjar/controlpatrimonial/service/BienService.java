@@ -6,10 +6,10 @@ import java.util.List;
 import com.google.zxing.WriterException;
 import com.itextpdf.text.DocumentException;
 
-import csjar.controlpatrimonial.domain.Bien;
 import csjar.controlpatrimonial.dto.RequestBienesDTO;
 import csjar.controlpatrimonial.dto.RequestEtiquetaDTO;
 import csjar.controlpatrimonial.dto.ResponseBienesDTO;
+import csjar.controlpatrimonial.entity.Bien;
 
 public interface BienService {
 

@@ -1,4 +1,4 @@
-package csjar.controlpatrimonial.domain;
+package csjar.controlpatrimonial.entity;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -104,10 +104,6 @@ public class Adquisicion {
 	}
 
 	public void setDetalleAdquisicion(List<DetalleAdquisicion> detalleAdquisicion) {
-        for (DetalleAdquisicion d : this.detalleAdquisicion) {
-            d.setAdquisicion(null);
-        }
-        this.detalleAdquisicion.clear();
         this.detalleAdquisicion.addAll(detalleAdquisicion);
 		if(CollectionUtils.isValidate(this.detalleAdquisicion))
 			this.detalleAdquisicion.stream().forEach(d -> d.setAdquisicion(this));

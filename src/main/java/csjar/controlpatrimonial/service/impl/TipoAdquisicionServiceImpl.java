@@ -7,8 +7,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import csjar.controlpatrimonial.domain.TipoAdquisicion;
 import csjar.controlpatrimonial.dto.ResponseTipoAdquisicionDTO;
+import csjar.controlpatrimonial.entity.TipoAdquisicion;
 import csjar.controlpatrimonial.mapper.service.TipoAdquisicionMapperService;
 import csjar.controlpatrimonial.repository.TipoAdquisicionRepository;
 import csjar.controlpatrimonial.service.TipoAdquisicionService;

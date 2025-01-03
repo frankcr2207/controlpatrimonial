@@ -2,8 +2,8 @@ package csjar.controlpatrimonial.service;
 
 import java.util.List;
 
-import csjar.controlpatrimonial.domain.Catalogo;
 import csjar.controlpatrimonial.dto.ResponseCatalogoDTO;
+import csjar.controlpatrimonial.entity.Catalogo;
 
 public interface CatalogoService {
 

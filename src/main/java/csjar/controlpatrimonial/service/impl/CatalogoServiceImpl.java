@@ -4,9 +4,9 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
-import csjar.controlpatrimonial.domain.Catalogo;
-import csjar.controlpatrimonial.domain.GrupoClase;
 import csjar.controlpatrimonial.dto.ResponseCatalogoDTO;
+import csjar.controlpatrimonial.entity.Catalogo;
+import csjar.controlpatrimonial.entity.GrupoClase;
 import csjar.controlpatrimonial.mapper.service.CatalogoMapperService;
 import csjar.controlpatrimonial.repository.CatalogoRepository;
 import csjar.controlpatrimonial.service.CatalogoService;

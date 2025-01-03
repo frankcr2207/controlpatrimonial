@@ -7,8 +7,8 @@ import org.modelmapper.TypeToken;
 import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.stereotype.Service;
 
-import csjar.controlpatrimonial.domain.Clase;
 import csjar.controlpatrimonial.dto.ResponseClaseDTO;
+import csjar.controlpatrimonial.entity.Clase;
 import csjar.controlpatrimonial.mapper.service.ClaseMapperService;
 
 @Service

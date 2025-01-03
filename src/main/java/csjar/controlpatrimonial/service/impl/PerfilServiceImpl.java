@@ -6,9 +6,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import csjar.controlpatrimonial.domain.Perfil;
 import csjar.controlpatrimonial.dto.RequestPerfilDTO;
 import csjar.controlpatrimonial.dto.ResponsePerfilDTO;
+import csjar.controlpatrimonial.entity.Perfil;
 import csjar.controlpatrimonial.mapper.service.PerfilMapperService;
 import csjar.controlpatrimonial.repository.PerfilRepository;
 import csjar.controlpatrimonial.service.PerfilService;

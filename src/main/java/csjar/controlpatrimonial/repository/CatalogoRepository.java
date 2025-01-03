@@ -4,7 +4,7 @@ import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import csjar.controlpatrimonial.domain.Catalogo;
+import csjar.controlpatrimonial.entity.Catalogo;
 
 public interface CatalogoRepository extends JpaRepository<Catalogo, Integer>{
 

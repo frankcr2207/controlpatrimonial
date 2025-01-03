@@ -4,7 +4,7 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
-import csjar.controlpatrimonial.domain.DetalleAdquisicion;
+import csjar.controlpatrimonial.entity.DetalleAdquisicion;
 import csjar.controlpatrimonial.repository.DetalleAdquisicionRepository;
 import csjar.controlpatrimonial.service.DetalleAdquisicionService;
 

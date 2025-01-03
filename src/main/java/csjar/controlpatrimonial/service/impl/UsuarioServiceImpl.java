@@ -11,10 +11,10 @@ import org.springframework.web.server.ResponseStatusException;
 
 import com.mysql.cj.util.StringUtils;
 
-import csjar.controlpatrimonial.domain.Perfil;
-import csjar.controlpatrimonial.domain.Usuario;
 import csjar.controlpatrimonial.dto.RequestUsuarioDTO;
 import csjar.controlpatrimonial.dto.ResponseUsuarioDTO;
+import csjar.controlpatrimonial.entity.Perfil;
+import csjar.controlpatrimonial.entity.Usuario;
 import csjar.controlpatrimonial.external.service.UsuarioExternalService;
 import csjar.controlpatrimonial.mapper.service.UsuarioMapperService;
 import csjar.controlpatrimonial.repository.UsuarioRepository;

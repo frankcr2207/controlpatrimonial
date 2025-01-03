@@ -9,7 +9,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -35,20 +34,21 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import csjar.controlpatrimonial.domain.Acta;
-import csjar.controlpatrimonial.domain.Area;
-import csjar.controlpatrimonial.domain.Bien;
-import csjar.controlpatrimonial.domain.Catalogo;
-import csjar.controlpatrimonial.domain.Usuario;
 import csjar.controlpatrimonial.dto.RequestActaDTO;
 import csjar.controlpatrimonial.dto.RequestEmailDTO;
 import csjar.controlpatrimonial.dto.ResponseBienesDTO;
 import csjar.controlpatrimonial.dto.ResponseUsuarioDTO;
+import csjar.controlpatrimonial.entity.Acta;
+import csjar.controlpatrimonial.entity.Area;
+import csjar.controlpatrimonial.entity.Bien;
+import csjar.controlpatrimonial.entity.Catalogo;
+import csjar.controlpatrimonial.entity.Usuario;
 import csjar.controlpatrimonial.external.service.NotificacionExternalService;
 import csjar.controlpatrimonial.repository.ActaRepository;
 import csjar.controlpatrimonial.service.ActaService;
 import csjar.controlpatrimonial.service.AreaService;
 import csjar.controlpatrimonial.service.BienService;
+import csjar.controlpatrimonial.service.BienVerService;
 import csjar.controlpatrimonial.service.CatalogoService;
 import csjar.controlpatrimonial.service.FtpService;
 import csjar.controlpatrimonial.service.UsuarioService;
@@ -63,10 +63,11 @@ public class ActaServiceImpl implements ActaService {
 	private CatalogoService catalogoService;
 	private NotificacionExternalService notificacionExternalService;
 	private FtpService ftpService;
+	private BienVerService bienVerService;
 
 	public ActaServiceImpl(ActaRepository repository, UsuarioService usuarioService, BienService bienService,
 			NotificacionExternalService notificacionExternalService, FtpService ftpService, AreaService areaService,
-			CatalogoService catalogoService) {
+			CatalogoService catalogoService, BienVerService bienVerService) {
 		super();
 		this.repository = repository;
 		this.usuarioService = usuarioService;
@@ -75,6 +76,7 @@ public class ActaServiceImpl implements ActaService {
 		this.ftpService = ftpService;
 		this.areaService = areaService;
 		this.catalogoService = catalogoService;
+		this.bienVerService = bienVerService;
 	}
 
 	@Transactional
@@ -104,7 +106,7 @@ public class ActaServiceImpl implements ActaService {
 				bien.setEstado("A");
 				bien.setIdEmpleado(requestActaDTO.getIdEmpleado());
 			}
-			else {
+			else if(requestActaDTO.getTipo().equals("D")){
 				if(Objects.isNull(bien.getIdEmpleado()) || !bien.getIdEmpleado().equals(requestActaDTO.getIdEmpleado()))
 					throw new ResponseStatusException(HttpStatus.CONFLICT, "El código " + b.getCodigoPatrimonial() + " no se encuentra asignado a este empleado para devolución.");
 				
@@ -117,6 +119,9 @@ public class ActaServiceImpl implements ActaService {
 			
 			bienes.add(bien);
 		});
+		
+		this.bienVerService.generarVersion(bienes);
+		
 		acta.setBienes(bienes);
 		repository.save(acta);
 

@@ -4,7 +4,7 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
-import csjar.controlpatrimonial.domain.Modelo;
+import csjar.controlpatrimonial.entity.Modelo;
 import csjar.controlpatrimonial.repository.ModeloRepository;
 import csjar.controlpatrimonial.service.ModeloService;
 

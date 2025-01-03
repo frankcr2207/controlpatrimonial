@@ -4,7 +4,7 @@ import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import csjar.controlpatrimonial.domain.Adquisicion;
+import csjar.controlpatrimonial.entity.Adquisicion;
 
 public interface AdquisicionRepository extends JpaRepository<Adquisicion, Integer>{
 	

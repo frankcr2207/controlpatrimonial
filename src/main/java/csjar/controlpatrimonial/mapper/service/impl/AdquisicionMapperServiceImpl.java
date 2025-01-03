@@ -7,9 +7,9 @@ import org.modelmapper.TypeToken;
 import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.stereotype.Service;
 
-import csjar.controlpatrimonial.domain.Adquisicion;
 import csjar.controlpatrimonial.dto.RequestAdquisicionDTO;
 import csjar.controlpatrimonial.dto.ResponseAdquisicionDTO;
+import csjar.controlpatrimonial.entity.Adquisicion;
 import csjar.controlpatrimonial.mapper.service.AdquisicionMapperService;
 
 @Service

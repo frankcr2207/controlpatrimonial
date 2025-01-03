@@ -16,13 +16,13 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import csjar.controlpatrimonial.domain.Adquisicion;
-import csjar.controlpatrimonial.domain.Catalogo;
-import csjar.controlpatrimonial.domain.DetalleAdquisicion;
-import csjar.controlpatrimonial.domain.TipoAdquisicion;
 import csjar.controlpatrimonial.dto.RequestAdquisicionDTO;
 import csjar.controlpatrimonial.dto.RequestDetalleAdquisicionDTO;
 import csjar.controlpatrimonial.dto.ResponseAdquisicionDTO;
+import csjar.controlpatrimonial.entity.Adquisicion;
+import csjar.controlpatrimonial.entity.Catalogo;
+import csjar.controlpatrimonial.entity.DetalleAdquisicion;
+import csjar.controlpatrimonial.entity.TipoAdquisicion;
 import csjar.controlpatrimonial.mapper.service.AdquisicionMapperService;
 import csjar.controlpatrimonial.repository.AdquisicionRepository;
 import csjar.controlpatrimonial.service.AdquisicionService;

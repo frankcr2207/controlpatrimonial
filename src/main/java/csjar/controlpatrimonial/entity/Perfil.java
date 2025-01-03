@@ -1,4 +1,4 @@
-package csjar.controlpatrimonial.domain;
+package csjar.controlpatrimonial.entity;
 
 import java.util.List;
 
@@ -12,20 +12,23 @@ import javax.persistence.Table;
 
 import lombok.Data;
 
-@Table(name="cp_tipoadquisicion")
+@Table(name="cp_perfil")
 @Entity
 @Data
-public class TipoAdquisicion {
+public class Perfil {
 
 	@Id
 	@Column(name="n_id")
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
 	private Integer id;
 	
-	@Column(name="s_denominacion")
-	private String denominacion;
+	@Column(name="s_descripcion")
+	private String descripcion;
 	
-	@OneToMany(mappedBy = "tipoAdquisicion")
-    private List<Adquisicion> adquisicion;
+	@Column(name="s_estado")
+	private String estado;
+	
+	@OneToMany(mappedBy = "perfil")
+    private List<Usuario> usuarios;
 	
 }

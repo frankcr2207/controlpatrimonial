@@ -7,8 +7,8 @@ import org.modelmapper.TypeToken;
 import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.stereotype.Service;
 
-import csjar.controlpatrimonial.domain.Sede;
 import csjar.controlpatrimonial.dto.ResponseSedeDTO;
+import csjar.controlpatrimonial.entity.Sede;
 import csjar.controlpatrimonial.mapper.service.SedeMapperService;
 
 @Service

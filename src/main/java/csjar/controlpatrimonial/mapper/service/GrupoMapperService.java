@@ -2,8 +2,8 @@ package csjar.controlpatrimonial.mapper.service;
 
 import java.util.List;
 
-import csjar.controlpatrimonial.domain.Grupo;
 import csjar.controlpatrimonial.dto.ResponseGrupoDTO;
+import csjar.controlpatrimonial.entity.Grupo;
 
 public interface GrupoMapperService {
 

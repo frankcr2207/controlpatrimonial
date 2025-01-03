@@ -7,11 +7,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import csjar.controlpatrimonial.domain.Clase;
-import csjar.controlpatrimonial.domain.Grupo;
-import csjar.controlpatrimonial.domain.GrupoClase;
 import csjar.controlpatrimonial.dto.ResponseClaseDTO;
 import csjar.controlpatrimonial.dto.ResponseGrupoDTO;
+import csjar.controlpatrimonial.entity.Clase;
+import csjar.controlpatrimonial.entity.Grupo;
+import csjar.controlpatrimonial.entity.GrupoClase;
 import csjar.controlpatrimonial.mapper.service.ClaseMapperService;
 import csjar.controlpatrimonial.mapper.service.GrupoMapperService;
 import csjar.controlpatrimonial.repository.ClaseRepository;

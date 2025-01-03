@@ -7,9 +7,9 @@ import org.modelmapper.TypeToken;
 import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.stereotype.Service;
 
-import csjar.controlpatrimonial.domain.Perfil;
 import csjar.controlpatrimonial.dto.RequestPerfilDTO;
 import csjar.controlpatrimonial.dto.ResponsePerfilDTO;
+import csjar.controlpatrimonial.entity.Perfil;
 import csjar.controlpatrimonial.mapper.service.PerfilMapperService;
 
 @Service

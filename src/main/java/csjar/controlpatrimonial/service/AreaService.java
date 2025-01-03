@@ -1,6 +1,6 @@
 package csjar.controlpatrimonial.service;
 
-import csjar.controlpatrimonial.domain.Area;
+import csjar.controlpatrimonial.entity.Area;
 
 public interface AreaService {
 

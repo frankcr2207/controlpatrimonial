@@ -2,9 +2,9 @@ package csjar.controlpatrimonial.service;
 
 import java.util.List;
 
-import csjar.controlpatrimonial.domain.Adquisicion;
 import csjar.controlpatrimonial.dto.RequestAdquisicionDTO;
 import csjar.controlpatrimonial.dto.ResponseAdquisicionDTO;
+import csjar.controlpatrimonial.entity.Adquisicion;
 
 public interface AdquisicionService {
 	

@@ -4,7 +4,7 @@ import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import csjar.controlpatrimonial.domain.Modelo;
+import csjar.controlpatrimonial.entity.Modelo;
 
 public interface ModeloRepository extends JpaRepository<Modelo, Integer>{
 

@@ -7,8 +7,8 @@ import org.modelmapper.TypeToken;
 import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.stereotype.Service;
 
-import csjar.controlpatrimonial.domain.Marca;
 import csjar.controlpatrimonial.dto.ResponseMarcaDTO;
+import csjar.controlpatrimonial.entity.Marca;
 import csjar.controlpatrimonial.mapper.service.MarcaMapperService;
 
 @Service

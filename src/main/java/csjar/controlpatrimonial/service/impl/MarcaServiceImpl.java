@@ -4,8 +4,8 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
-import csjar.controlpatrimonial.domain.Marca;
 import csjar.controlpatrimonial.dto.ResponseMarcaDTO;
+import csjar.controlpatrimonial.entity.Marca;
 import csjar.controlpatrimonial.mapper.service.MarcaMapperService;
 import csjar.controlpatrimonial.repository.MarcaRepository;
 import csjar.controlpatrimonial.service.MarcaService;

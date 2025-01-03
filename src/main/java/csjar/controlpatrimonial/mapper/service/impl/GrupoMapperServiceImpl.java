@@ -7,9 +7,9 @@ import org.modelmapper.TypeToken;
 import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.stereotype.Service;
 
-import csjar.controlpatrimonial.domain.Grupo;
 import csjar.controlpatrimonial.dto.ResponseGrupoDTO;
 import csjar.controlpatrimonial.dto.ResponsePerfilDTO;
+import csjar.controlpatrimonial.entity.Grupo;
 import csjar.controlpatrimonial.mapper.service.GrupoMapperService;
 
 @Service

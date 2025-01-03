@@ -2,9 +2,9 @@ package csjar.controlpatrimonial.service;
 
 import java.util.List;
 
-import csjar.controlpatrimonial.domain.Usuario;
 import csjar.controlpatrimonial.dto.RequestUsuarioDTO;
 import csjar.controlpatrimonial.dto.ResponseUsuarioDTO;
+import csjar.controlpatrimonial.entity.Usuario;
 
 public interface UsuarioService {
 
