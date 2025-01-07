@@ -52,6 +52,11 @@ public class ControlPatrimonialController {
 		return "vistas/asignacion";
 	}
 	
+	@GetMapping("/formTrazabilidad")
+	public String formTrazabilidad(){
+		return "vistas/trazabilidad";
+	}
+	
 	@GetMapping("/acta/validar")
 	public String formAsignacion(Model model, @RequestParam Integer code, @RequestParam String token) throws Exception{
 		ResponseActaDTO response = this.actaService.validarActa(code, token);

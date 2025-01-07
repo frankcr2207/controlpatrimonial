@@ -3,7 +3,7 @@
 	xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
 	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
 <head>
-<meta charset="UTF-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
 <title>PLATAFORMA DE ATENCION Y SERVICIOS</title>
 	<link rel="icon" type="img/jpg" href="img/pj.jpg" />
 	<script src="../js/jquery.min.js"></script>
@@ -12,7 +12,8 @@
 	<script src="../js/icons.js"></script>
 	<script src="../js/sweetalert2.all.min.js"></script>	
 	<script src="../js/toastr.min.js"></script>
-		
+	
+	<link rel="stylesheet" href="../css/loader.css" >	
 	<link rel="stylesheet" href="../css/bootstrap.min.css">
 	<link rel="stylesheet" href="../css/all.min.css">
 	<link rel="stylesheet" href="../css/estilo.css" >
@@ -51,19 +52,71 @@
 	<div id="divContenido" style="width: 50%; height: 75%; margin: auto; padding: 40px">
 		<h2 th:text="${dto.mensaje}"></h2>
 		<hr>
-		<div th:if="${(dto.status == 'OK')}">	
-			<input th:value="${dto.idActa}" id="id" type="hidden" class="id">
-			<label style="width: 150px;"><strong>NÚMERO ACTA: </strong></label><input style="font-weight: bold" th:value="${dto.numeroActa}" id="nombres" readonly="readonly" size="40"><br>
-			<label style="width: 150px;"><strong>FECHA: </strong></label><input style="font-weight: bold" th:value="${#temporals.format(dto.fecha, 'dd-MM-yyyy hh:mm:ss a')}" id="nombres" readonly="readonly" size="20"><br>
-			<label style="width: 150px;"><strong>NOMBRES: </strong></label><input style="font-weight: bold" th:value="${dto.nombresApellidos}" id="nombres" readonly="readonly" size="40"><br>
-			<label style="width: 150px;"><strong>CARGUE EL ACTA: </strong></label><input type="file" >
-			<div style="width: 100%; margin: auto; padding: 40px" align="center">
-				<button class="btn btn-primary" type="button">ENVIAR</button>
-			</div>
+		<div th:if="${(dto.status == 'OK')}">
+			<form enctype="multipart/form-data" id="formDatos">	
+				<input th:value="${dto.idActa}" id="id" type="hidden" class="id">
+				<label style="width: 150px;"><strong>NÚMERO ACTA: </strong></label><input style="font-weight: bold" th:value="${dto.numeroActa}" id="nombres" readonly="readonly" size="40"><br>
+				<label style="width: 150px;"><strong>FECHA: </strong></label><input style="font-weight: bold" th:value="${#temporals.format(dto.fecha, 'dd-MM-yyyy hh:mm:ss a')}" id="nombres" readonly="readonly" size="20"><br>
+				<label style="width: 150px;"><strong>NOMBRES: </strong></label><input style="font-weight: bold" th:value="${dto.nombresApellidos}" id="nombres" readonly="readonly" size="40"><br>
+				<label style="width: 150px;"><strong>CARGUE EL ACTA: </strong></label><input type="file" id="txtArchivo" >
+				<div style="width: 100%; margin: auto; padding: 40px" align="center">
+					<button class="btn btn-primary" type="button" id="btnEnviar" onclick="confirmar()">ENVIAR</button>
+				</div>
+			</form>
 		</div>
 	</div>
 	
-
+	<div class="modal fade modalEspera" id="modalEspera" data-backdrop="static" data-keyboard="false" tabindex="-1" role="dialog" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+		<div class="modal-dialog modal-dialog-centered">
+		    <div class="modal-content">
+			    <div class="modal-body" align="justify">
+			      	<div style="width:100%; height:100%">
+		      			<div style=" margin: auto;" >
+							<div style="position: relative; width: 100%; height: 100%;">
+								<div style="background-color: white; width: 100%; height: 100%; padding-top:15px; padding-bottom: auto; padding-left: auto; padding-right: auto; " align="center">
+									<div align="center">
+										<img alt="ayuda" src="img/corte.png" width="250px">
+									</div><br>
+									<div class="col-sm-2" style="height: 150px">
+						                <div class="container">
+										      <div class="wrapper">
+										        <div class="loader">
+										          <div class="dot">
+										</div>
+										</div>
+										<div class="loader">
+										          <div class="dot">
+										</div>
+										</div>
+										<div class="loader">
+										          <div class="dot">
+										</div>
+										</div>
+										<div class="loader">
+										          <div class="dot">
+										</div>
+										</div>
+										<div class="loader">
+										          <div class="dot">
+										</div>
+										</div>
+										<div class="loader">
+										          <div class="dot">
+										</div>
+										</div>
+										</div>
+										<div class="text">
+										<p><strong>ESPERE</strong></p></div>
+										</div>
+						            </div>
+								</div>
+							</div>
+						</div>
+	            	</div>
+			    </div>
+			</div>
+		</div>
+	</div>
 
 	
 		
@@ -79,73 +132,60 @@
 
 	<script type="text/javascript">
 	
-		function getRegistro(){	
-			$.ajax({
-				url: "formRegistro",
-		        type: 'GET',
-		        async : false,
-		        success: function (result) {
-		        	$("#divContenido").empty();
-		        	$("#divContenido").html(result); 
-		        },
-				error : function(e) {
-				 	Swal.fire({
-					  	icon: 'error', title: 'ATENCIÓN', text: 'No se pudo obtener la información, cierre sesión y vuelva a ingresar.!!',
-					});
-			 	}
-			});
-		};
+	function confirmar() {
+
+		if($('#txtArchivo').val() == ''){
+			toastr.clear();
+			toastr.options = {
+				"closeButton":true,
+				"progressBar": true,
+				"positionClass":"toast-topcenter-right"
+			};
+			toastr.warning("Debe adjuntar pdf firmado!!");
+			return false;
+		}
 		
-		function getGeneracion(){	
-			$.ajax({
-				url: "formGeneracion",
-		        type: 'GET',
-		        async : false,
-		        success: function (result) {
-		        	$("#divContenido").empty();
-		        	$("#divContenido").html(result); 
-		        },
-				error : function(e) {
-				 	Swal.fire({
-					  	icon: 'error', title: 'ATENCIÓN', text: 'No se pudo obtener la información, cierre sesión y vuelva a ingresar.!!',
-					});
-			 	}
-			});
-		};
+        var formData = new FormData();
+        var file = $('#txtArchivo')[0].files[0];
+
+        formData.append("id", $('#id').val());
+        formData.append("adjunto", file);
 		
-		function getUsuarios(){	
-			$.ajax({
-				url: "formUsuarios",
-		        type: 'GET',
-		        async : false,
-		        success: function (result) {
-		        	$("#divContenido").empty();
-		        	$("#divContenido").html(result); 
-		        },
-				error : function(e) {
-				 	Swal.fire({
-					  	icon: 'error', title: 'ATENCIÓN', text: 'No se pudo obtener la información, cierre sesión y vuelva a ingresar.!!',
-					});
-			 	}
-			});
-		};
+		$.ajax({
+			type:"PUT",
+			url:"confirmar",
+            data: formData,
+            dataType: "json",
+            processData: false,
+            contentType: false,
+			beforeSend:function(){
+	            $('#modalEspera').show();
+	        },
+			success:function(response) {
+				$('#modalEspera').hide();
+				$('#btnEnviar').hide();
+				Swal.fire(
+				  'ACTA FUE ENVIADO CON ÉXITO!!',
+				  'Click en OK para continuar!',
+				  'success'
+				);
+			},
+	        error : function(response){
+	        	setTimeout(function() {
+	        		$('#modalEspera').hide();
+		        	var r = jQuery.parseJSON(response.responseText);
+					toastr.clear();
+					toastr.options = {
+						"closeButton":true,
+						"progressBar": true,
+						"positionClass":"toast-topcenter-right"
+					};
+					toastr.warning(r.message);
+		        }
+	        }, 2000);
 		
-		function getAsignacion(){	
-			$.ajax({
-				url: "formAsignacion",
-		        type: 'GET',
-		        async : false,
-		        success: function (result) {
-		        	$("#divContenido").empty();
-		        	$("#divContenido").html(result); 
-		        },
-				error : function(e) {
-				 	Swal.fire({
-					  	icon: 'error', title: 'ATENCIÓN', text: 'No se pudo obtener la información, cierre sesión y vuelva a ingresar.!!',
-					});
-			 	}
-			});
-		};
+		});
+	};	
 	
 	</script>
 </body>

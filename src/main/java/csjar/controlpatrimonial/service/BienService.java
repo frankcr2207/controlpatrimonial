@@ -8,15 +8,17 @@ import com.itextpdf.text.DocumentException;
 
 import csjar.controlpatrimonial.dto.RequestBienesDTO;
 import csjar.controlpatrimonial.dto.RequestEtiquetaDTO;
-import csjar.controlpatrimonial.dto.ResponseBienesDTO;
+import csjar.controlpatrimonial.dto.ResponseBienDTO;
+import csjar.controlpatrimonial.dto.ResponseTrazabilidadDTO;
 import csjar.controlpatrimonial.entity.Bien;
 
 public interface BienService {
 
 	Bien obtenerEntidad(String codigo);
-	ResponseBienesDTO obtenerBien(String codigo, Integer idEmpleado, String tipoActa);
-	List<ResponseBienesDTO> obtenerBienes(Integer idAdquisicion);
+	ResponseBienDTO obtenerBien(String codigo, Integer idEmpleado, String tipoActa);
+	List<ResponseBienDTO> obtenerBienes(Integer idAdquisicion);
 	void generarBienes(RequestBienesDTO requestBienesnDTO);
 	byte[] generarEtiquetas(List<RequestEtiquetaDTO> requestEtiquetaDTO) throws DocumentException, IOException, WriterException ;
+	ResponseTrazabilidadDTO obtenerTrazabilidad(String codigo);
 	
 }

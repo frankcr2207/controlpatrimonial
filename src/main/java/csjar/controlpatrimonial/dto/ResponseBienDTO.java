@@ -1,9 +1,13 @@
 package csjar.controlpatrimonial.dto;
 
+import java.time.LocalDateTime;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 import lombok.Data;
 
 @Data
-public class ResponseBienesDTO {
+public class ResponseBienDTO {
 
 	private Integer orden;
 	private String denominacion;
@@ -17,5 +21,11 @@ public class ResponseBienesDTO {
 	private String catalogo;
 	private String codigoPatrimonial;
 	private String descripcion;
+	
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy HH:mm")
+	private LocalDateTime fecRegistro;
+	private String empleado;
+	private Integer idActa;
+	private String conservacion;
 	
 }

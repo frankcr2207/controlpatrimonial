@@ -1,8 +1,10 @@
 package csjar.controlpatrimonial.service.impl;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
@@ -65,9 +67,23 @@ public class FtpServiceImpl implements FtpService {
 	}
 
 	@Override
-	public void descargarArchivo(String ruta, String nombre) {
-		// TODO Auto-generated method stub
+	public byte[] descargarArchivo(String ruta, String nombre) throws IOException {
+		InputStream inputStream = ftpClient.retrieveFileStream(ruta + "/" +  nombre);
+        if (inputStream == null) {
+        	throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "No se pudo encontrar el archivo en el repositorio FTP.");
+        }
+        
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        byte[] buffer = new byte[4096];
+        int bytesRead;
 
+        while ((bytesRead = inputStream.read(buffer)) != -1) {
+            byteArrayOutputStream.write(buffer, 0, bytesRead);
+        }
+        
+        inputStream.close();
+        ftpClient.completePendingCommand();
+        return byteArrayOutputStream.toByteArray();
 	}
 
 }

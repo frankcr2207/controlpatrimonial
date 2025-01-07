@@ -31,7 +31,7 @@ public class UsuarioController {
 	
 	@GetMapping
 	public ResponseEntity<List<ResponseUsuarioDTO>> listarUsuarios() throws NoSuchAlgorithmException {
-		return new ResponseEntity<>(usuarioService.listarUsuario(), HttpStatus.OK);
+		return new ResponseEntity<>(usuarioService.listarUsuarios(), HttpStatus.OK);
 	}
 	
 	@GetMapping("/{id}")

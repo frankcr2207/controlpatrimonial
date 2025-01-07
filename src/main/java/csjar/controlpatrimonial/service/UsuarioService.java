@@ -10,11 +10,12 @@ public interface UsuarioService {
 
 	String obtenerNombreSesion();
 	ResponseUsuarioDTO buscarUsuario(Integer id);
-	Usuario buscarRntidad(String login);
-	List<ResponseUsuarioDTO> listarUsuario();
+	Usuario buscarPorLogin(String login);
+	List<ResponseUsuarioDTO> listarUsuarios();
 	ResponseUsuarioDTO buscarEmpleado(String dni);
 	void crearUsuario(RequestUsuarioDTO usuario);
 	void modificarUsuario(RequestUsuarioDTO usuario);
 	void cambiarClave(RequestUsuarioDTO usuario);
+	List<Usuario> obtenerEntidades(List<Integer> ids);
 	
 }

@@ -1,5 +1,7 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
 <head>
 <meta charset="UTF-8">
 <title>PLATAFORMA DE ATENCION Y SERVICIOS</title>
@@ -47,22 +49,13 @@
 	<div style="background-color: #790000; padding:0px; border-bottom: 5px solid #C4C4C4;">
 		<div class="form-row" id="menu">
 			 <div style="width: 75%;" class="form-row">
-
-				<div  sec:authorize="hasRole('ASISTENTE CONTROL PATRIMONIAL')" id="divMenuControlPatrimonial">
-				  	<a style="cursor: pointer" onclick="getRegistro()"><i class='fas fa-edit'></i>&nbsp; REGISTRO</a>
-				  	<a style="cursor: pointer" onclick="getGeneracion()"><i class='fas fa-pallet'></i>&nbsp; GENERAR</a>
-				  	<a style="cursor: pointer" onclick="getAsignacion()"><i class='fas fa-hand-holding'></i>&nbsp; ASIGNACIÓN</a>
-				  	<a style="cursor: pointer" onclick="getTrazabilidad()"><i class='fas fa-chart-line'></i>&nbsp; TRAZABILIDAD</a>
-				  	<a style="cursor: pointer" onclick="getReportes()"><i class='fas fa-layer-group'></i>&nbsp; REPORTES</a>
-				</div>
-				<div sec:authorize="hasRole('ASISTENTE INFORMATICA')" id="divMenuAsistenteInformatica">
 				  	<a style="cursor: pointer" onclick="getUsuarios()"><i class='fas fa-user-friends'></i>&nbsp; USUARIOS</a>
 				  	<a style="cursor: pointer" onclick="getPerfiles()"><i class='fas fa-chalkboard-teacher'></i>&nbsp; PERFILES</a>
-				</div>
-				<div sec:authorize="hasRole('JEFE CONTROL PATRIMONIAL')" id="divMenuAsistenteInformatica">
-				  	<a style="cursor: pointer" onclick="getUsuarios()"><i class='fas fa-user-friends'></i>&nbsp; GENERAL</a>
-				</div>
-
+				  	<a style="cursor: pointer" onclick="getRegistro()"><i class='fas fa-edit'></i>&nbsp; REGISTRO</a>
+				  	<a style="cursor: pointer" onclick="getGeneracion()"><i class='fas fa-pallet'></i>&nbsp; GENERAR</a>
+				  	<a style="cursor: pointer" onclick="getAsignacion()"><i class='fas fa-hand-holding'></i>&nbsp; MOVIMIENTO</a>
+				  	<a style="cursor: pointer" onclick="getTrazabilidad()"><i class='fas fa-chart-line'></i>&nbsp; TRAZABILIDAD</a>
+				  	<a style="cursor: pointer" onclick="getReportes()"><i class='fas fa-layer-group'></i>&nbsp; REPORTES</a>
 		  	</div>
 		  	<div align="right" style="width: 25%;">
 		  		<button id="btnUsuario" type="button" class="btn btn-sm btn-outline-light btn-sm" sec:authorize="isAuthenticated()" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
@@ -170,6 +163,23 @@
 		function getAsignacion(){	
 			$.ajax({
 				url: "formAsignacion",
+		        type: 'GET',
+		        async : false,
+		        success: function (result) {
+		        	$("#divContenido").empty();
+		        	$("#divContenido").html(result); 
+		        },
+				error : function(e) {
+				 	Swal.fire({
+					  	icon: 'error', title: 'ATENCIÓN', text: 'No se pudo obtener la información, cierre sesión y vuelva a ingresar.!!',
+					});
+			 	}
+			});
+		};
+		
+		function getTrazabilidad(){	
+			$.ajax({
+				url: "formTrazabilidad",
 		        type: 'GET',
 		        async : false,
 		        success: function (result) {

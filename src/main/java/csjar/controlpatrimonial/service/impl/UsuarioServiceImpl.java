@@ -49,7 +49,7 @@ public class UsuarioServiceImpl implements UsuarioService {
 	}
 	
 	@Override
-	public List<ResponseUsuarioDTO> listarUsuario() {
+	public List<ResponseUsuarioDTO> listarUsuarios() {
 		List<Usuario> usuarios = this.usuarioRepository.findByPerfilIsNotNull();
 		return this.usuarioMapperService.toDTO(usuarios);
 	}
@@ -120,8 +120,13 @@ public class UsuarioServiceImpl implements UsuarioService {
     }
 
 	@Override
-	public Usuario buscarRntidad(String login) {
+	public Usuario buscarPorLogin(String login) {
 		return this.usuarioRepository.findByLogin(login);
+	}
+
+	@Override
+	public List<Usuario> obtenerEntidades(List<Integer> ids) {
+		return this.usuarioRepository.findByIdIn(ids);
 	}
 
 }

@@ -12,5 +12,6 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Integer>{
 	Usuario findByDni(String dni);
 	List<Usuario> findByPerfilIsNotNull();
 	Usuario findByLogin(String login);
+	List<Usuario> findByIdIn(List<Integer> ids);
 	
 }

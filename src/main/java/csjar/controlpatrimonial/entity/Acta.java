@@ -64,6 +64,12 @@ public class Acta {
 	@Column(name = "f_notificado")
 	private LocalDateTime fecNotificado;
 	
+	@Column(name = "s_pdf_firmado")
+	private String nombrePdfFirmado;
+	
+	@Column(name = "f_firmado")
+	private LocalDateTime fecFirmado;
+	
 	@Column(name = "s_token")
 	private String token;
 	

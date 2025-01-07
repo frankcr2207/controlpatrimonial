@@ -4,8 +4,6 @@ import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
 
-import javax.servlet.http.HttpServletResponse;
-
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,7 +20,8 @@ import com.itextpdf.text.DocumentException;
 
 import csjar.controlpatrimonial.dto.RequestBienesDTO;
 import csjar.controlpatrimonial.dto.RequestEtiquetaDTO;
-import csjar.controlpatrimonial.dto.ResponseBienesDTO;
+import csjar.controlpatrimonial.dto.ResponseBienDTO;
+import csjar.controlpatrimonial.dto.ResponseTrazabilidadDTO;
 import csjar.controlpatrimonial.service.BienService;
 
 @RequestMapping("/bien")
@@ -37,14 +36,19 @@ public class BienController {
 	}
 	
 	@GetMapping("/buscar")
-	public ResponseEntity<ResponseBienesDTO> obtenerBien(@RequestParam String codigo, 
+	public ResponseEntity<ResponseBienDTO> obtenerBien(@RequestParam String codigo, 
 		@RequestParam Integer idEmpleado, @RequestParam String tipoActa) throws NoSuchAlgorithmException {
 		return new ResponseEntity<>(this.bienService.obtenerBien(codigo, idEmpleado, tipoActa), HttpStatus.OK);
 	}
 	
 	@GetMapping("/{idAdquisicion}")
-	public ResponseEntity<List<ResponseBienesDTO>> obtenerBienes(@PathVariable Integer idAdquisicion) throws NoSuchAlgorithmException {
+	public ResponseEntity<List<ResponseBienDTO>> obtenerBienes(@PathVariable Integer idAdquisicion) throws NoSuchAlgorithmException {
 		return new ResponseEntity<>(this.bienService.obtenerBienes(idAdquisicion), HttpStatus.OK);
+	}
+	
+	@GetMapping("/trazabilidad/{codigo}")
+	public ResponseEntity<ResponseTrazabilidadDTO> obtenerTrazabilidad(@PathVariable String codigo) throws NoSuchAlgorithmException {
+		return new ResponseEntity<>(this.bienService.obtenerTrazabilidad(codigo), HttpStatus.OK);
 	}
 	
 	@PostMapping("/generar")

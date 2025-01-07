@@ -4,6 +4,8 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -31,17 +33,25 @@ import csjar.controlpatrimonial.constants.GeneralConstants;
 import csjar.controlpatrimonial.dto.RequestBienesDTO;
 import csjar.controlpatrimonial.dto.RequestDetalleBienesDTO;
 import csjar.controlpatrimonial.dto.RequestEtiquetaDTO;
-import csjar.controlpatrimonial.dto.ResponseBienesDTO;
+import csjar.controlpatrimonial.dto.ResponseBienDTO;
+import csjar.controlpatrimonial.dto.ResponseTrazabilidadDTO;
+import csjar.controlpatrimonial.dto.ResponseUsuarioDTO;
+import csjar.controlpatrimonial.entity.Acta;
 import csjar.controlpatrimonial.entity.Adquisicion;
+import csjar.controlpatrimonial.entity.Area;
 import csjar.controlpatrimonial.entity.Bien;
+import csjar.controlpatrimonial.entity.BienVer;
 import csjar.controlpatrimonial.entity.Catalogo;
 import csjar.controlpatrimonial.entity.Modelo;
+import csjar.controlpatrimonial.entity.Usuario;
 import csjar.controlpatrimonial.repository.BienRepository;
 import csjar.controlpatrimonial.service.AdquisicionService;
+import csjar.controlpatrimonial.service.AreaService;
 import csjar.controlpatrimonial.service.BienService;
 import csjar.controlpatrimonial.service.BienVerService;
 import csjar.controlpatrimonial.service.CatalogoService;
 import csjar.controlpatrimonial.service.ModeloService;
+import csjar.controlpatrimonial.service.UsuarioService;
 import csjar.controlpatrimonial.utils.CollectionUtils;
 
 @Service
@@ -52,36 +62,45 @@ public class BienServiceImpl implements BienService {
 	private CatalogoService catalogoService;
 	private AdquisicionService adquisicionService;
 	private BienVerService bienVerService;
+	private UsuarioService usuarioService;
+	private AreaService areaService;
 	
 	public BienServiceImpl(BienRepository repository, ModeloService modeloService, CatalogoService catalogoService,
-			AdquisicionService adquisicionService, BienVerService bienVerService) {
+			AdquisicionService adquisicionService, BienVerService bienVerService, UsuarioService usuarioService,
+			AreaService areaService) {
 		super();
 		this.repository = repository;
 		this.modeloService = modeloService;
 		this.catalogoService = catalogoService;
 		this.adquisicionService = adquisicionService;
 		this.bienVerService = bienVerService;
+		this.usuarioService = usuarioService;
+		this.areaService = areaService;
 	}
 
 	@Override
-	public ResponseBienesDTO obtenerBien(String codigo, Integer idEmpleado, String tipoActa) {
+	public ResponseBienDTO obtenerBien(String codigo, Integer idEmpleado, String tipoActa) {
 		Bien bien = this.repository.findByCodigoPatrimonial(codigo);
 		if(Objects.isNull(bien)) {
 			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No se encontró resultado con el código " + codigo);
 		}
 		
+		if(bien.getEstado().equals(GeneralConstants.BIEN_ESTADO_MANTENIMIENTO)) {
+			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "El código " + codigo + " se encuentra en mantenimiento.");
+		}
+		
 		if(tipoActa.equals("A")) {
 			if(Objects.nonNull(bien.getIdEmpleado()) && !bien.getIdEmpleado().equals(idEmpleado)) 
-				throw new ResponseStatusException(HttpStatus.CONFLICT, "El código " + codigo + " se encuentra asignado a otro empleado");
+				throw new ResponseStatusException(HttpStatus.CONFLICT, "El código " + codigo + " se encuentra asignado a otro empleado.");
 			if(Objects.nonNull(bien.getIdEmpleado()) && bien.getIdEmpleado().equals(idEmpleado)) 
-				throw new ResponseStatusException(HttpStatus.CONFLICT, "El código " + codigo + " ya se está asignado a este empleado");
+				throw new ResponseStatusException(HttpStatus.CONFLICT, "El código " + codigo + " ya se está asignado a este empleado.");
 		}
 		else {
 			if(Objects.isNull(bien.getIdEmpleado()) || !bien.getIdEmpleado().equals(idEmpleado))
 				throw new ResponseStatusException(HttpStatus.CONFLICT, "El código " + codigo + " no se encuentra asignado a este empleado para devolución.");
 		}
 		
-		ResponseBienesDTO response = new ResponseBienesDTO();
+		ResponseBienDTO response = new ResponseBienDTO();
 		response.setCodigoPatrimonial(bien.getCodigoPatrimonial());
 		response.setDescripcion(bien.getDescripcion());
 		return response;
@@ -116,7 +135,8 @@ public class BienServiceImpl implements BienService {
 				bien.setColor(b.getColor());
 				bien.setDescripcion(b.getDescripcion());
 				bien.setSerie(b.getSerie());
-				bien.setEstado(GeneralConstants.BIEN_ESTADO_GENERADO);
+				bien.setEstado(GeneralConstants.BIEN_ESTADO_INGRESADO);
+				bien.setObservacion(GeneralConstants.BIEN_OBSERVACION_NUEVO_INGRESO);
 				bien.setObservacion(b.getObservacion());
 				bien.setModelo(mapModelos.get(b.getIdModelo()));
 				bien.setCodigoPatrimonial(catalogo.getCodigo().concat(String.format("%04d", secuencia)));
@@ -138,9 +158,9 @@ public class BienServiceImpl implements BienService {
 	}
 
 	@Override
-	public List<ResponseBienesDTO> obtenerBienes(Integer idAdquisicion) {
+	public List<ResponseBienDTO> obtenerBienes(Integer idAdquisicion) {
 		List<Bien> bienes = this.repository.findByIdAdquisicion(idAdquisicion);
-		List<ResponseBienesDTO> responseBienes = new ArrayList<>();
+		List<ResponseBienDTO> responseBienes = new ArrayList<>();
 		
 		List<Integer> idsCatalogo = bienes.stream() 
 	            .map(Bien::getIdCatalogo).distinct().collect(Collectors.toList());
@@ -149,7 +169,7 @@ public class BienServiceImpl implements BienService {
 				.stream().collect(Collectors.toMap(Catalogo::getId, Catalogo::getDenominacion));
 		
 		bienes.stream().forEach(b -> {
-			ResponseBienesDTO bien = new ResponseBienesDTO();
+			ResponseBienDTO bien = new ResponseBienDTO();
 			bien.setCatalogo(mapCatalogos.get(b.getIdCatalogo()));
 			bien.setCodigoPatrimonial(b.getCodigoPatrimonial());
 			bien.setDescripcion(b.getDescripcion());
@@ -216,6 +236,67 @@ public class BienServiceImpl implements BienService {
 	@Override
 	public Bien obtenerEntidad(String codigo) {
 		return this.repository.findByCodigoPatrimonial(codigo);
+	}
+
+	@Override
+	public ResponseTrazabilidadDTO obtenerTrazabilidad(String codigo) {
+		Bien bien = this.repository.findByCodigoPatrimonial(codigo);
+		if(Objects.isNull(bien)) {
+			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No se encontró resultado con el código " + codigo);
+		}
+		
+		Catalogo catalogo = this.catalogoService.obtenerCatalogo(Arrays.asList(bien.getIdCatalogo())).get(0);
+		ResponseUsuarioDTO empleado = null;
+		if(Objects.nonNull(bien.getIdEmpleado()))
+			empleado = this.usuarioService.buscarUsuario(bien.getIdEmpleado());
+		
+		List<Acta> actas = bien.getActas();
+		actas.sort(Comparator.comparing(Acta::getFecRegistro).reversed());
+		
+		Area area = this.areaService.obtenerEntidad(CollectionUtils.isValidate(actas) ? actas.get(0).getIdArea() : 1);
+		
+		ResponseTrazabilidadDTO traza = new ResponseTrazabilidadDTO();
+		traza.setCodigo(bien.getCodigoPatrimonial());
+		traza.setCatalogo(catalogo.getDenominacion());
+		traza.setDescripcion(bien.getDescripcion());
+		traza.setConservacionActual(bien.getEstadoConservacion());
+		traza.setEstadoActual(bien.getEstado());
+		traza.setEmpleadoActual(Objects.isNull(empleado) ? "" : empleado.getNombres().concat(" ").concat(empleado.getApellidos()));
+		traza.setUbicacionActual(area.getSede().getDenominacion().concat(" - ").concat(area.getSede().getDireccion()));
+		
+		List<BienVer> versiones = this.bienVerService.obtenerEntidades(bien.getId());
+		
+		if(CollectionUtils.isValidate(versiones)) {
+			
+			versiones.sort(Comparator.comparing(BienVer::getFecRegistro).reversed());
+			
+	        List<Integer> ids = versiones.stream()
+                    .map(BienVer::getIdEmpleado)
+                    .filter(id -> id != null)
+                    .collect(Collectors.toList());
+	        
+	        List<Usuario> empleados = new ArrayList<>();
+	        if(CollectionUtils.isValidate(ids)) {
+	        	 empleados = this.usuarioService.obtenerEntidades(ids);
+	        }
+	        Map<Integer, String> mapUsuarios = empleados.stream().collect(Collectors.toMap(Usuario::getId, usuario -> usuario.getNombres() + " " + usuario.getApellidos()));
+
+			
+			List<ResponseBienDTO> detalle = new ArrayList<>();
+			versiones.stream().forEach(v -> {
+				ResponseBienDTO dto = new ResponseBienDTO();
+				dto.setEstado(v.getEstado());
+				dto.setFecRegistro(v.getFecRegistro());
+				dto.setObservaciones(v.getObservacion());
+				dto.setEmpleado(mapUsuarios.containsKey(v.getIdEmpleado()) ? mapUsuarios.get(v.getIdEmpleado()) : "");
+				dto.setIdActa(v.getIdActa());
+				dto.setConservacion(v.getEstadoConservacion());
+				detalle.add(dto);
+			});
+			traza.setDetalle(detalle);
+		}
+		
+		return traza;
 	}
 
 }

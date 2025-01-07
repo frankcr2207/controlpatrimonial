@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -25,6 +26,8 @@ import java.util.stream.Collectors;
 
 import javax.transaction.Transactional;
 
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.interactive.digitalsignature.PDSignature;
 import org.apache.poi.ss.usermodel.PrintSetup;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -36,13 +39,14 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 import csjar.controlpatrimonial.constants.GeneralConstants;
 import csjar.controlpatrimonial.dto.RequestActaDTO;
 import csjar.controlpatrimonial.dto.RequestEmailDTO;
 import csjar.controlpatrimonial.dto.ResponseActaDTO;
-import csjar.controlpatrimonial.dto.ResponseBienesDTO;
+import csjar.controlpatrimonial.dto.ResponseBienDTO;
 import csjar.controlpatrimonial.dto.ResponseUsuarioDTO;
 import csjar.controlpatrimonial.entity.Acta;
 import csjar.controlpatrimonial.entity.Area;
@@ -91,7 +95,7 @@ public class ActaServiceImpl implements ActaService {
 	@Transactional
 	@Override
 	public void guardarActa(RequestActaDTO requestActaDTO) throws Exception {
-		Usuario usuario = usuarioService.buscarRntidad(obtenerUsuario());
+		Usuario usuario = usuarioService.buscarPorLogin(obtenerUsuario());
 		Acta actaAnterior = this.repository.findActaWithMaxNumeroByYear(LocalDateTime.now().getYear());
 		Integer numero = Objects.nonNull(actaAnterior) ? actaAnterior.getNumero() + 1 : 1;
 
@@ -138,7 +142,7 @@ public class ActaServiceImpl implements ActaService {
 		
 		Acta newActa = repository.saveAndFlush(acta);
 		
-		String token = generateHash(newActa.getId().toString());
+		String token = generaHash(newActa.getId().toString());
 		newActa.setToken(token);
 		
 		this.bienVerService.generarVersion(bienes, newActa.getId());
@@ -195,9 +199,9 @@ public class ActaServiceImpl implements ActaService {
 				.collect(Collectors.toMap(Catalogo::getId, Function.identity()));
 
 		int orden = 1;
-		List<ResponseBienesDTO> bienes = new ArrayList<>();
+		List<ResponseBienDTO> bienes = new ArrayList<>();
 		for(Bien b : listaBienes){
-			ResponseBienesDTO bien = new ResponseBienesDTO();
+			ResponseBienDTO bien = new ResponseBienDTO();
 			bien.setOrden(orden);
 			bien.setCodigoPatrimonial(b.getCodigoPatrimonial());
 			bien.setDenominacion(mapCatalogos.get(b.getIdCatalogo()).getDenominacion());
@@ -314,7 +318,7 @@ public class ActaServiceImpl implements ActaService {
 		return this.notificacionExternalService.enviarEmail(requestEmailDTO);
 	}
 	
-	public static String generateHash(String data) throws NoSuchAlgorithmException {
+	public static String generaHash(String data) throws NoSuchAlgorithmException {
         String input = data + SECRET_KEY;
         MessageDigest digest = MessageDigest.getInstance("SHA-256");
         byte[] hashBytes = digest.digest(input.getBytes());
@@ -325,17 +329,23 @@ public class ActaServiceImpl implements ActaService {
 	public ResponseActaDTO validarActa(Integer code, String token) throws Exception {
 		
 		ResponseActaDTO response = new ResponseActaDTO();
-		boolean validation = this.validar(code, token);
+		boolean validation = this.validar(code, token.replace(" ", "+"));
 		response.setMensaje(validation ? "Validación de datos correcta" : "Validación de datos incorrecta");
 		response.setStatus(validation ? "OK" : "KO");
 		if(validation) {
 			Acta acta = this.repository.findById(code).orElse(null);
-			ResponseUsuarioDTO empleado = this.usuarioService.buscarUsuario(acta.getIdEmpleado());
-			response.setIdActa(acta.getId());
-			response.setNumeroActa(acta.getNumero().toString().concat("-").concat(String.valueOf(acta.getFecRegistro().getYear())));
-			response.setDni(empleado.getDni());
-			response.setNombresApellidos(empleado.getNombres().concat(" ").concat(empleado.getApellidos()));
-			response.setFecha(acta.getFecRegistro());
+			if(Objects.nonNull(acta.getFecFirmado())){
+				response.setMensaje("Acta ya fue confirmada");
+				response.setStatus("KO");		
+			}
+			else {
+				ResponseUsuarioDTO empleado = this.usuarioService.buscarUsuario(acta.getIdEmpleado());
+				response.setIdActa(acta.getId());
+				response.setNumeroActa(acta.getNumero().toString().concat("-").concat(String.valueOf(acta.getFecRegistro().getYear())));
+				response.setDni(empleado.getDni());
+				response.setNombresApellidos(empleado.getNombres().concat(" ").concat(empleado.getApellidos()));
+				response.setFecha(acta.getFecRegistro());
+			}
 		}
 		return response;
 	}
@@ -344,12 +354,54 @@ public class ActaServiceImpl implements ActaService {
 		Integer id = code;
         String secretKey = SECRET_KEY;
         String receivedHash = token;
-        return verifyHash(receivedHash, id, secretKey);
+        return verificaHash(receivedHash, id, secretKey);
 	}
 	
-	public static boolean verifyHash(String receivedHash, Integer data, String secretKey) throws NoSuchAlgorithmException {
-		String generatedHash = generateHash(data.toString());
+	public static boolean verificaHash(String receivedHash, Integer data, String secretKey) throws NoSuchAlgorithmException {
+		String generatedHash = generaHash(data.toString());
         return generatedHash.equals(receivedHash);
     }
+
+	@Transactional
+	@Override
+	public void guardarConfirmacion(Integer id, MultipartFile multipartFile) throws IOException {
+		
+		Acta acta = this.repository.findById(id).get();
+		String pdf = acta.getNombrePdfOriginal();
+		pdf = pdf.substring(0, pdf.lastIndexOf("."));
+		pdf = pdf.concat("_[F]").concat(GeneralConstants.EXTENSION_PDF);
+		String directorio = "/" + String.valueOf(acta.getFecRegistro().getYear());
+		
+		Path path = Paths.get(GeneralConstants.SERVER_TEMP + pdf);
+        Files.write(path, multipartFile.getBytes());
+        
+        contieneFirmaDigital(new File(GeneralConstants.SERVER_TEMP + pdf));
+		
+		this.ftpService.conectarFTP();
+		this.ftpService.cargarArchivo(pdf, directorio, multipartFile.getBytes());
+
+		if(Objects.nonNull(acta.getFecFirmado())) 
+			throw new ResponseStatusException(HttpStatus.CONFLICT, "Acta ya fue confirmada!!");
+		
+		acta.setFecFirmado(LocalDateTime.now());
+		acta.setNombrePdfFirmado(pdf);
+		this.repository.save(acta);
+	}
+	
+	public void contieneFirmaDigital(File pdfFile) throws IOException {
+        PDDocument document = PDDocument.load(pdfFile);
+            List<PDSignature> signatures = document.getSignatureDictionaries();
+            if(signatures.isEmpty())
+            	throw new ResponseStatusException(HttpStatus.NOT_FOUND, "El archivo no está firmado digitalmente.");
+
+    }
+
+	@Override
+	public byte[] descargarActa(Integer id) throws Exception {
+		Acta acta = this.repository.findById(id).get();
+		this.ftpService.conectarFTP();
+		byte[] fileBytes = this.ftpService.descargarArchivo(acta.getRutaPdf(), acta.getNombrePdfFirmado());
+		return fileBytes;
+	}
 
 }

@@ -1,6 +1,7 @@
 package csjar.controlpatrimonial.service.impl;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -48,6 +49,11 @@ public class BienVerServiceImpl implements BienVerService {
 		});
 		
 		this.repository.saveAll(nuevos);
+	}
+
+	@Override
+	public List<BienVer> obtenerEntidades(Integer idBien) {
+		return this.repository.findByIdBienIn(Arrays.asList(idBien));
 	}
 
 }
