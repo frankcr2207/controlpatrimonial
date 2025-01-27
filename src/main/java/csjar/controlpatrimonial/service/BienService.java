@@ -7,6 +7,7 @@ import com.google.zxing.WriterException;
 import com.itextpdf.text.DocumentException;
 
 import csjar.controlpatrimonial.dto.RequestBienesDTO;
+import csjar.controlpatrimonial.dto.RequestDetalleBienesDTO;
 import csjar.controlpatrimonial.dto.RequestEtiquetaDTO;
 import csjar.controlpatrimonial.dto.ResponseBienDTO;
 import csjar.controlpatrimonial.dto.ResponseTrazabilidadDTO;
@@ -14,11 +15,13 @@ import csjar.controlpatrimonial.entity.Bien;
 
 public interface BienService {
 
+	ResponseBienDTO obtenerBienPorId(Integer id);
 	Bien obtenerEntidad(String codigo);
 	ResponseBienDTO obtenerBien(String codigo, Integer idEmpleado, String tipoActa);
 	List<ResponseBienDTO> obtenerBienes(Integer idAdquisicion);
 	void generarBienes(RequestBienesDTO requestBienesnDTO);
 	byte[] generarEtiquetas(List<RequestEtiquetaDTO> requestEtiquetaDTO) throws DocumentException, IOException, WriterException ;
 	ResponseTrazabilidadDTO obtenerTrazabilidad(String codigo);
+	void modificarBien(RequestDetalleBienesDTO request);
 	
 }

@@ -74,7 +74,8 @@ public class AdquisicionServiceImpl implements AdquisicionService {
 			LocalDate fecha = LocalDate.parse(requestAdquisicionDTO.getFecAdquisicion(), formatter);
 		    LocalDateTime fechaHora = fecha.atStartOfDay();
 	        adquisicion.setFecAdquisicion(fechaHora);
-	        adquisicion.setEstado(GeneralConstants.ADQUISICION_ESTADO_REGISTRADO);
+	        adquisicion.setEstado(requestAdquisicionDTO.getRegularizar().equals("S") ? 
+	        	GeneralConstants.ADQUISICION_ESTADO_REGULARIZADO : GeneralConstants.ADQUISICION_ESTADO_REGISTRADO);
 	        adquisicion.setUsuario(this.obtenerUsuario());
 		}
 		TipoAdquisicion tipoAdquisicion = tipoAdquisicionService.obtenerEntidad(requestAdquisicionDTO.getIdTipoAdquisicion());

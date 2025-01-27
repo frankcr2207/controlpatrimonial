@@ -12,7 +12,7 @@
  }
  
 input::-webkit-input-placeholder{
-  color:#8f8fa1;
+  color:white;
 }
 .container-login100{
 
@@ -124,7 +124,7 @@ input::-webkit-input-placeholder{
 }
 input:focus {
   outline: none !important;
-  border-bottom: 3px solid rgb(0, 90, 165);
+  border-bottom: 3px solid rgb(255, 255, 255);
   font-size: 17px;
   font-weight: bold;
   color: white;

@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -19,6 +20,7 @@ import com.google.zxing.WriterException;
 import com.itextpdf.text.DocumentException;
 
 import csjar.controlpatrimonial.dto.RequestBienesDTO;
+import csjar.controlpatrimonial.dto.RequestDetalleBienesDTO;
 import csjar.controlpatrimonial.dto.RequestEtiquetaDTO;
 import csjar.controlpatrimonial.dto.ResponseBienDTO;
 import csjar.controlpatrimonial.dto.ResponseTrazabilidadDTO;
@@ -35,13 +37,18 @@ public class BienController {
 		this.bienService = bienService;
 	}
 	
+	@GetMapping("/{id}")
+	public ResponseEntity<ResponseBienDTO> obtenerBienPorId(@PathVariable Integer id) throws NoSuchAlgorithmException {
+		return new ResponseEntity<>(this.bienService.obtenerBienPorId(id), HttpStatus.OK);
+	}
+	
 	@GetMapping("/buscar")
 	public ResponseEntity<ResponseBienDTO> obtenerBien(@RequestParam String codigo, 
 		@RequestParam Integer idEmpleado, @RequestParam String tipoActa) throws NoSuchAlgorithmException {
 		return new ResponseEntity<>(this.bienService.obtenerBien(codigo, idEmpleado, tipoActa), HttpStatus.OK);
 	}
 	
-	@GetMapping("/{idAdquisicion}")
+	@GetMapping("/adquisicion/{idAdquisicion}")
 	public ResponseEntity<List<ResponseBienDTO>> obtenerBienes(@PathVariable Integer idAdquisicion) throws NoSuchAlgorithmException {
 		return new ResponseEntity<>(this.bienService.obtenerBienes(idAdquisicion), HttpStatus.OK);
 	}
@@ -71,5 +78,11 @@ public class BienController {
         } catch (IOException e) {
             return ResponseEntity.status(500).body(null);
         }
+	}
+	
+	@PutMapping
+	public ResponseEntity<HttpStatus> modificarBienes(@RequestBody RequestDetalleBienesDTO request) throws NoSuchAlgorithmException {
+		this.bienService.modificarBien(request);
+		return new ResponseEntity<>(HttpStatus.NO_CONTENT);
 	}
 }

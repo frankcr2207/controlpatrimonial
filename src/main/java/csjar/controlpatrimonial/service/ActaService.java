@@ -9,7 +9,7 @@ import csjar.controlpatrimonial.dto.ResponseActaDTO;
 
 public interface ActaService {
 	
-	void guardarActa(RequestActaDTO requestActaDTO) throws Exception;
+	ResponseActaDTO guardarActa(RequestActaDTO requestActaDTO) throws Exception;
 	ResponseActaDTO validarActa(Integer code, String token) throws Exception;
 	void guardarConfirmacion(Integer id, MultipartFile multipartFile) throws IOException;
 	byte[] descargarActa(Integer id) throws Exception;

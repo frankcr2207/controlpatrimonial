@@ -9,6 +9,7 @@ import lombok.Data;
 @Data
 public class ResponseBienDTO {
 
+	private Integer id;
 	private Integer orden;
 	private String denominacion;
 	private String marca;

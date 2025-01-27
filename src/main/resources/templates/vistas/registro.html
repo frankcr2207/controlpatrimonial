@@ -26,7 +26,8 @@
 		<div  style="width:60%; height: 100%; font-size: 11px; margin: auto">
 			<h3>REGISTRO NUEVA ADQUISICIÓN</h3>
 			<label>N° DOCUMENTO: </label><input type="text" id="txtDocumento"> <br>
-			<label>FECHA DOCUMENTO: </label><input type="date" id="txtFecAdquisicion"> <br>
+			<label>FECHA DOCUMENTO: </label><input type="date" id="txtFecAdquisicion"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+			<label>REGULARIZAR: </label><input type="checkbox" id="checkRegularizar"><br>
 			<label>TIPO ADQUISICIÓN: </label><select id="listTipo"></select> <button id="btnAgregar" type="button" class="btn btn-info btn-sm"><i class="fas fa-plus"></i></button>
 			<button id="btnAgregar" type="button" class="btn btn-primary" onclick="guardarAdquisicion()"><i class="fas fa-save"></i>&nbsp;GUARDAR</button>
 			<hr>
@@ -235,6 +236,7 @@
             var filas = tabla.getElementsByTagName("tr");
             var documento = $('#txtDocumento').val();
             var fecAdquisicion = $('#txtFecAdquisicion').val();
+            var checkbox = document.getElementById('checkRegularizar');
             
             if(documento == '' || fecAdquisicion == '' || filas.length == 1){
 				toastr.clear();
@@ -263,6 +265,7 @@
             	documento: documento,
                 fecAdquisicion: fecAdquisicion,
                 idTipoAdquisicion: $('#listTipo').val(),
+                regularizar: checkbox.checked ? 'S' : 'N', 
                 detalle: detalle
             };
             

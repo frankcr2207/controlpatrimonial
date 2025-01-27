@@ -11,6 +11,7 @@ public class RequestAdquisicionDTO {
 	private String documento;
 	private String fecAdquisicion;
 	private Integer idTipoAdquisicion;
+	private String regularizar;
 	private List<RequestDetalleAdquisicionDTO> detalle;
 	
 }

@@ -159,10 +159,10 @@
             processData: false,
             contentType: false,
 			beforeSend:function(){
-	            $('#modalEspera').show();
+	            $('#modalEspera').modal('show');
 	        },
 			success:function(response) {
-				$('#modalEspera').hide();
+				$('#modalEspera').modal('hide');
 				$('#btnEnviar').hide();
 				Swal.fire(
 				  'ACTA FUE ENVIADO CON ÉXITO!!',
@@ -172,7 +172,7 @@
 			},
 	        error : function(response){
 	        	setTimeout(function() {
-	        		$('#modalEspera').hide();
+	        		$('#modalEspera').modal('hide');
 		        	var r = jQuery.parseJSON(response.responseText);
 					toastr.clear();
 					toastr.options = {
@@ -181,8 +181,8 @@
 						"positionClass":"toast-topcenter-right"
 					};
 					toastr.warning(r.message);
-		        }
-	        }, 2000);
+		        }, 2000);
+	        }
 		
 		});
 	};	

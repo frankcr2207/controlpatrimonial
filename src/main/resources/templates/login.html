@@ -48,16 +48,14 @@ body {
 
 			<div class="wrap-login100 p-t-50 p-b-90 p-l-50 p-r-50">
 				<form class="login100-form flex-sb flex-w" th:action="@{/}"  method="post">
-					<span class="login100-form-title"> <a href=""
-						target="_blank"> <i class="fas fa-user-circle fa-lg"></i>
-					</a>
+					<span class="login100-form-title"> <i class="fas fa-user-circle fa-lg"></i>
 					</span>
 					<div class="formGroup">
 						<input type="text" placeholder="Usuario" id="username" name="username" autofocus="autofocus" style="text-transform:uppercase;" required
 							autocomplete="off">
 					</div>
 					<div class="formGroup">
-						<input type="password" id="password" name="password" placeholder="Contraseña"
+						<input type="password" id="password" name="password" placeholder="CONTRASEÑA"
 							required autocomplete="off">
 					</div>
 					<div th:if="${param.error}" role="alert" align="center">

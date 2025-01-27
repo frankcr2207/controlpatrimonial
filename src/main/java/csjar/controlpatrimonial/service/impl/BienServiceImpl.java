@@ -28,6 +28,7 @@ import com.google.zxing.WriterException;
 import com.google.zxing.common.BitMatrix;
 import com.itextpdf.html2pdf.HtmlConverter;
 import com.itextpdf.text.DocumentException;
+import com.mysql.cj.util.StringUtils;
 
 import csjar.controlpatrimonial.constants.GeneralConstants;
 import csjar.controlpatrimonial.dto.RequestBienesDTO;
@@ -44,6 +45,7 @@ import csjar.controlpatrimonial.entity.BienVer;
 import csjar.controlpatrimonial.entity.Catalogo;
 import csjar.controlpatrimonial.entity.Modelo;
 import csjar.controlpatrimonial.entity.Usuario;
+import csjar.controlpatrimonial.mapper.service.BienMapperService;
 import csjar.controlpatrimonial.repository.BienRepository;
 import csjar.controlpatrimonial.service.AdquisicionService;
 import csjar.controlpatrimonial.service.AreaService;
@@ -64,10 +66,11 @@ public class BienServiceImpl implements BienService {
 	private BienVerService bienVerService;
 	private UsuarioService usuarioService;
 	private AreaService areaService;
+	private BienMapperService bienMapperService;
 	
 	public BienServiceImpl(BienRepository repository, ModeloService modeloService, CatalogoService catalogoService,
 			AdquisicionService adquisicionService, BienVerService bienVerService, UsuarioService usuarioService,
-			AreaService areaService) {
+			AreaService areaService, BienMapperService bienMapperService) {
 		super();
 		this.repository = repository;
 		this.modeloService = modeloService;
@@ -76,6 +79,7 @@ public class BienServiceImpl implements BienService {
 		this.bienVerService = bienVerService;
 		this.usuarioService = usuarioService;
 		this.areaService = areaService;
+		this.bienMapperService = bienMapperService;
 	}
 
 	@Override
@@ -111,6 +115,7 @@ public class BienServiceImpl implements BienService {
 	public void generarBienes(RequestBienesDTO requestBienesDTO) {
 		
 		if(CollectionUtils.isValidate(requestBienesDTO.getBienes())) {
+			Adquisicion adquisicion = this.adquisicionService.obtenerEntidad(requestBienesDTO.getIdAdquisicion());
 			
 			List<Integer> idsModelo = requestBienesDTO.getBienes().stream() 
 		            .map(RequestDetalleBienesDTO::getIdModelo).distinct().collect(Collectors.toList());
@@ -139,7 +144,8 @@ public class BienServiceImpl implements BienService {
 				bien.setObservacion(GeneralConstants.BIEN_OBSERVACION_NUEVO_INGRESO);
 				bien.setObservacion(b.getObservacion());
 				bien.setModelo(mapModelos.get(b.getIdModelo()));
-				bien.setCodigoPatrimonial(catalogo.getCodigo().concat(String.format("%04d", secuencia)));
+				if(adquisicion.getEstado().equals(GeneralConstants.ADQUISICION_ESTADO_REGISTRADO))
+					bien.setCodigoPatrimonial(catalogo.getCodigo().concat(String.format("%04d", secuencia)));
 				bien.setIdCatalogo(b.getIdCatalogo());
 				bienes.add(bien);
 				secuencia++;
@@ -150,7 +156,6 @@ public class BienServiceImpl implements BienService {
 			List<Bien> result = this.repository.saveAll(bienes);
 			this.bienVerService.generarVersion(result, null);
 			
-			Adquisicion adquisicion = this.adquisicionService.obtenerEntidad(requestBienesDTO.getIdAdquisicion());
 			adquisicion.setEstado(GeneralConstants.ADQUISICION_ESTADO_GENERADO);
 			adquisicionService.actualizarEntidad(adquisicion);
 		}
@@ -170,6 +175,7 @@ public class BienServiceImpl implements BienService {
 		
 		bienes.stream().forEach(b -> {
 			ResponseBienDTO bien = new ResponseBienDTO();
+			bien.setId(b.getId());
 			bien.setCatalogo(mapCatalogos.get(b.getIdCatalogo()));
 			bien.setCodigoPatrimonial(b.getCodigoPatrimonial());
 			bien.setDescripcion(b.getDescripcion());
@@ -181,6 +187,12 @@ public class BienServiceImpl implements BienService {
 
 	@Override
 	public byte[] generarEtiquetas(List<RequestEtiquetaDTO> requestEtiquetaDTO) throws DocumentException, IOException, WriterException  {
+		
+		requestEtiquetaDTO.stream().forEach(e -> {
+			if(StringUtils.isNullOrEmpty(e.getCodigoPatrimonial())) {
+				throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Aun existen bines sin codigo patrimonial, no es posible generar etiquetas.");
+			}
+		});
 		
 		String htmlContent = this.construirHtml(requestEtiquetaDTO);
 		try (ByteArrayOutputStream pdfStream = new ByteArrayOutputStream()) {
@@ -297,6 +309,39 @@ public class BienServiceImpl implements BienService {
 		}
 		
 		return traza;
+	}
+
+	@Override
+	public ResponseBienDTO obtenerBienPorId(Integer id) {
+		Bien bien = this.repository.findById(id).get();
+		ResponseBienDTO response = new ResponseBienDTO();
+		response.setId(bien.getId());
+		response.setDescripcion(bien.getDescripcion());
+		return response;
+	}
+
+	@Override
+	public void modificarBien(RequestDetalleBienesDTO request) {
+		Bien bien = this.repository.findByCodigoPatrimonial(request.getCodigoPatrimonial());
+		
+		if(Objects.nonNull(bien)) {
+			throw new ResponseStatusException(HttpStatus.CONFLICT, "El código " + request.getCodigoPatrimonial() + " ya existe en base de datos, verifique.");
+		}
+		
+		Bien bienEntity = this.repository.findById(request.getId()).get();
+		bienEntity.setCodigoPatrimonial(request.getCodigoPatrimonial());
+		this.repository.save(bienEntity);
+		
+		List<Bien> bienes = this.repository.findByIdAdquisicion(request.getIdAdquisicion());
+		
+		Integer regularizados = (int) bienes.stream().filter(b -> !StringUtils.isNullOrEmpty(b.getCodigoPatrimonial())).count();
+		
+		if(bienes.size() == regularizados) {
+			Adquisicion adquisicion = this.adquisicionService.obtenerEntidad(request.getIdAdquisicion());
+			adquisicion.setEstado(GeneralConstants.ADQUISICION_ESTADO_GENERADO);
+			this.adquisicionService.actualizarEntidad(adquisicion);
+		}
+		
 	}
 
 }

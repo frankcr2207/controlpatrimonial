@@ -14,6 +14,7 @@ public class RequestDetalleBienesDTO {
 	
 	private String codigoPatrimonial;
 	private String estadoConservacion;
-	
+	private Integer id;
+	private Integer idAdquisicion;
 	
 }

@@ -13,9 +13,8 @@
 		    font-size: 11px;
 	    }
 	    
-	    label, h6{
+	    label{
 	    	width: 150px;
-	    	font-weight: bold;
 	    }
 	    #contenedor {
 		    display: flex;
@@ -84,7 +83,7 @@
 						<thead class="thead-dark">
 				            <tr>
 				            	<th>ID</th>
-				            	<th>CODIGO</th>
+				            	<th>CATÁLOGO</th>
 				                <th>BIEN</th>
 				                <th>DESCRIPCION</th>
 				                <th>MARCA</th>
@@ -103,6 +102,7 @@
 				            	<th>CATALOGO</th>
 				            	<th>CODIGO PATRIMONIAL</th>
 				                <th>DESCRIPCION</th>
+				                <th></th>
 				            </tr>
 				        </thead>
 				        <tbody>
@@ -111,6 +111,31 @@
 				</div>
 			</div>
 		</div>
+	</div>
+	
+	<div class="modal fade modalBien" id="modalBien" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+	  <div class="modal-dialog" role="document">
+	    <div class="modal-content">
+	      <div class="modal-header">
+	        <h5 class="modal-title" id="exampleModalLabel">DATOS DE BIEN</h5>
+	        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+	          <span aria-hidden="true">&times;</span>
+	        </button>
+	      </div>
+	      
+	      <div class="modal-body">
+	      	<div id="divBusqueda">
+	      		<input id="txtIdBien" type="hidden"/>
+	      		<label>DESCRIPCIÓN: </label><input id="txtDescripcion" type="text"/><br>
+		      	<label>CÓDIGO PATRIMONIAL: </label><input id="txtCodigoPatrimonial" size="12" type="text" maxlength="12" onkeypress="return numbersonly(event)"/>
+		    </div>
+			<div align="right">
+	        	<button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">CERRAR</button>
+	        	<button type="button" class="btn btn-primary" onclick="guardarModificacionBien()"><i class="fas fa-save"></i>&nbsp;GUARDAR</button>
+	        </div>    
+	      </div>
+	    </div>
+	  </div>
 	</div>
 	
 	
@@ -199,7 +224,14 @@
 		                
 		                celda1.innerHTML = data[i].documento;
 		                celda2.innerHTML = data[i].fecRegistro;
-		                var estado = data[i].estado == 'R' ? 'REGISTRADO' : 'GENERADO';
+		                var estado
+		                if(data[i].estado == 'REGISTRADO')
+		                	estado = '<span class="badge badge-primary">REGISTRADO</span>';
+		                else if (data[i].estado == 'REGULARIZADO')
+		                	estado = '<span class="badge badge-warning">REGULARIZADO</span>';
+		                else
+		                	estado = '<span class="badge badge-success">GENERADO</span>';
+		                	
 		                celda3.innerHTML = estado;
 		                celda4.innerHTML = '<button type="button" class="btn btn-info btn-sm" onclick="verAdquisicion('+data[i].id+')"><i class="fas fa-eye"></i></button>';
 		               
@@ -231,9 +263,9 @@
 					$('#txtDocumento').val(data.documento);
 					$('#txtFecAdquisicion').val(data.fecAdquisicion);
 					$('#txtFecRegistro').val(data.fecRegistro);
-					$('#txtEstado').val(data.estado == 'R' ? 'REGISTRADO' : 'GENERADO');
+					$('#txtEstado').val(data.estado);
 					
-					if(data.estado == 'R'){
+					if(data.estado == 'REGISTRADO'){
 						$('#btnEtiquetas').hide();
 						$('#btnGuardar').show();
 						$('#btnReplicar').show();
@@ -289,14 +321,22 @@
 								    tabla.deleteRow(i);
 								}
 								
+								var editar;
+								
 								for (var i = 0; i < data.length; i++) { 
 									var fila = tbody.insertRow();
 						            var celda1 = fila.insertCell(0);
 						            var celda2 = fila.insertCell(1);
 						            var celda3 = fila.insertCell(2);
+						            var celda4 = fila.insertCell(3);
 						            celda1.innerHTML = data[i].catalogo;
 						            celda2.innerHTML = data[i].codigoPatrimonial;
 						            celda3.innerHTML = data[i].descripcion;
+						            if(data[i].codigoPatrimonial == '')
+						            	editar = '<button type="button" class="btn btn-warning btn-sm" onclick="editarBien('+data[i].id+')"><i class="fas fa-edit"></i></button>';
+						            else
+						            	editar = '';
+						            celda4.innerHTML = editar;
 								}
 						    })
 						    .catch(function(error) {
@@ -327,6 +367,12 @@
 	            var filas = tabla.getElementsByTagName("tr");
 				for (var i = filas.length - 1; i > 0; i--) {
 				    tabla.deleteRow(i);
+				}
+				
+				var tabla2 = document.getElementById("tablaProductosGenerados");
+	            var filas2 = tabla2.getElementsByTagName("tr");
+				for (var i = filas2.length - 1; i > 0; i--) {
+				    tabla2.deleteRow(i);
 				}
 				const cajasTexto = document.querySelectorAll('#divResultado input');
 		    	cajasTexto.forEach(function(caja) {
@@ -483,7 +529,7 @@
 		    return new Promise(function(resolve, reject) {
 		        $.ajax({
 		            type : "GET",
-		            url : "bien/" + idAdquisicion,
+		            url : "bien/adquisicion/" + idAdquisicion,
 		            dataType : 'json',
 		            success : function(data) {
 		                resolve(data); // Resolvemos la promesa con los datos
@@ -530,6 +576,28 @@
 	            
    		        },
    		        error : function(response){
+   					toastr.clear();
+   					toastr.options = {
+   						"closeButton":true,
+   						"progressBar": true,
+   						"positionClass":"toast-topcenter-right"
+   					};
+   					toastr.warning("No es posible generar etiquetas, aún existen bines sin codigo patrimonial.");	
+   		        }
+   			});
+		}
+		
+		function editarBien(id) {
+   			$.ajax({
+	       		type : "GET",
+	       		url : "bien/" + id,
+		        dataType : 'json',
+		        success : function(data) {
+	   		        $('#modalBien').modal('show');
+	   		     	$('#txtIdBien').val(data.id);
+	   		  		$('#txtDescripcion').val(data.descripcion);
+	   		    },
+   		        error : function(response){
    		        	var r = jQuery.parseJSON(response.responseText);
    					toastr.clear();
    					toastr.options = {
@@ -542,6 +610,59 @@
    			});
 		}
 		
+		function guardarModificacionBien(){
+			var codigoPatrimonial = $('#txtCodigoPatrimonial').val()
+			if(codigoPatrimonial.length != 12){
+				toastr.clear();
+				toastr.options = {
+					"closeButton":true,
+					"progressBar": true,
+					"positionClass":"toast-topcenter-right"
+				};
+				toastr.warning("Debe completar campo Código patrimonial");
+				return;
+			}
+			var bien = {
+				id : $('#txtIdBien').val(),
+				codigoPatrimonial : $('#txtCodigoPatrimonial').val(),
+				idAdquisicion : $('#txtId').val()
+			};
+			
+			$.ajax({
+				type: "PUT",
+				url: "bien",
+				data: JSON.stringify(bien),
+				cache: false,
+				dataType: "json",
+				contentType: "application/json; charset=utf-8",
+				processData: false,
+				success:function(response) {
+					var tabla = document.getElementById("tablaProductosGenerados");
+		            var filas = tabla.getElementsByTagName("tr");
+					for (var i = filas.length - 1; i > 0; i--) {
+					    tabla.deleteRow(i);
+					}
+					$('#modalBien').modal('hide');
+					$('#txtCodigoPatrimonial').val();
+					verAdquisicion($('#txtId').val());
+					Swal.fire(
+						'BIEN MODIFICADO CORRECTAMENTE!!',
+						'Click en OK para continuar!',
+						'success'
+					);	
+				},
+		        error : function(response){
+		        	var r = jQuery.parseJSON(response.responseText);
+					toastr.clear();
+					toastr.options = {
+						"closeButton":true,
+						"progressBar": true,
+						"positionClass":"toast-topcenter-right"
+					};
+					toastr.warning(r.message);	
+		        }
+			});
+   		}
 	</script>
 
 </body>

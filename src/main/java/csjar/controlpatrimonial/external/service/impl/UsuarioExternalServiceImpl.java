@@ -43,7 +43,7 @@ public class UsuarioExternalServiceImpl implements UsuarioExternalService{
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, mensajeDeError);
 		}
 		catch(Exception ex) {
-			throw new RuntimeException();
+			throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "No se pudo conectar al servicio RRHH");
 		}
 	}
 	

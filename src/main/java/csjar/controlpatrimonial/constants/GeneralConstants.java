@@ -6,21 +6,22 @@ public class GeneralConstants {
 	
 	public static final String SERVER_TEMP = "D://TEMP/";
 	
-	public static final String ACTA_ESTADO_REGISTRADO = "R";
-	public static final String ACTA_ESTADO_NOTIFICADO = "N";
+	public static final String ACTA_ESTADO_REGISTRADO = "REGISTRADO";
+	public static final String ACTA_ESTADO_NOTIFICADO = "NOTIFICADO";
 	public static final String ACTA_TIPO_ASIGNACION = "ASIGNACIÓN";
 	public static final String ACTA_TIPO_DEVOLUCION = "DEVOLUCIÓN";
 	public static final String ACTA_PLANTILLA_EXCEL = "plantilla_acta_v2";
 	
-	public static final String BIEN_ESTADO_INGRESADO = "I";
-	public static final String BIEN_ESTADO_RETORNADO = "R";
-	public static final String BIEN_ESTADO_MANTENIMIENTO = "M";
-	public static final String BIEN_ESTADO_ASIGNADO = "A";
-	public static final String BIEN_ESTADO_DEVUELTO = "D";
-	public static final String BIEN_OBSERVACION_NUEVO_INGRESO = "N8UEVO INGRESO";
+	public static final String BIEN_ESTADO_INGRESADO = "INGRESADO";
+	public static final String BIEN_ESTADO_RETORNADO = "RETORNADOO";
+	public static final String BIEN_ESTADO_MANTENIMIENTO = "MANTENIMIENTO";
+	public static final String BIEN_ESTADO_ASIGNADO = "ASIGNADO";
+	public static final String BIEN_ESTADO_DEVUELTO = "DEVUELTO";
+	public static final String BIEN_OBSERVACION_NUEVO_INGRESO = "NUEVO INGRESO";
 	
-	public static final String ADQUISICION_ESTADO_REGISTRADO = "R";
-	public static final String ADQUISICION_ESTADO_GENERADO = "G";
+	public static final String ADQUISICION_ESTADO_REGISTRADO = "REGISTRADO";
+	public static final String ADQUISICION_ESTADO_REGULARIZADO = "REGULARIZADO";
+	public static final String ADQUISICION_ESTADO_GENERADO = "GENERADO";
 	
 	public static final String NOMENCLATURA_ACTA_PDF = "CP_ACTA_";
 	public static final String EXTENSION_EXCEL = ".xlsx";

@@ -94,7 +94,7 @@ public class ActaServiceImpl implements ActaService {
 
 	@Transactional
 	@Override
-	public void guardarActa(RequestActaDTO requestActaDTO) throws Exception {
+	public ResponseActaDTO guardarActa(RequestActaDTO requestActaDTO) throws Exception {
 		Usuario usuario = usuarioService.buscarPorLogin(obtenerUsuario());
 		Acta actaAnterior = this.repository.findActaWithMaxNumeroByYear(LocalDateTime.now().getYear());
 		Integer numero = Objects.nonNull(actaAnterior) ? actaAnterior.getNumero() + 1 : 1;
@@ -105,7 +105,7 @@ public class ActaServiceImpl implements ActaService {
 		acta.setNumero(numero);
 		acta.setIdUsuario(usuario.getId());
 		acta.setIdArea(requestActaDTO.getIdArea());
-		acta.setTipo(requestActaDTO.getTipo());
+		acta.setTipo(requestActaDTO.getTipo().equals("A") ? GeneralConstants.ACTA_TIPO_ASIGNACION : GeneralConstants.ACTA_TIPO_DEVOLUCION);
 		List<Bien> bienes = new ArrayList<>();
 		requestActaDTO.getBienes().stream().forEach(b -> {
 			Bien bien = bienService.obtenerEntidad(b.getCodigoPatrimonial());
@@ -157,10 +157,20 @@ public class ActaServiceImpl implements ActaService {
 		ftpService.conectarFTP();
 		ftpService.cargarArchivo(nombreArchivo, directorio, fileBytes);
 		
+		ResponseActaDTO response = new ResponseActaDTO();
+
 		if(this.enviarEmail(newActa, empleado, token, fileBytes)) {
+			response.setStatus("OK");
+			response.setMensaje("Acta Nro " + acta.getNumero() + "-" + LocalDateTime.now().getYear() + " generada y notificada correctamente.");
 			newActa.setEstado(GeneralConstants.ACTA_ESTADO_NOTIFICADO);
 			newActa.setFecNotificado(LocalDateTime.now());
 		}
+		else {
+			response.setStatus("KO");
+			response.setMensaje("Acta Nro " + acta.getNumero() + "-" + LocalDateTime.now().getYear() + " generada correctamente, sin embargo hubo un error de notificación, intente por el apartado de consulta de ACTAS.");
+		}
+		
+		return response;
 	}
 
 	public String obtenerUsuario() {

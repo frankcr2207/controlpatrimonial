@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import csjar.controlpatrimonial.dto.RequestActaDTO;
+import csjar.controlpatrimonial.dto.ResponseActaDTO;
 import csjar.controlpatrimonial.service.ActaService;
 
 @RequestMapping("/acta")
@@ -33,9 +34,8 @@ public class ActaController {
 	}
 
 	@PostMapping
-	public ResponseEntity<HttpStatus> gestionarMovimiento(@RequestBody RequestActaDTO requestActaDTO) throws Exception {
-		this.actaService.guardarActa(requestActaDTO);
-		return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+	public ResponseEntity<ResponseActaDTO> gestionarMovimiento(@RequestBody RequestActaDTO requestActaDTO) throws Exception {
+		return new ResponseEntity<>(this.actaService.guardarActa(requestActaDTO), HttpStatus.CREATED);
 	}
 
 	@PutMapping("/confirmar")

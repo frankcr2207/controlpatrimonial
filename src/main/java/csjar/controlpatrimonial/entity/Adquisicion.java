@@ -38,6 +38,9 @@ public class Adquisicion {
 	@Column(name="f_registro", insertable = true, updatable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
 	private LocalDateTime fecRegistro;
 	
+	@Column(name="s_regularizar")
+	private String regularizar;
+	
 	@Column(name="s_estado")
 	private String estado;
 	
@@ -115,6 +118,14 @@ public class Adquisicion {
 
 	public void setUsuario(String usuario) {
 		this.usuario = usuario;
+	}
+
+	public String getRegularizar() {
+		return regularizar;
+	}
+
+	public void setRegularizar(String regularizar) {
+		this.regularizar = regularizar;
 	}
 	
 }
