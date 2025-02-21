@@ -15,6 +15,7 @@
 	    
 	    label{
 	    	width: 150px;
+	    	font-weight: bold;
 	    }
 	    #contenedor {
 		    display: flex;
@@ -72,9 +73,9 @@
 							<label>ESTADO: </label><input type="text" id="txtEstado">
 						</div>
 						<div style="width: 50%; margin: auto" align="center">
-							<button id="btnGuardar" type="button" class="btn btn-primary" onclick="guardarBienes()">GUARDAR</button><br><br>
+							<button id="btnGuardar" type="button" style="display: none" class="btn btn-primary" onclick="guardarBienes()">GUARDAR</button><br><br>
 							<button id="btnEtiquetas" type="button" style="display: none" class="btn btn-success" onclick="generarEtiquetas()">ETIQUETAS</button><br><br>
-							<button id="btnCancelar" onclick="animacion(false)" type="button" class="btn btn-secondary btn-sm">CANCELAR</button>
+							<button id="btnCancelar" style="display: none" onclick="animacion(false)" type="button" class="btn btn-secondary btn-sm">CANCELAR</button>
 						</div> 
 					</div>
 					<hr>
@@ -264,7 +265,7 @@
 					$('#txtFecAdquisicion').val(data.fecAdquisicion);
 					$('#txtFecRegistro').val(data.fecRegistro);
 					$('#txtEstado').val(data.estado);
-					
+					$('#btnCancelar').show();
 					if(data.estado == 'REGISTRADO'){
 						$('#btnEtiquetas').hide();
 						$('#btnGuardar').show();
@@ -380,6 +381,9 @@
 		    	});
 		    	izquierdo.style.width = "35%"; // Reducir el div izquierdo
 		    	derecho.style.width = "65%"; // Expandir el div derecho
+		    	$('#btnCancelar').hide();
+		    	$('#btnGuardar').hide();
+		    	$('#btnReplicar').hide();
 			}
 		}
 		

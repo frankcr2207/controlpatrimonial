@@ -11,11 +11,12 @@
 	    	border:0;
 		    border-bottom: 1px solid #009CBF;
 		    font-size: 11px;
+		    text-align: center;
 	    }
 	    
-	    .modalLabel{
-	    	width: 100px;
+	    label{
 	    	font-weight: bold;
+	    	width: 150px;
 	    }
 
 	</style>
@@ -23,18 +24,30 @@
 <body>
 	
 	<div class="card card-body">
-		<div  style="width:60%; height: 100%; font-size: 11px; margin: auto">
-			<h3>REGISTRO NUEVA ADQUISICIÓN</h3>
-			<label>N° DOCUMENTO: </label><input type="text" id="txtDocumento"> <br>
-			<label>FECHA DOCUMENTO: </label><input type="date" id="txtFecAdquisicion"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-			<label>REGULARIZAR: </label><input type="checkbox" id="checkRegularizar"><br>
-			<label>TIPO ADQUISICIÓN: </label><select id="listTipo"></select> <button id="btnAgregar" type="button" class="btn btn-info btn-sm"><i class="fas fa-plus"></i></button>
-			<button id="btnAgregar" type="button" class="btn btn-primary" onclick="guardarAdquisicion()"><i class="fas fa-save"></i>&nbsp;GUARDAR</button>
-			<hr>
-			<label>GRUPO: </label><select id="listGrupo"></select>&nbsp;<label>CLASE: </label><select id="listClase"></select>
+		<div  style="width:60%; height: 100%; font-size: 11px; margin: auto; display: flex;">
+			<h3>REGISTRO NUEVA ADQUISICIÓN</h3><hr>
+		</div>
+		<div  style="width:60%; height: 100%; font-size: 11px; margin: auto; display: flex;">
+			<div style="width: 50%;" id="divBusqueda" class="interno izquierdo">
+				<label>N° DOCUMENTO: </label><input type="text" id="txtDocumento"> <br>
+				<label>FECHA DOCUMENTO: </label><input type="date" id="txtFecAdquisicion"><br>
+				<label>GUIA: </label><input type="text" id="txtGuia"><br>
+				<label>PROVEEDOR: </label><input type="text" id="txtProveedor"><br>
+				<label>REGULARIZAR: </label><input type="checkbox" id="checkRegularizar"><br>
+				<label>TIPO ADQUISICIÓN: </label><select id="listTipo"></select> <button id="btnAgregar" type="button" class="btn btn-info btn-sm"><i class="fas fa-plus"></i></button>
+			</div>
+			<div style="width: 50%; padding: 10px" id="divResultado" class="interno derecho">
+				<button id="btnAgregar" type="button" class="btn btn-primary" onclick="guardarAdquisicion()"><i class="fas fa-save"></i>&nbsp;GUARDAR</button>
+			</div>
+		</div><hr>
+		<div  style="width:60%; height: 100%; font-size: 11px; margin: auto;">
+			<label>GRUPO: </label><select id="listGrupo"></select>
+			<label style="padding-left: 50px">CLASE: </label><select id="listClase"></select>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 			<button id="btnBuscar" onclick="obtenerCatalogo()" type="button" class="btn btn-info btn-sm"><i class="fas fa-search"></i></button><br>
-			<label>DENOMINACIÓN: </label><select id="listCatalogo"></select>&nbsp;<label>CANTIDAD: </label><input type="number" id="txtCantidad">
-			<button id="btnAgregar" type="button" class="btn btn-info btn-sm" onclick="insertarProducto()"><i class="fas fa-download"></i>&nbsp;AGREGAR</button>
+			<label>DENOMINACIÓN: </label><select id="listCatalogo"></select><br>
+			<label>CANTIDAD: </label><input type="number" id="txtCantidad"><br>
+			<label>COSTO UNITARIO: </label><input type="text" id="txtCostoUnitario">
+			<button id="btnAgregar" type="button" class="btn btn-black btn-sm" onclick="insertarProducto()"><i class="fas fa-download"></i></button>
 			<hr>
 			<table id="tablaCatalogo" class="table">
 				<thead class="thead-dark">
@@ -42,14 +55,15 @@
 		                <th>ID</th>
 		                <th>DENOMINACIÓN</th>
 		                <th>CANTIDAD</th>
+		                <th>COSTO UNITARIO</th>
 		                <th>ELIMINAR</th>
 		            </tr>
 		        </thead>
 		        <tbody>
 		        </tbody>
 			</table>
-
 		</div>
+
 	</div>
 	
 	<script type="text/javascript">
@@ -163,8 +177,9 @@
 			var idCatalogo = $('#listCatalogo').val();
 			var textoSeleccionado = $('#listCatalogo option:selected').text();
 			var cantidad = $('#txtCantidad').val();
+			var costo = $('#txtCostoUnitario').val();
 			
-            if(idCatalogo == '' || cantidad == '' || cantidad < 0){
+            if(idCatalogo == '' || cantidad == '' || cantidad < 0 || costo == '' || costo < 0){
 				toastr.clear();
 				toastr.options = {
 					"closeButton":true,
@@ -214,12 +229,14 @@
             var celda2 = fila.insertCell(1); // Segunda columna
             var celda3 = fila.insertCell(2); // Tercera columna
             var celda4 = fila.insertCell(3);
+            var celda5 = fila.insertCell(4);
             
             // Asignar valores a las celdas
             celda1.innerHTML = idCatalogo;
             celda2.innerHTML = textoSeleccionado;
             celda3.innerHTML = cantidad;
-            celda4.innerHTML = '<button type="button" class="btn btn-outline-danger btn-sm" onclick="eliminarFila(this)"><i class="fas fa-minus"></i></button>';
+            celda4.innerHTML = costo;
+            celda5.innerHTML = '<button type="button" class="btn btn-outline-danger btn-sm" onclick="eliminarFila(this)"><i class="fas fa-minus"></i></button>';
             
 		}
 		
@@ -254,10 +271,12 @@
                 
                 var idCatalogo = celdas[0].innerHTML;
                 var cantidad = celdas[2].innerHTML;
+                var cosoto = celdas[3].innerHTML;
 
                 detalle.push({
                 	idCatalogo: idCatalogo,
-                    cantidad: cantidad
+                    cantidad: cantidad,
+                    costo: costo
                 });
             }
             

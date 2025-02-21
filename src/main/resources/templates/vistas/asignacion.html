@@ -11,6 +11,10 @@
 		    border-bottom: 1px solid #009CBF;
 		    font-size: 11px;
 	    }
+	    label{
+	    	font-weight: bold;
+	    	width: 130px;
+	    }
 	    
 	</style>
 	
@@ -18,34 +22,83 @@
 <body>
 
 	<div class="card card-body">
+		<div  style="width:60%; height: 100%; font-size: 11px; margin: auto; display: flex;">
+			<h3>GESTIÓN DE MOVIMIENTOS</h3>
+		</div>
+		<div  style="width:60%; height: 100%; font-size: 11px; margin: auto; display: flex;">
+			<div style="width: 50%;" id="divBusqueda" class="interno izquierdo"><br>
+				<label>ACTA O NOMBRES: </label><input type="text" id="txtDni" onkeydown="handleEnterDni(event)"> <br>
+			</div>
+			<div style="width: 50%; padding: 10px" id="divResultado" class="interno derecho">
+				<button id="btnGuardar" type="button" class="btn btn-outline-info" onclick="guardarMovimiento()"><i class="fas fa-search"></i>&nbsp;BUSCAR</button>
+				<button id="btnGuardar" type="button" class="btn btn-outline-dark" onclick="abrirModal()"><i class="fas fa-file"></i>&nbsp;NUEVO</button>
+			</div>
+		</div>
 		<div  style="width:60%; height: 100%; font-size: 11px; margin: auto">
-			<h3>GESTIÓN DE ACTAS</h3>
-			<label>DNI: </label><input type="text" id="txtDni" onkeydown="handleEnterDni(event)"> <br>
-			<input type="hidden" id="txtIdEmpleado">
-			<label>NOMBRES: </label><input type="text" id="txtNombres"> <br>
-			<label>APELLIDOS: </label><input type="text" id="txtApellidos"> <br>
-			<label>CORREO: </label><input type="text" id="txtCorreo"> <br>
-			<label>TIPO: </label><select id="listTipo"><option value="A">ASIGNACIÓN</option><option value="D">DEVOLUCIÓN</option></select>
-			<button id="btnGuardar" type="button" class="btn btn-primary" onclick="guardarMovimiento()"><i class="fas fa-save"></i>&nbsp;GUARDAR</button>
 			<hr>
-			<label>SEDE: </label><select id="listSede"></select>&nbsp;<label>DIRECCIÓN: </label><input type="text" id="txtDireccion">
-			<label>ÁREA INTERNA: </label><select id="listArea"></select>
-			<hr>
-			<label>CÓDIGO PATRIMONIAL: </label><input type="text" id="txtCodigo" onkeydown="handleEnterCodigo(event)"><br>
 			<table id="tablaBienes" class="table">
 				<thead class="thead-dark">
 		            <tr>
-		                <th>CÓDIGO</th>
-		                <th>DESCRIPCIÓN</th>
+		                <th>NUMERO</th>
+		                <th>EMPLEADO</th>
 		                <th>ESTADO</th>
-		                <th>OBSERVACIÓN</th>
-		                <th>ELIMINAR</th>
+		                <th>VISTA</th>
 		            </tr>
 		        </thead>
 		        <tbody>
 		        </tbody>
 			</table>
-
+		</div>
+	</div>
+	
+	<div class="modal fade modalNuevo" id="modalNuevo" data-backdrop="static" data-keyboard="false" tabindex="-1" role="dialog" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+		<div class="modal-dialog modal-dialog-centered modal-lg">
+		    <div class="modal-content">
+			    <div class="modal-body" align="justify">
+			      	<div style="width:100%; height:100%">
+		      			<div  style="width:90%; height: 100%; font-size: 11px; margin: auto; display: flex;">
+							<div style="width: 50%;" id="divBusqueda" class="interno izquierdo">
+								<h5>NUEVO MOVIMIENTO</h5>
+								<hr>
+								<label>DNI: </label><input type="text" id="txtDni" onkeydown="handleEnterDni(event)"> <br>
+								<input type="hidden" id="txtIdEmpleado">
+								<label>NOMBRES: </label><input type="text" id="txtNombres" size="30"> <br>
+								<label>APELLIDOS: </label><input type="text" id="txtApellidos" size="30"><br>
+								<label>CORREO: </label><input type="text" id="txtCorreo" size="30"><br>
+								<label>CARGO: </label><input type="text" id="txtCargo" size="30"><br>
+								<label>TIPO: </label><select id="listTipo"><option value="A">ASIGNACIÓN</option><option value="D">DEVOLUCIÓN</option></select>
+							</div>
+							<div style="width: 50%; padding: 10px" id="divResultado" class="interno derecho">
+								<button id="btnGuardar" type="button" class="btn btn-primary" onclick="guardarMovimiento()"><i class="fas fa-save"></i>&nbsp;GUARDAR</button>
+								<button id="btnCancelar" type="button" class="btn btn-dark" onclick="guardarMovimiento()"><i class="fas fa-times"></i>&nbsp;CANCELAR</button>
+							</div>
+						</div>
+						<div  style="width:90%; height: 100%; font-size: 11px; margin: auto">
+						<hr>
+							<label>ORIGEN: </label><input type="text" id="txtOrigen" size="50" value="OFICINA DE CONTROL PATRIMONIAL"><br>
+							<label>DIRECCIÓN ORIGEN: </label><input type="text" id="txtDireccionOrigen" size="50" value="PALACIO DE JUSTICIA - AV SIGLO XX S/N"><br>
+							<label>SEDE DESTINO: </label><select id="listSede"></select>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+							<label>DIRECCIÓN DESTINO: </label><input type="text" id="txtDireccion" size="40"><br>
+							<label>ÁREA INTERNA: </label><select id="listArea"></select>
+							<hr>
+							<label>CÓDIGO PATRIMONIAL: </label><input type="text" id="txtCodigo" onkeydown="handleEnterCodigo(event)"><br><br>
+							<table id="tablaBienes" class="table">
+								<thead class="thead-dark">
+						            <tr>
+						                <th>CÓDIGO</th>
+						                <th>DESCRIPCIÓN</th>
+						                <th>ESTADO</th>
+						                <th>OBSERVACIÓN</th>
+						                <th>ELIMINAR</th>
+						            </tr>
+						        </thead>
+						        <tbody>
+						        </tbody>
+							</table>
+						</div>
+	            	</div>
+			    </div>
+			</div>
 		</div>
 	</div>
 	
@@ -133,6 +186,10 @@
 	 </script>
 	 
 	 <script>
+	 
+	 		function abrirModal(){
+	 			$('#modalNuevo').modal('show');
+	 		}
 	 
 			$("#listTipo").change(function() {	 				
 				var tabla = document.getElementById("tablaBienes");
