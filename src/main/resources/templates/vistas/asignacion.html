@@ -27,20 +27,21 @@
 		</div>
 		<div  style="width:60%; height: 100%; font-size: 11px; margin: auto; display: flex;">
 			<div style="width: 50%;" id="divBusqueda" class="interno izquierdo"><br>
-				<label>ACTA O NOMBRES: </label><input type="text" id="txtDni" onkeydown="handleEnterDni(event)"> <br>
+				<label>NOMBRES: </label><input type="text" id="txtEmpleado" onkeydown="handleEnterDni(event)"> <br>
 			</div>
 			<div style="width: 50%; padding: 10px" id="divResultado" class="interno derecho">
-				<button id="btnGuardar" type="button" class="btn btn-outline-info" onclick="guardarMovimiento()"><i class="fas fa-search"></i>&nbsp;BUSCAR</button>
-				<button id="btnGuardar" type="button" class="btn btn-outline-dark" onclick="abrirModal()"><i class="fas fa-file"></i>&nbsp;NUEVO</button>
+				<button type="button" class="btn btn-outline-info" onclick="buscarActa()"><i class="fas fa-search"></i>&nbsp;BUSCAR</button>
+				<button type="button" class="btn btn-outline-dark" onclick="abrirModal()"><i class="fas fa-file"></i>&nbsp;NUEVO</button>
 			</div>
 		</div>
 		<div  style="width:60%; height: 100%; font-size: 11px; margin: auto">
 			<hr>
-			<table id="tablaBienes" class="table">
+			<table id="tablaActas" class="table">
 				<thead class="thead-dark">
 		            <tr>
 		                <th>NUMERO</th>
 		                <th>EMPLEADO</th>
+		                <th>REGISTRO</th>
 		                <th>ESTADO</th>
 		                <th>VISTA</th>
 		            </tr>
@@ -52,7 +53,7 @@
 	</div>
 	
 	<div class="modal fade modalNuevo" id="modalNuevo" data-backdrop="static" data-keyboard="false" tabindex="-1" role="dialog" aria-labelledby="staticBackdropLabel" aria-hidden="true">
-		<div class="modal-dialog modal-dialog-centered modal-lg">
+		<div class="modal-dialog modal-dialog-centered modal-xl">
 		    <div class="modal-content">
 			    <div class="modal-body" align="justify">
 			      	<div style="width:100%; height:100%">
@@ -70,7 +71,7 @@
 							</div>
 							<div style="width: 50%; padding: 10px" id="divResultado" class="interno derecho">
 								<button id="btnGuardar" type="button" class="btn btn-primary" onclick="guardarMovimiento()"><i class="fas fa-save"></i>&nbsp;GUARDAR</button>
-								<button id="btnCancelar" type="button" class="btn btn-dark" onclick="guardarMovimiento()"><i class="fas fa-times"></i>&nbsp;CANCELAR</button>
+								<button id="btnCancelar" type="button" class="btn btn-dark" onclick="cancelarMovimiento()"><i class="fas fa-times"></i>&nbsp;CANCELAR</button>
 							</div>
 						</div>
 						<div  style="width:90%; height: 100%; font-size: 11px; margin: auto">
@@ -187,35 +188,35 @@
 	 
 	 <script>
 	 
-	 		function abrirModal(){
-	 			$('#modalNuevo').modal('show');
-	 		}
-	 
-			$("#listTipo").change(function() {	 				
-				var tabla = document.getElementById("tablaBienes");
-	            var filas = tabla.getElementsByTagName("tr");
-				for (var i = filas.length - 1; i > 0; i--) {
-				    tabla.deleteRow(i);
-				}
-			});
-			
-	 		$("#listSede").change(function() {	 				
-	 			var	instanciaSelect = document.getElementById("listArea");
-				const sedeId = parseInt($(this).find(":selected").val());
-				const sedeSeleccionada = sedes.find((sede) => sede.id === sedeId);
+ 		function abrirModal(){
+ 			$('#modalNuevo').modal('show');
+ 		}
+ 
+		$("#listTipo").change(function() {	 				
+			var tabla = document.getElementById("tablaBienes");
+            var filas = tabla.getElementsByTagName("tr");
+			for (var i = filas.length - 1; i > 0; i--) {
+			    tabla.deleteRow(i);
+			}
+		});
 		
-				instanciaSelect.innerHTML = '<option value="" disabled selected>Selecciona un area</option>';
-		
-				if (sedeSeleccionada) {
-				$('#txtDireccion').val(sedeSeleccionada.direccion);
-				    sedeSeleccionada.areas.forEach((area) => {
-				      	const option = document.createElement("option");
-						option.value = area.id;
-						option.textContent = area.denominacion;
-						instanciaSelect.appendChild(option);
-					});
-				}
-			});
+ 		$("#listSede").change(function() {	 				
+ 			var	instanciaSelect = document.getElementById("listArea");
+			const sedeId = parseInt($(this).find(":selected").val());
+			const sedeSeleccionada = sedes.find((sede) => sede.id === sedeId);
+	
+			instanciaSelect.innerHTML = '<option value="" disabled selected>Selecciona un area</option>';
+	
+			if (sedeSeleccionada) {
+			$('#txtDireccion').val(sedeSeleccionada.direccion);
+			    sedeSeleccionada.areas.forEach((area) => {
+			      	const option = document.createElement("option");
+					option.value = area.id;
+					option.textContent = area.denominacion;
+					instanciaSelect.appendChild(option);
+				});
+			}
+		});
 			 
 		function handleEnterCodigo(event) {
 	         if (event.key === "Enter") {
@@ -402,9 +403,67 @@
             
         }
         
+        function cancelarMovimiento() {
+        	$('#modalNuevo').modal('hide');
+        }
+        
         function eliminarFila(boton) {
             var fila = boton.parentNode.parentNode;
             fila.parentNode.removeChild(fila);
+        }
+        
+        function buscarActa() {
+        	var empleado = $('#txtEmpleado').val();
+            if (empleado != '') {
+            	
+	         	var tabla = document.getElementById("tablaActas");
+	    		var tbody = tabla.querySelector('tbody');
+	            var filas = tabla.getElementsByTagName("tr");
+	            
+            	$.ajax({
+    	       		type : "GET",
+    	       		url : "acta/" + empleado,
+    		        dataType : 'json',
+    		        success : function(data) {
+						for (var i = 0; i < data.length; i++) { 
+							var fila = tbody.insertRow();
+	
+				            var celda1 = fila.insertCell(0);
+				            var celda2 = fila.insertCell(1);
+				            var celda3 = fila.insertCell(2);
+				            var celda4 = fila.insertCell(3);
+				            var celda5 = fila.insertCell(4);
+				            var celda6 = fila.insertCell(5);
+				            var celda7 = fila.insertCell(6);
+				            var celda8 = fila.insertCell(7);
+				            var celda9 = fila.insertCell(8);
+				            
+				            celda1.innerHTML = data[i].numeroActa;
+				            celda2.innerHTML = data[i].nombresApellidos;
+				            celda3.innerHTML = data[i].fecRegistro;
+				            var estado = data[i].estado;
+			                if(data[i].estado == 'REGISTRADO')
+			                	estado = '<span class="badge badge-warning">REGISTRADO</span>';
+			                else if (data[i].estado == 'NOTIFICADO')
+				                estado = '<span class="badge badge-primary">NOTIFICADO</span>';
+			                else
+			                	estado = '<span class="badge badge-success">CONFIRMADO</span>';
+			                celda4.innerHTML = estado;
+				            celda5.innerHTML = '<button type="button" class="btn btn-outline-danger"><i class="fas fa-file-pdf" onclick="abrirActa(' + data[i].idActa + ')"></i></button>';
+						}
+    		        },
+    		        error : function(response){
+    		        	var r = jQuery.parseJSON(response.responseText);
+    					toastr.clear();
+    					toastr.options = {
+    						"closeButton":true,
+    						"progressBar": true,
+    						"positionClass":"toast-topcenter-right"
+    					};
+    					toastr.warning(r.message);	
+    		        }
+    	      	});
+            }
         }
         
     </script>

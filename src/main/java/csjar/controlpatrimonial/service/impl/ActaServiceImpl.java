@@ -26,6 +26,7 @@ import java.util.stream.Collectors;
 
 import javax.transaction.Transactional;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.interactive.digitalsignature.PDSignature;
 import org.apache.poi.ss.usermodel.PrintSetup;
@@ -99,8 +100,10 @@ public class ActaServiceImpl implements ActaService {
 		Acta actaAnterior = this.repository.findActaWithMaxNumeroByYear(LocalDateTime.now().getYear());
 		Integer numero = Objects.nonNull(actaAnterior) ? actaAnterior.getNumero() + 1 : 1;
 
+		Usuario empleadoEntity = this.usuarioService.obtenerEntidad(requestActaDTO.getIdEmpleado());
+		
 		Acta acta = new Acta();
-		acta.setIdEmpleado(requestActaDTO.getIdEmpleado());
+		acta.setUsuario(empleadoEntity);
 		acta.setEstado(GeneralConstants.ACTA_ESTADO_REGISTRADO);
 		acta.setNumero(numero);
 		acta.setIdUsuario(usuario.getId());
@@ -349,7 +352,7 @@ public class ActaServiceImpl implements ActaService {
 				response.setStatus("KO");		
 			}
 			else {
-				ResponseUsuarioDTO empleado = this.usuarioService.buscarUsuario(acta.getIdEmpleado());
+				ResponseUsuarioDTO empleado = this.usuarioService.buscarUsuario(acta.getUsuario().getId());
 				response.setIdActa(acta.getId());
 				response.setNumeroActa(acta.getNumero().toString().concat("-").concat(String.valueOf(acta.getFecRegistro().getYear())));
 				response.setDni(empleado.getDni());
@@ -395,6 +398,7 @@ public class ActaServiceImpl implements ActaService {
 		
 		acta.setFecFirmado(LocalDateTime.now());
 		acta.setNombrePdfFirmado(pdf);
+		acta.setEstado(GeneralConstants.ACTA_ESTADO_CONFIRMADO);
 		this.repository.save(acta);
 	}
 	
@@ -412,6 +416,27 @@ public class ActaServiceImpl implements ActaService {
 		this.ftpService.conectarFTP();
 		byte[] fileBytes = this.ftpService.descargarArchivo(acta.getRutaPdf(), acta.getNombrePdfFirmado());
 		return fileBytes;
+	}
+
+	@Override
+	public List<ResponseActaDTO> buscarActa(String parametro) throws Exception {
+		List<Acta> actas = this.repository.findByUsuarioNombresContaining(parametro);
+		List<ResponseActaDTO> response = new ArrayList<>();
+		
+		if(CollectionUtils.isEmpty(actas))
+			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No se encontraon resultados");
+		
+		actas.stream().forEach(a -> {
+			ResponseActaDTO dto = new ResponseActaDTO();
+			dto.setIdActa(a.getId());
+			dto.setNumeroActa(a.getNumero().toString().concat(" - ").concat(String.valueOf(a.getFecRegistro().getYear())));
+			dto.setNombresApellidos(a.getUsuario().getNombres().concat(" ").concat(a.getUsuario().getApellidos()));
+			dto.setFecRegistro(a.getFecRegistro());
+			dto.setEstado(a.getEstado());
+			response.add(dto);
+		});
+		
+		return response;
 	}
 
 }

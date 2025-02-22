@@ -17,5 +17,6 @@ public interface UsuarioService {
 	void modificarUsuario(RequestUsuarioDTO usuario);
 	void cambiarClave(RequestUsuarioDTO usuario);
 	List<Usuario> obtenerEntidades(List<Integer> ids);
+	Usuario obtenerEntidad(Integer id);
 	
 }

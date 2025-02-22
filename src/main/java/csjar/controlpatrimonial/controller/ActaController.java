@@ -45,8 +45,13 @@ public class ActaController {
 		this.actaService.guardarConfirmacion(id, multipartFile);
 		return new ResponseEntity<>(HttpStatus.NO_CONTENT);
 	}
+	
+	@GetMapping("/{empleado}")
+	public ResponseEntity<?> buscarActa(@PathVariable String empleado) throws Exception {
+		return new ResponseEntity<>(this.actaService.buscarActa(empleado), HttpStatus.OK);
+	}
 
-	@GetMapping("/{id}")
+	@GetMapping("/pdf/{id}")
 	public ResponseEntity<?> descargarActa(@PathVariable Integer id) throws Exception {
 		try {
 			byte[] pdfBytes = actaService.descargarActa(id);

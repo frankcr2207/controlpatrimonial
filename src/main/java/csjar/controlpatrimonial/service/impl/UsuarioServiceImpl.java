@@ -129,4 +129,9 @@ public class UsuarioServiceImpl implements UsuarioService {
 		return this.usuarioRepository.findByIdIn(ids);
 	}
 
+	@Override
+	public Usuario obtenerEntidad(Integer id) {
+		return this.usuarioRepository.findById(id).orElse(null);
+	}
+
 }

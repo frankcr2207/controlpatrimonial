@@ -8,6 +8,8 @@ public class GeneralConstants {
 	
 	public static final String ACTA_ESTADO_REGISTRADO = "REGISTRADO";
 	public static final String ACTA_ESTADO_NOTIFICADO = "NOTIFICADO";
+	public static final String ACTA_ESTADO_ANULADO = "ANULADO";
+	public static final String ACTA_ESTADO_CONFIRMADO = "CONFIRMADO";
 	public static final String ACTA_TIPO_ASIGNACION = "ASIGNACIÓN";
 	public static final String ACTA_TIPO_DEVOLUCION = "DEVOLUCIÓN";
 	public static final String ACTA_PLANTILLA_EXCEL = "plantilla_acta_v2";

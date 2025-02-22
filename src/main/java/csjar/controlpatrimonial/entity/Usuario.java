@@ -12,6 +12,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
 import org.springframework.security.core.GrantedAuthority;
@@ -54,6 +55,9 @@ public class Usuario implements UserDetails{
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "n_id_perfil", nullable = false)
 	private Perfil perfil;
+	
+	@OneToMany(mappedBy = "usuario")
+    private List<Acta> actas;
 
 	@Override
 	public Collection<? extends GrantedAuthority> getAuthorities() {
