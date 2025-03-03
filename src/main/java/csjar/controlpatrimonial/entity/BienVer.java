@@ -48,4 +48,10 @@ public class BienVer {
 	@Column(name = "n_id_acta")
 	private Integer idActa;
 	
+	@Column(name = "n_id_sede")
+	private Integer idSede;
+	
+	@Column(name = "n_id_instancia")
+	private Integer idInstancia;
+	
 }

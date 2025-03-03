@@ -10,7 +10,7 @@
 		input{
 	    	border:0;
 		    border-bottom: 1px solid #009CBF;
-		    font-size: 11px;
+		    font-size: 12px;
 	    }
 	    
 	    label{
@@ -42,7 +42,7 @@
 <body>
 	
 	<div class="card card-body">
-		<div style="width:100%; height: 100%; font-size: 11px">
+		<div style="width:100%; height: 100%; font-size: 12px">
 			<h3>GESTIÓN DE BIENES</h3>
 			<hr>
 			<div id="contenedor">
@@ -65,7 +65,7 @@
 				<div style="width: 65%; padding: 10px" id="divResultado" class="interno derecho">
 					<div style="display: flex; width: 100%;">
 						<div style="width: 50%;">
-							<h6>ADQUISICIÓN</h6>
+							<h6><strong>ADQUISICIÓN</strong></h6>
 							<input type="hidden" id="txtId">
 							<label>N° DOCUMENTO: </label><input type="text" id="txtDocumento"> <br>
 							<label>FECHA DOCUMENTO: </label><input type="text" id="txtFecAdquisicion"> <br>
@@ -73,13 +73,13 @@
 							<label>ESTADO: </label><input type="text" id="txtEstado">
 						</div>
 						<div style="width: 50%; margin: auto" align="center">
-							<button id="btnGuardar" type="button" style="display: none" class="btn btn-primary" onclick="guardarBienes()">GUARDAR</button><br><br>
-							<button id="btnEtiquetas" type="button" style="display: none" class="btn btn-success" onclick="generarEtiquetas()">ETIQUETAS</button><br><br>
-							<button id="btnCancelar" style="display: none" onclick="animacion(false)" type="button" class="btn btn-secondary btn-sm">CANCELAR</button>
+							<button id="btnGuardar" type="button" style="display: none" class="btn btn-primary" onclick="guardarBienes()"><i class="fas fa-save"></i>&nbsp;GUARDAR</button><br><br>
+							<button id="btnEtiquetas" type="button" style="display: none" class="btn btn-outline-danger" onclick="generarEtiquetas()"><i class="fas fa-file-pdf"></i>&nbsp;ETIQUETAS</button><br><br>
+							<button id="btnCancelar" style="display: none" onclick="animacion(false)" type="button" class="btn btn-secondary btn-sm"><i class="fas fa-times"></i>&nbsp;CANCELAR</button>
 						</div> 
 					</div>
 					<hr>
-					<button id="btnReplicar" onclick="replicar()" class="btn btn-info btn-sm">REPLICAR</button><br><br>
+					<button id="btnReplicar" onclick="replicar()" class="btn btn-info btn-sm"><i class="fas fa-copy"></i>&nbsp;REPLICAR</button><br><br>
 					<table id="tablaProductos" class="table">
 						<thead class="thead-dark">
 				            <tr>
@@ -384,6 +384,7 @@
 		    	$('#btnCancelar').hide();
 		    	$('#btnGuardar').hide();
 		    	$('#btnReplicar').hide();
+		    	$('#btnEtiquetas').hide();
 			}
 		}
 		

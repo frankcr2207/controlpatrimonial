@@ -31,7 +31,6 @@ public class GeneralConstants {
 	
 	public static final String NOTIFICACION_REMITENTE = "Corte Superior de Justicia de Arequipa - Control Patrimonial <pj.csj.arequipa@gmail.com>";
 	public static final String NOTIFICACION_ASUNTO = "Control Patrimonial - Remisión de acta";
-	public static final String MS_CONTROL_PATRIMONIAL_VERIFICAR = "http://172.28.3.11:8080/acta/validar";
 	public static final String NOTIFICACION_CUERPO = "<html><head><meta charset='utf-8'><title></title></head><body><br>" +
 		"Estimado(a) <nombres>, por el presente se remite acta de movimiento y traslado N° <numeroActa>, para su respectiva conformidad con firma digital; descargue el documento, "+
 		"firme con el certificado digital y finalmente haga click en el enlace líneas abajo para subir el acta firmada.<br><br>" +

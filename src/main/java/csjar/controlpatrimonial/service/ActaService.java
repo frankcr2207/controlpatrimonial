@@ -12,6 +12,7 @@ public interface ActaService {
 	
 	List<ResponseActaDTO> buscarActa(String parametro) throws Exception;
 	ResponseActaDTO guardarActa(RequestActaDTO requestActaDTO) throws Exception;
+	void notificarActa(Integer idActa) throws IOException;
 	ResponseActaDTO validarActa(Integer code, String token) throws Exception;
 	void guardarConfirmacion(Integer id, MultipartFile multipartFile) throws IOException;
 	byte[] descargarActa(Integer id) throws Exception;

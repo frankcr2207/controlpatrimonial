@@ -18,5 +18,6 @@ public interface UsuarioService {
 	void cambiarClave(RequestUsuarioDTO usuario);
 	List<Usuario> obtenerEntidades(List<Integer> ids);
 	Usuario obtenerEntidad(Integer id);
+	String obtenerUsuarioSesion();
 	
 }

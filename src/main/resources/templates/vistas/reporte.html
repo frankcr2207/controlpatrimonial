@@ -1,10 +1,85 @@
 <!DOCTYPE html>
-<html>
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
 <head>
-<meta charset="ISO-8859-1">
-<title>Insert title here</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+	<style type="text/css">
+	 	.selected{ background-color: #E1E1E1; } tr:hover{ background-color: #E1E1E1; } 
+
+		input{
+			width: 300px;
+	    	border:0;
+		    border-bottom: 1px solid #009CBF;
+		    font-size: 11px;
+	    }
+	    
+	    label{
+	    	width: 100px;
+	    	font-weight: bold;
+	    }
+
+	</style>
 </head>
 <body>
 
+	<div class="card card-body">
+		<div  style="width:60%; height: 100%; font-size: 11px; margin: auto">
+		<h3>REPORTES</h3>
+		<hr>
+			<div>
+				<label>SEDE:</label><select id="listSedes" style="width: 500px;"></select>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+				<button type="button" class="btn btn-info btn-sm" onclick="buscarbienes"><i class="fas fa-search"></i>&nbsp;BUSCAR</button>
+				<hr>
+				<table id="tablaBienes" class="table">
+					<thead class="thead-dark">
+			            <tr>
+			                <th>CODIGO</th>
+			                <th>BIEN</th>
+			                <th>CONSERVACION</th>
+			                <th>OBSERVACIÓN</th>
+			                <th>ANTIGUEDAD (AÑOS)</th>
+			            </tr>
+			        </thead>
+			        <tbody>
+			        </tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+	
+	<script>
+		$(document).ready(function() {
+		  $('#listSedes').select2();
+		});
+	
+		var sedes;
+	   	$(document).ready(function() {
+	   		$.ajax({
+	       		type : "GET",
+	       		url : "sede",
+		        dataType : 'json',
+		        success : function(data) {
+		        	sedes = data;
+		         	var html = '';
+		         	var len = data.length;
+		         	html+='<option value="0">SELECCIONE ...</option>';
+		         	for (var i = 0; i < len; i++) {
+						html+='<option value="' + data[i].id +'">'+data[i].denominacion+'</option>';
+		         	}
+			        $("#listSedes").html(html);
+		        },
+		        error : function(response){
+		        	var r = jQuery.parseJSON(response.responseText);
+					toastr.clear();
+					toastr.options = {
+						"closeButton":true,
+						"progressBar": true,
+						"positionClass":"toast-topcenter-right"
+					};
+					toastr.warning(r.message);	
+		        }
+	      	});
+	   	});
+	</script>
 </body>
 </html>

@@ -58,6 +58,8 @@ public class AdquisicionServiceImpl implements AdquisicionService {
 	@Override
 	public List<ResponseAdquisicionDTO> buscarAdquisicion(String documento) {
 		List<Adquisicion> lista = this.adquisicionRepository.findByDocumentoContains(documento);
+		if(!CollectionUtils.isValidate(lista))
+			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No se encontraron coincidencias");	
 		return this.adquisicionMapperService.toDTO(lista);
 	}
 

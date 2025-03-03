@@ -70,6 +70,9 @@ public class ActaServiceImpl implements ActaService {
 	@Value("${secret.key}")
 	private static String SECRET_KEY;
 	
+	@Value("${url.validar}")
+	private static String MS_CONTROL_PATRIMONIAL_VERIFICAR;
+	
 	private ActaRepository repository;
 	private UsuarioService usuarioService;
 	private BienService bienService;
@@ -109,7 +112,11 @@ public class ActaServiceImpl implements ActaService {
 		acta.setIdUsuario(usuario.getId());
 		acta.setIdArea(requestActaDTO.getIdArea());
 		acta.setTipo(requestActaDTO.getTipo().equals("A") ? GeneralConstants.ACTA_TIPO_ASIGNACION : GeneralConstants.ACTA_TIPO_DEVOLUCION);
+		
+		Integer idSede = requestActaDTO.getIdSede();
+		Integer idInstancia = requestActaDTO.getIdArea();
 		List<Bien> bienes = new ArrayList<>();
+		
 		requestActaDTO.getBienes().stream().forEach(b -> {
 			Bien bien = bienService.obtenerEntidad(b.getCodigoPatrimonial());
 
@@ -132,6 +139,8 @@ public class ActaServiceImpl implements ActaService {
 			
 			bien.setEstadoConservacion(b.getEstadoConservacion());
 			bien.setObservacion(b.getObservacion());
+			bien.setIdInstancia(idInstancia);
+			bien.setIdSede(idSede);
 			
 			bienes.add(bien);
 		});
@@ -152,7 +161,7 @@ public class ActaServiceImpl implements ActaService {
 
 		ByteArrayOutputStream jxlsOutStream = new ByteArrayOutputStream();
 		
-		ResponseUsuarioDTO empleado = this.usuarioService.buscarUsuario(requestActaDTO.getIdEmpleado());
+		Usuario empleado = this.usuarioService.obtenerEntidad(requestActaDTO.getIdEmpleado());
 		generarDatosActa(jxlsOutStream, numero, requestActaDTO, bienes, empleado);
 		
 		byte[] fileBytes = convertExcelToPdf(jxlsOutStream);
@@ -170,7 +179,7 @@ public class ActaServiceImpl implements ActaService {
 		}
 		else {
 			response.setStatus("KO");
-			response.setMensaje("Acta Nro " + acta.getNumero() + "-" + LocalDateTime.now().getYear() + " generada correctamente, sin embargo hubo un error de notificación, intente por el apartado de consulta de ACTAS.");
+			response.setMensaje("Acta Nro " + acta.getNumero() + "-" + LocalDateTime.now().getYear() + " generada correctamente, sin embargo hubo un error de notificación, intente por el apartado de MOVIMIENTO.");
 		}
 		
 		return response;
@@ -187,17 +196,22 @@ public class ActaServiceImpl implements ActaService {
 		throw new ResponseStatusException(HttpStatus.FORBIDDEN, "La sesión ha finalizado");
 	}
 
-	private void generarDatosActa(ByteArrayOutputStream jxlsOutStream, Integer numero, RequestActaDTO requestActaDTO, List<Bien> listaBienes, ResponseUsuarioDTO empleado) {
+	private void generarDatosActa(ByteArrayOutputStream jxlsOutStream, Integer numero, RequestActaDTO requestActaDTO, 
+			List<Bien> listaBienes, Usuario empleado) {
 
 
 		Area area = this.areaService.obtenerEntidad(requestActaDTO.getIdArea());
 
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
 		
+		String sesion = usuarioService.obtenerUsuarioSesion();
+		Usuario usuarioControl = usuarioService.buscarPorLogin(sesion);
+		
 		Map<String, Object> data = new HashMap<>();
 		data.put("fecha", LocalDateTime.now().format(formatter));
 		data.put("dni", empleado.getDni());
 		data.put("nombresApellidos", empleado.getNombres() + " " + empleado.getApellidos());
+		data.put("personalControlpatrimonial", usuarioControl.getNombres() + " " + usuarioControl.getApellidos());
 		data.put("correo", requestActaDTO.getCorreo());
 		data.put("area", area.getDenominacion());
 		data.put("sede", area.getSede().getDenominacion());
@@ -316,11 +330,11 @@ public class ActaServiceImpl implements ActaService {
 
 	}
 
-	private boolean enviarEmail(Acta acta, ResponseUsuarioDTO empleado, String token, byte[] fileBytes) {
+	private boolean enviarEmail(Acta acta, Usuario empleado, String token, byte[] fileBytes) {
 		RequestEmailDTO requestEmailDTO = new RequestEmailDTO();
 		String mensaje = GeneralConstants.NOTIFICACION_CUERPO.replace("<nombres>", empleado.getNombres().concat(" ").concat(empleado.getApellidos()))
 				.replace("<numeroActa>", acta.getNumero().toString().concat("-").concat(String.valueOf(acta.getFecRegistro().getYear())))
-					.replace("<enlace>", GeneralConstants.MS_CONTROL_PATRIMONIAL_VERIFICAR.concat("?code=").concat(acta.getId().toString()).concat("&token=").concat(token));
+					.replace("<enlace>", MS_CONTROL_PATRIMONIAL_VERIFICAR.concat("?code=").concat(acta.getId().toString()).concat("&token=").concat(token));
 		
 		requestEmailDTO.setAsunto(GeneralConstants.NOTIFICACION_ASUNTO);
 		requestEmailDTO.setDestino(empleado.getCorreo());
@@ -437,6 +451,17 @@ public class ActaServiceImpl implements ActaService {
 		});
 		
 		return response;
+	}
+
+	@Override
+	public void notificarActa(Integer idActa) throws IOException {
+		Acta acta = this.repository.findById(idActa).get();
+		this.ftpService.conectarFTP();
+		byte[] fileBytes = this.ftpService.descargarArchivo(acta.getRutaPdf(), acta.getNombrePdfFirmado());
+		if(!enviarEmail(acta, acta.getUsuario(), acta.getToken(), fileBytes))
+			throw new ResponseStatusException(HttpStatus.CONFLICT, "No se pudo notificar el acta");
+		acta.setEstado(GeneralConstants.ACTA_ESTADO_NOTIFICADO);
+		acta.setFecNotificado(LocalDateTime.now());
 	}
 
 }

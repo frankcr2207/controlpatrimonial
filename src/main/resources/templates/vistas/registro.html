@@ -2,15 +2,14 @@
 <html xmlns:th="http://www.thymeleaf.org"
 	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
 <head>
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-
+<meta charset="UTF-8">
 	<style type="text/css">
 	 	.selected{ background-color: #E1E1E1; } tr:hover{ background-color: #E1E1E1; } 
 
 		input{
 	    	border:0;
 		    border-bottom: 1px solid #009CBF;
-		    font-size: 11px;
+		    font-size: 12px;
 		    text-align: center;
 	    }
 	    
@@ -24,30 +23,32 @@
 <body>
 	
 	<div class="card card-body">
-		<div  style="width:60%; height: 100%; font-size: 11px; margin: auto; display: flex;">
+		<div  style="width:60%; height: 100%; margin: auto; display: flex;">
 			<h3>REGISTRO NUEVA ADQUISICIÓN</h3><hr>
 		</div>
-		<div  style="width:60%; height: 100%; font-size: 11px; margin: auto; display: flex;">
-			<div style="width: 50%;" id="divBusqueda" class="interno izquierdo">
+		<div  style="width:60%; height: 100%; font-size: 12px; margin: auto; display: flex;">
+			<div style="width: 70%;" id="divBusqueda" class="interno izquierdo">
 				<label>N° DOCUMENTO: </label><input type="text" id="txtDocumento"> <br>
 				<label>FECHA DOCUMENTO: </label><input type="date" id="txtFecAdquisicion"><br>
 				<label>GUIA: </label><input type="text" id="txtGuia"><br>
-				<label>PROVEEDOR: </label><input type="text" id="txtProveedor"><br>
+				<label>PROVEEDOR: </label><input type="text" id="txtProveedor" size="50"><br>
 				<label>REGULARIZAR: </label><input type="checkbox" id="checkRegularizar"><br>
-				<label>TIPO ADQUISICIÓN: </label><select id="listTipo"></select> <button id="btnAgregar" type="button" class="btn btn-info btn-sm"><i class="fas fa-plus"></i></button>
+				<label>TIPO ADQUISICIÓN: </label><select id="listTipo"></select> <button id="btnAgregar" type="button" class="btn btn-info btn-sm"><i class="fas fa-plus"></i></button><br>
+				<label>ADJUNTAR ADQUISICION: </label><input type="file" id="txtFileAdquisicion" style="border-bottom: none"><br>
+				<label>ADJUNTAR GUIA: </label><input type="file" id="txtFileGuia" style="border-bottom: none">
 			</div>
-			<div style="width: 50%; padding: 10px" id="divResultado" class="interno derecho">
+			<div style="width: 30%; padding: 10px" id="divResultado" class="interno derecho">
 				<button id="btnAgregar" type="button" class="btn btn-primary" onclick="guardarAdquisicion()"><i class="fas fa-save"></i>&nbsp;GUARDAR</button>
 			</div>
 		</div><hr>
-		<div  style="width:60%; height: 100%; font-size: 11px; margin: auto;">
-			<label>GRUPO: </label><select id="listGrupo"></select>
-			<label style="padding-left: 50px">CLASE: </label><select id="listClase"></select>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+		<div  style="width:60%; height: 100%; font-size: 12px; margin: auto;">
+			<label>GRUPO: </label><select style="width: 200px; font-size: 8px" id="listGrupo"></select>
+			<label style="padding-left: 50px">CLASE: </label><select style="width: 200px; font-size: 8px" id="listClase"></select>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 			<button id="btnBuscar" onclick="obtenerCatalogo()" type="button" class="btn btn-info btn-sm"><i class="fas fa-search"></i></button><br>
-			<label>DENOMINACIÓN: </label><select id="listCatalogo"></select><br>
+			<label>DENOMINACIÓN: </label><select style="width: 400px; font-size: 8px" id="listCatalogo"></select><br>
 			<label>CANTIDAD: </label><input type="number" id="txtCantidad"><br>
 			<label>COSTO UNITARIO: </label><input type="text" id="txtCostoUnitario">
-			<button id="btnAgregar" type="button" class="btn btn-black btn-sm" onclick="insertarProducto()"><i class="fas fa-download"></i></button>
+			<button id="btnAgregar" type="button" class="btn btn-outline-dark btn-sm" onclick="insertarProducto()"><i class="fas fa-download"></i>&nbsp;&nbsp;AGREGAR</button>
 			<hr>
 			<table id="tablaCatalogo" class="table">
 				<thead class="thead-dark">
@@ -67,6 +68,12 @@
 	</div>
 	
 	<script type="text/javascript">
+		$(document).ready(function() {
+		  $('#listCatalogo').select2();
+		  $('#listGrupo').select2();
+		  $('#listClase').select2();
+		});
+		
 	   	$(document).ready(function() {
 	   		$.ajax({
 	       		type : "GET",

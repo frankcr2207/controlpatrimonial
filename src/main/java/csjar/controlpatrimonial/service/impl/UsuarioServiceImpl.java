@@ -104,11 +104,12 @@ public class UsuarioServiceImpl implements UsuarioService {
 
 	@Override
 	public String obtenerNombreSesion() {
-		Usuario usuario = this.usuarioRepository.findByLogin(obtenerUsuario());
+		Usuario usuario = this.usuarioRepository.findByLogin(obtenerUsuarioSesion());
 		return usuario.getNombres();
 	}
 	
-	public String obtenerUsuario() {
+	@Override
+	public String obtenerUsuarioSesion() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         
         if (authentication != null) {

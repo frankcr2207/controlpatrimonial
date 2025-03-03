@@ -45,6 +45,8 @@ public class BienVerServiceImpl implements BienVerService {
 			version.setVersion(mapaPorIdBien.containsKey(b.getId()) ? mapaPorIdBien.get(b.getId()).size() + 1 : 1);
 			version.setIdBien(b.getId());
 			version.setIdActa(idActa);
+			version.setIdInstancia(b.getIdInstancia());
+			version.setIdActa(b.getIdSede());
 			nuevos.add(version);
 		});
 		

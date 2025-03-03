@@ -9,7 +9,8 @@
 		input{
 	    	border:0;
 		    border-bottom: 1px solid #009CBF;
-		    font-size: 11px;
+		    font-size: 12px;
+		    text-align: center;
 	    }
 	    label{
 	    	font-weight: bold;
@@ -25,7 +26,7 @@
 		<div  style="width:60%; height: 100%; font-size: 11px; margin: auto; display: flex;">
 			<h3>GESTIÓN DE MOVIMIENTOS</h3>
 		</div>
-		<div  style="width:60%; height: 100%; font-size: 11px; margin: auto; display: flex;">
+		<div  style="width:60%; height: 100%; font-size: 12px; margin: auto; display: flex;">
 			<div style="width: 50%;" id="divBusqueda" class="interno izquierdo"><br>
 				<label>NOMBRES: </label><input type="text" id="txtEmpleado" onkeydown="handleEnterDni(event)"> <br>
 			</div>
@@ -34,16 +35,17 @@
 				<button type="button" class="btn btn-outline-dark" onclick="abrirModal()"><i class="fas fa-file"></i>&nbsp;NUEVO</button>
 			</div>
 		</div>
-		<div  style="width:60%; height: 100%; font-size: 11px; margin: auto">
+		<div  style="width:60%; height: 100%; font-size: 12px; margin: auto">
 			<hr>
 			<table id="tablaActas" class="table">
 				<thead class="thead-dark">
 		            <tr>
-		                <th>NUMERO</th>
+		                <th>ACTA</th>
 		                <th>EMPLEADO</th>
 		                <th>REGISTRO</th>
 		                <th>ESTADO</th>
 		                <th>VISTA</th>
+		                <th>NOTIFICAR</th>
 		            </tr>
 		        </thead>
 		        <tbody>
@@ -57,7 +59,7 @@
 		    <div class="modal-content">
 			    <div class="modal-body" align="justify">
 			      	<div style="width:100%; height:100%">
-		      			<div  style="width:90%; height: 100%; font-size: 11px; margin: auto; display: flex;">
+		      			<div  style="width:90%; height: 100%; font-size: 12px; margin: auto; display: flex;">
 							<div style="width: 50%;" id="divBusqueda" class="interno izquierdo">
 								<h5>NUEVO MOVIMIENTO</h5>
 								<hr>
@@ -78,9 +80,9 @@
 						<hr>
 							<label>ORIGEN: </label><input type="text" id="txtOrigen" size="50" value="OFICINA DE CONTROL PATRIMONIAL"><br>
 							<label>DIRECCIÓN ORIGEN: </label><input type="text" id="txtDireccionOrigen" size="50" value="PALACIO DE JUSTICIA - AV SIGLO XX S/N"><br>
-							<label>SEDE DESTINO: </label><select id="listSede"></select>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+							<label>SEDE DESTINO: </label><select style="width: 300px; font-size: 8px" id="listSede"></select>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 							<label>DIRECCIÓN DESTINO: </label><input type="text" id="txtDireccion" size="40"><br>
-							<label>ÁREA INTERNA: </label><select id="listArea"></select>
+							<label>ÁREA INTERNA: </label><select style="width: 500px; font-size: 8px" id="listArea"></select>
 							<hr>
 							<label>CÓDIGO PATRIMONIAL: </label><input type="text" id="txtCodigo" onkeydown="handleEnterCodigo(event)"><br><br>
 							<table id="tablaBienes" class="table">
@@ -187,7 +189,11 @@
 	 </script>
 	 
 	 <script>
-	 
+		$(document).ready(function() {
+			  $('#listSede').select2();
+			  $('#listArea').select2();
+		});
+		
  		function abrirModal(){
  			$('#modalNuevo').modal('show');
  		}
@@ -434,22 +440,24 @@
 				            var celda4 = fila.insertCell(3);
 				            var celda5 = fila.insertCell(4);
 				            var celda6 = fila.insertCell(5);
-				            var celda7 = fila.insertCell(6);
-				            var celda8 = fila.insertCell(7);
-				            var celda9 = fila.insertCell(8);
 				            
 				            celda1.innerHTML = data[i].numeroActa;
 				            celda2.innerHTML = data[i].nombresApellidos;
 				            celda3.innerHTML = data[i].fecRegistro;
 				            var estado = data[i].estado;
-			                if(data[i].estado == 'REGISTRADO')
+				            var notificado = '';
+			                if(data[i].estado == 'REGISTRADO'){
 			                	estado = '<span class="badge badge-warning">REGISTRADO</span>';
+			                	notificado = '<button type="button" class="btn btn-outline-warning"><i class="fa fa-envelope" onclick="notificarActa(' + data[i].idActa + ')"></i></button>';
+			                }
 			                else if (data[i].estado == 'NOTIFICADO')
 				                estado = '<span class="badge badge-primary">NOTIFICADO</span>';
 			                else
 			                	estado = '<span class="badge badge-success">CONFIRMADO</span>';
 			                celda4.innerHTML = estado;
 				            celda5.innerHTML = '<button type="button" class="btn btn-outline-danger"><i class="fas fa-file-pdf" onclick="abrirActa(' + data[i].idActa + ')"></i></button>';
+				            celda6.innerHTML = notificado;
+
 						}
     		        },
     		        error : function(response){

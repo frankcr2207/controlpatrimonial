@@ -63,6 +63,12 @@ public class Bien {
 	@Column(name = "n_id_empleado")
 	private Integer idEmpleado;
 	
+	@Column(name = "n_id_sede")
+	private Integer idSede;
+	
+	@Column(name = "n_id_instancia")
+	private Integer idInstancia;
+	
     @ManyToMany(mappedBy = "bienes")
     private List<Acta> actas;
 	
