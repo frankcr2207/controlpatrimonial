@@ -13,26 +13,23 @@ import javax.persistence.Table;
 
 import lombok.Data;
 
-@Table(name="cp_sedes")
+@Table(name="cp_sedeorgano")
 @Entity
 @Data
-public class Sede {
+public class SedeOrgano {
 
 	@Id
 	@Column(name="n_id")
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
 	private Integer id;
 	
-	@Column(name="s_codigo")
-	private String codigo;
+	@Column(name="n_id_sede")
+	private Integer idSede;
 	
-	@Column(name="s_denominacion")
-	private String denominacion;
+	@Column(name="n_id_organo")
+	private Integer idOrgano;
 	
-	@Column(name="s_direccion")
-	private String direccion;
-	
-	@OneToMany(mappedBy = "sede", fetch = FetchType.LAZY)
-	private List<Area> areas;
+	@OneToMany(mappedBy = "sedeOrgano", fetch = FetchType.LAZY)
+    private List<Area> area;
 	
 }

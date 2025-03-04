@@ -1,38 +1,25 @@
 package csjar.controlpatrimonial.entity;
 
-import java.util.List;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
 import lombok.Data;
 
-@Table(name="cp_sedes")
+@Table(name="cp_organo")
 @Entity
 @Data
-public class Sede {
+public class Organo {
 
 	@Id
 	@Column(name="n_id")
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
 	private Integer id;
 	
-	@Column(name="s_codigo")
-	private String codigo;
-	
-	@Column(name="s_denominacion")
+	@Column(name="s_organo")
 	private String denominacion;
-	
-	@Column(name="s_direccion")
-	private String direccion;
-	
-	@OneToMany(mappedBy = "sede", fetch = FetchType.LAZY)
-	private List<Area> areas;
 	
 }

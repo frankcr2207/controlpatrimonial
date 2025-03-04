@@ -32,4 +32,8 @@ public class Area {
 	@JoinColumn(name = "n_id_sede", nullable = false)
 	private Sede sede;
 	
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "n_id_sede_organo")
+	private SedeOrgano sedeOrgano;
+	
 }

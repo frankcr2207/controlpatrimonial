@@ -85,4 +85,10 @@ public class BienController {
 		this.bienService.modificarBien(request);
 		return new ResponseEntity<>(HttpStatus.NO_CONTENT);
 	}
+	
+	@GetMapping("/listarDetalle")
+	public ResponseEntity<ResponseBienDTO> listarDetalle(@RequestParam String codigo, 
+		@RequestParam Integer idEmpleado, @RequestParam String tipoActa) throws NoSuchAlgorithmException {
+		return new ResponseEntity<>(this.bienService.obtenerBien(codigo, idEmpleado, tipoActa), HttpStatus.OK);
+	}
 }
