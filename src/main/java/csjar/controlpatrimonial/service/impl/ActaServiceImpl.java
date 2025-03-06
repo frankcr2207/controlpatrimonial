@@ -128,6 +128,8 @@ public class ActaServiceImpl implements ActaService {
 				
 				bien.setEstado(GeneralConstants.BIEN_ESTADO_ASIGNADO);
 				bien.setIdEmpleado(requestActaDTO.getIdEmpleado());
+				bien.setIdInstancia(idInstancia);
+				bien.setIdSede(idSede);
 			}
 			else if(requestActaDTO.getTipo().equals(GeneralConstants.BIEN_ESTADO_DEVUELTO)){
 				if(Objects.isNull(bien.getIdEmpleado()) || !bien.getIdEmpleado().equals(requestActaDTO.getIdEmpleado()))
@@ -135,12 +137,13 @@ public class ActaServiceImpl implements ActaService {
 				
 				bien.setIdEmpleado(null);
 				bien.setEstado(GeneralConstants.BIEN_ESTADO_DEVUELTO);
+				bien.setIdInstancia(1);
+				bien.setIdSede(197);
 			}
 			
 			bien.setEstadoConservacion(b.getEstadoConservacion());
 			bien.setObservacion(b.getObservacion());
-			bien.setIdInstancia(idInstancia);
-			bien.setIdSede(idSede);
+
 			
 			bienes.add(bien);
 		});

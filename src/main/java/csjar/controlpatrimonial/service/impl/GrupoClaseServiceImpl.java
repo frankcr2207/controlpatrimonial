@@ -55,7 +55,7 @@ public class GrupoClaseServiceImpl implements GrupoClaseService {
 	public GrupoClase obtenerEntidad(Integer idGrupo, Integer idClase) {
 		GrupoClase grupoClase = this.grupoClaseRepository.findByIdGrupoAndIdClase(idGrupo, idClase);
 		if(Objects.isNull(grupoClase))
-			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No se encontró cat+alogo asociado a grupo y clase");
+			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No se encontró catálogo asociado a grupo y clase");
 		return grupoClase;
 	}
 

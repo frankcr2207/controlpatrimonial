@@ -27,7 +27,8 @@
 		<h3>REPORTES</h3>
 		<hr>
 			<div>
-				<label>SEDE:</label><select id="listSedes" style="width: 500px;"></select>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+				<label>SEDE:</label><select id="listSedes" style="width: 500px;"></select><br><br>
+				<label>ORGANOS:</label><select id="listOrganos" style="width: 300px;"></select>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 				<button type="button" class="btn btn-info btn-sm" onclick="buscarbienes"><i class="fas fa-search"></i>&nbsp;BUSCAR</button>
 				<hr>
 				<table id="tablaBienes" class="table">
@@ -50,6 +51,9 @@
 	<script>
 		$(document).ready(function() {
 		  $('#listSedes').select2();
+		});
+		$(document).ready(function() {
+			$('#listOrganos').select2();
 		});
 	
 		var sedes;
@@ -80,6 +84,36 @@
 		        }
 	      	});
 	   	});
+	   	
+	   	$('#listSedes').change(function() {
+            var id = $(this).val();
+
+            $.ajax({
+	       		type : "GET",
+	       		url : "organo/" + id,
+		        dataType : 'json',
+		        success : function(data) {
+		        	sedes = data;
+		         	var html = '';
+		         	var len = data.length;
+		         	html+='<option value="0">SELECCIONE ...</option>';
+		         	for (var i = 0; i < len; i++) {
+						html+='<option value="' + data[i].id +'">'+data[i].denominacion+'</option>';
+		         	}
+			        $("#listOrganos").html(html);
+		        },
+		        error : function(response){
+		        	var r = jQuery.parseJSON(response.responseText);
+					toastr.clear();
+					toastr.options = {
+						"closeButton":true,
+						"progressBar": true,
+						"positionClass":"toast-topcenter-right"
+					};
+					toastr.warning(r.message);	
+		        }
+	      	});
+        });
 	</script>
 </body>
 </html>

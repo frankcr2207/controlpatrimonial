@@ -23,5 +23,6 @@ public interface BienService {
 	byte[] generarEtiquetas(List<RequestEtiquetaDTO> requestEtiquetaDTO) throws DocumentException, IOException, WriterException ;
 	ResponseTrazabilidadDTO obtenerTrazabilidad(String codigo);
 	void modificarBien(RequestDetalleBienesDTO request);
+	void guardarMovimiento(RequestDetalleBienesDTO request);
 	
 }

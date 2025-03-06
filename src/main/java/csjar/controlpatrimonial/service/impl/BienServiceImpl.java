@@ -144,6 +144,8 @@ public class BienServiceImpl implements BienService {
 				bien.setObservacion(GeneralConstants.BIEN_OBSERVACION_NUEVO_INGRESO);
 				bien.setObservacion(b.getObservacion());
 				bien.setModelo(mapModelos.get(b.getIdModelo()));
+				bien.setIdSede(1);
+				bien.setIdInstancia(197);
 				if(adquisicion.getEstado().equals(GeneralConstants.ADQUISICION_ESTADO_REGISTRADO))
 					bien.setCodigoPatrimonial(catalogo.getCodigo().concat(String.format("%04d", secuencia)));
 				bien.setIdCatalogo(b.getIdCatalogo());
@@ -320,6 +322,7 @@ public class BienServiceImpl implements BienService {
 		return response;
 	}
 
+	@Transactional
 	@Override
 	public void modificarBien(RequestDetalleBienesDTO request) {
 		Bien bien = this.repository.findByCodigoPatrimonial(request.getCodigoPatrimonial());
@@ -342,6 +345,23 @@ public class BienServiceImpl implements BienService {
 			this.adquisicionService.actualizarEntidad(adquisicion);
 		}
 		
+	}
+
+	@Transactional
+	@Override
+	public void guardarMovimiento(RequestDetalleBienesDTO request) {
+		Bien bien = this.obtenerEntidad(request.getCodigoPatrimonial());
+		if(bien.getIdEmpleado() != null)
+			throw new ResponseStatusException(HttpStatus.NOT_ACCEPTABLE, "El bien aún se encuentra asignado a un empleado, debe generar devolución");
+		bien.setEstado(request.getTipoMovimiento().equals("M") ? GeneralConstants.BIEN_ESTADO_MANTENIMIENTO : request.getTipoMovimiento().equals("R") 
+				? GeneralConstants.BIEN_ESTADO_REPARADO : GeneralConstants.BIEN_ESTADO_BAJA);
+		bien.setEstadoConservacion(request.getEstadoConservacion().equals("B") ? GeneralConstants.BIEN_CONSERVACION_BUENO : request.getEstadoConservacion().equals("R") 
+				? GeneralConstants.BIEN_CONSERVACION_BUENO : GeneralConstants.BIEN_CONSERVACION_MALO);
+		bien.setObservacion(request.getObservacion());
+		
+		repository.save(bien);
+		
+		bienVerService.generarVersion(Arrays.asList(bien), null);
 	}
 
 }

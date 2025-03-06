@@ -24,18 +24,30 @@
 
 	<div class="card card-body">
 		<div  style="width:60%; height: 100%; font-size: 11px; margin: auto">
-			<h3>TRAZABILIDAD DE BIENES</h3>
-			<label>CÓDIGO PATRIMONIAL: </label><input style="width: 100px" type="text" id="txtCodigo" onkeydown="handleEnterCodigo(event)">
+			<div  style="width:100%; height: 100%; font-size: 11px; margin: auto; display: flex;">
+				<h3>TRAZABILIDAD DE BIENES</h3>
+			</div>
+			<div  style="width:100%; height: 100%; font-size: 12px; margin: auto; display: flex;">
+				<label>CÓDIGO PATRIMONIAL: </label><input style="width: 100px" type="text" id="txtCodigo" onkeydown="handleEnterCodigo(event)">
+			</div>
 			<hr>
-			<input type="hidden" id="txtId">
-			<label>CÓDIGO: </label><input type="text" id="txtCodigoPatrimonial" readonly> <br>
-			<label>CATÁLOGO: </label><input type="text" id="txtCatalogo" readonly> <br>
-			<label>DESCRIPCIÓN: </label><input type="text" id="txtDescripcion"readonly> <br>
-			<label>CONSERVACIÓN ACTUAL: </label><input type="text" id="txtConservacionActual readonly"> <br>
-			<label>ESTADO ACTUAL: </label><input type="text" id="txtEstadoActual" readonly> <br>
-			<label>EMPLEADO ACTUAL: </label><input type="text" id="txtEmpleadoActual" readonly> <br>
-			<label>UBICACIÓN ACTUAL: </label><input type="text" id="txtUbicacionActual" readonly> <br>
-			<label>ADQUISICION: </label><input type="text" id="txtAdquisicion" readonly> <br>
+			<div  style="width:100%; height: 100%; font-size: 12px; margin: auto; display: flex;">
+				<div style="width: 50%;" align="left" id="divBusqueda"><br>
+					<input type="hidden" id="txtId">
+					<label>CÓDIGO: </label><input type="text" id="txtCodigoPatrimonial" readonly> <br>
+					<label>CATÁLOGO: </label><input type="text" id="txtCatalogo" readonly> <br>
+					<label>DESCRIPCIÓN: </label><input type="text" id="txtDescripcion"readonly> <br>
+					<label>CONSERVACIÓN ACTUAL: </label><input type="text" id="txtConservacionActual readonly"> <br>
+					<label>ESTADO ACTUAL: </label><input type="text" id="txtEstadoActual" readonly> <br>
+					<label>EMPLEADO ACTUAL: </label><input type="text" id="txtEmpleadoActual" readonly> <br>
+					<label>UBICACIÓN ACTUAL: </label><input type="text" id="txtUbicacionActual" readonly> <br>
+					<label>ADQUISICION: </label><input type="text" id="txtAdquisicion" readonly> <br>
+				</div>
+				<div style="width: 50%; padding: 10px" id="divResultado" class="interno derecho">
+					<button type="button" class="btn btn-outline-info" onclick="nuevoSeguimiento()"><i class="fas fa-file"></i>&nbsp;NUEVO SEGUIMIENTO</button>
+				</div>
+			</div>
+			
 			<hr>
 			<table id="tablaTrazabilidad" class="table">
 				<thead class="thead-dark">
@@ -70,8 +82,35 @@
         </div>
     </div>
     
-	<script type="text/javascript">
-
+    <div class="modal fade" id="nuevoSeguimiento" tabindex="-1" aria-labelledby="documentModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-sm">
+            <div class="modal-content">
+                <div class="modal-header">
+                     <h5 class="modal-title">NUEVO MOVIMIENTO</h5>
+                </div>
+                <div class="modal-body">
+                    <div style="width: 100%;" id="divBusqueda" class="interno izquierdo">
+						<label>TIPO: </label><select class="form form-control" id="listEstado"><option value="M">MANTENIMIENTO</option><option value="R">REPARADO</option><option value="B">BAJA</option></select> <br>
+						<label>CONSERVACION: </label><select class="form form-control" id="listConservacion"><option value="B">BUENO</option><option value="R">REGULAR</option><option value="M">MALO</option></select> <br>
+						<label>DETALLE: </label><textarea class="form form-control" id="txtObservacion" > </textarea>
+					</div>
+                </div>
+                <div class="modal-body">
+                	<button id="btnCancelar" type="button" class="btn btn-dark btn-sm" onclick="cancelarMovimiento()"><i class="fas fa-times"></i>&nbsp;CANCELAR</button>
+                	<button class="btn btn-primary" onclick="guardarMovimiento()"> GUARDAR</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+	<script>
+		function nuevoSeguimiento(){
+			$('#nuevoSeguimiento').modal('show');
+		}
+        function cancelarMovimiento() {
+        	$('#nuevoSeguimiento').modal('hide');
+        	$('#txtObservacion').val('');
+        }
 	 </script>
 	 
 	 <script>
@@ -99,50 +138,55 @@
 				    tabla.deleteRow(i);
 				}
 				
-	         	$.ajax({
-	 	       		type : "GET",
-	 	       		url : "bien/trazabilidad/" + codigo,
-	 		        dataType : 'json',
-	 		        success : function(data) {
-	 		        	$('#txtCodigoPatrimonial').val(data.codigo);
-	 		        	$('#txtCatalogo').val(data.catalogo);
-	 		        	$('#txtDescripcion').val(data.descripcion);
-	 		        	$('#txtConservacionActual').val(data.conservacionActual);
-	 		        	$('#txtEstadoActual').val(data.estadoActual);
-	 		        	$('#txtEmpleadoActual').val(data.empleadoActual);
-	 		        	$('#txtUbicacionActual').val(data.ubicacionActual);
-	 		        	for (var i = 0; i < data.detalle.length; i++) { 
-		 		        	var fila = tbody.insertRow();
-		
-		 		            var celda1 = fila.insertCell(0);
-		 		            var celda2 = fila.insertCell(1);
-		 		            var celda3 = fila.insertCell(2);
-		 		            var celda4 = fila.insertCell(3);
-		 		           	var celda5 = fila.insertCell(4);
-		 		           	var celda6 = fila.insertCell(5);
-		 		            
-		 		            celda1.innerHTML = data.detalle[i].fecRegistro;
-		 		            celda2.innerHTML = data.detalle[i].estado;
-		 		           	celda3.innerHTML = data.detalle[i].conservacion;
-		 		            celda4.innerHTML = data.detalle[i].empleado;
-			 		        celda5.innerHTML = data.detalle[i].observaciones;
-			 		        var botonActa = data.detalle[i].idActa != null ? '<button type="button" class="btn btn-outline-danger btn-sm" onclick="abrirActa(' + data.detalle[i].idActa + ')"><i class="fas fa-file-pdf fa-lg"></i></button>' : '';
-		 		           	celda6.innerHTML = botonActa;
-	 		        	}
-	 		        },
-	 		        error : function(response){
-	 		        	var r = jQuery.parseJSON(response.responseText);
-	 					toastr.clear();
-	 					toastr.options = {
-	 						"closeButton":true,
-	 						"progressBar": true,
-	 						"positionClass":"toast-topcenter-right"
-	 					};
-	 					toastr.warning(r.message);	
-	 		        }
-	 	      	});
+				cargarTabla(codigo);
+	         	
 	         }
 	     }
+		
+		function cargarTabla(codigo){
+			$.ajax({
+ 	       		type : "GET",
+ 	       		url : "bien/trazabilidad/" + codigo,
+ 		        dataType : 'json',
+ 		        success : function(data) {
+ 		        	$('#txtCodigoPatrimonial').val(data.codigo);
+ 		        	$('#txtCatalogo').val(data.catalogo);
+ 		        	$('#txtDescripcion').val(data.descripcion);
+ 		        	$('#txtConservacionActual').val(data.conservacionActual);
+ 		        	$('#txtEstadoActual').val(data.estadoActual);
+ 		        	$('#txtEmpleadoActual').val(data.empleadoActual);
+ 		        	$('#txtUbicacionActual').val(data.ubicacionActual);
+ 		        	for (var i = 0; i < data.detalle.length; i++) { 
+	 		        	var fila = tbody.insertRow();
+	
+	 		            var celda1 = fila.insertCell(0);
+	 		            var celda2 = fila.insertCell(1);
+	 		            var celda3 = fila.insertCell(2);
+	 		            var celda4 = fila.insertCell(3);
+	 		           	var celda5 = fila.insertCell(4);
+	 		           	var celda6 = fila.insertCell(5);
+	 		            
+	 		            celda1.innerHTML = data.detalle[i].fecRegistro;
+	 		            celda2.innerHTML = data.detalle[i].estado;
+	 		           	celda3.innerHTML = data.detalle[i].conservacion;
+	 		            celda4.innerHTML = data.detalle[i].empleado;
+		 		        celda5.innerHTML = data.detalle[i].observaciones;
+		 		        var botonActa = data.detalle[i].idActa != null ? '<button type="button" class="btn btn-outline-danger btn-sm" onclick="abrirActa(' + data.detalle[i].idActa + ')"><i class="fas fa-file-pdf fa-lg"></i></button>' : '';
+	 		           	celda6.innerHTML = botonActa;
+ 		        	}
+ 		        },
+ 		        error : function(response){
+ 		        	var r = jQuery.parseJSON(response.responseText);
+ 					toastr.clear();
+ 					toastr.options = {
+ 						"closeButton":true,
+ 						"progressBar": true,
+ 						"positionClass":"toast-topcenter-right"
+ 					};
+ 					toastr.warning(r.message);	
+ 		        }
+ 	      	});
+		}
 		
 	    function abrirActa(id) {
 	    	$.ajax({
@@ -184,58 +228,37 @@
 	    }
         
         function guardarMovimiento() {
-         	var tabla = document.getElementById("tablaBienes");
-            var filas = tabla.getElementsByTagName("tr");
-            
-            var bienes = [];
-            
-        	var idEmpleado = $('#txtIdEmpleado').val();
-        	if(idEmpleado == '' || filas < 2 || $('#listArea').val() == ''){
+         	var observacion = document.getElementById("txtObservacion");
+         	var codigoPatrimonial = $('#txtCodigoPatrimonial').val()
+         	if(observacion == ''){
 				toastr.clear();
 				toastr.options = {
 					"closeButton":true,
 					"progressBar": true,
 					"positionClass":"toast-topcenter-right"
 				};
-				toastr.warning("Debe completar toda información requerida");
+				toastr.warning("Debe completar el campo observación");
 				return;
         	}
-        	
-			$('#tablaBienes tbody tr').each(function() {
-				var bien = {};
-				bien["codigoPatrimonial"] = $(this).find("td:eq(0)").text();
-				bien["estadoConservacion"] = $(this).find("td:eq(2) select").val();
-				bien["observacion"] = $(this).find("td:eq(3)").text();
-				bienes.push(bien);
-			});
             
             var movimiento = {
-            	idEmpleado : idEmpleado,
-            	correo : $('#txtCorreo').val(),
-            	tipo : $('#listTipo').val(),
-            	idArea : $('#listArea').val(),
-            	bienes: bienes
+            	codigoPatrimonial : codigoPatrimonial,
+            	observacion : observacion,
+            	tipoMovimiento : $('#listEstado').val(),
+            	estadoConservacion : $('#listConservacion').val()
             };
         	
             $.ajax({
 				type: "POST",
-				url: "acta",
+				url: "bien/movimiento",
 				data: JSON.stringify(movimiento),
 				cache: false,
 				dataType: "json",
 				contentType: "application/json; charset=utf-8",
 				processData: false,
 				success:function(response) {
-					var tabla = document.getElementById("tablaBienes");
-		            var filas = tabla.getElementsByTagName("tr");
-					for (var i = filas.length - 1; i > 0; i--) {
-					    tabla.deleteRow(i);
-					}
-					Swal.fire(
-						'MOVIMIENTO REGISTRADO CORRECTAMENTE!!',
-						'Click en OK para continuar!',
-						'success'
-					);	
+					cargarTabla(codigoPatrimonial);
+					cancelarMovimiento();
 				},
 		        error : function(response){
 		        	var r = jQuery.parseJSON(response.responseText);

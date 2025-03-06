@@ -91,4 +91,10 @@ public class BienController {
 		@RequestParam Integer idEmpleado, @RequestParam String tipoActa) throws NoSuchAlgorithmException {
 		return new ResponseEntity<>(this.bienService.obtenerBien(codigo, idEmpleado, tipoActa), HttpStatus.OK);
 	}
+	
+	@PostMapping("/movimiento")
+	public ResponseEntity<HttpStatus> nuevoMovimiento(@RequestBody RequestDetalleBienesDTO request) throws NoSuchAlgorithmException {
+		this.bienService.guardarMovimiento(request);
+		return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+	}
 }

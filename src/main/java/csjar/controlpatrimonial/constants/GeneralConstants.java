@@ -15,10 +15,16 @@ public class GeneralConstants {
 	public static final String ACTA_PLANTILLA_EXCEL = "plantilla_acta_v2";
 	
 	public static final String BIEN_ESTADO_INGRESADO = "INGRESADO";
-	public static final String BIEN_ESTADO_RETORNADO = "RETORNADOO";
+	public static final String BIEN_ESTADO_REPARADO = "REPARADO";
 	public static final String BIEN_ESTADO_MANTENIMIENTO = "MANTENIMIENTO";
 	public static final String BIEN_ESTADO_ASIGNADO = "ASIGNADO";
 	public static final String BIEN_ESTADO_DEVUELTO = "DEVUELTO";
+	public static final String BIEN_ESTADO_BAJA = "BAJA";
+	
+	public static final String BIEN_CONSERVACION_BUENO = "BUENO";
+	public static final String BIEN_CONSERVACION_REGULAR = "REGULAR";
+	public static final String BIEN_CONSERVACION_MALO= "MALO";
+	
 	public static final String BIEN_OBSERVACION_NUEVO_INGRESO = "NUEVO INGRESO";
 	
 	public static final String ADQUISICION_ESTADO_REGISTRADO = "REGISTRADO";

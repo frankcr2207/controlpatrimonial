@@ -8,7 +8,7 @@ import csjar.controlpatrimonial.entity.SedeOrgano;
 
 public interface SedeOrganoRepository extends JpaRepository<SedeOrgano, Integer>{
 
-	List<SedeOrgano> findByIdSedeIn(Integer idSede);
+	List<SedeOrgano> findByIdSede(Integer idSede);
 	List<SedeOrgano> findByIdSedeAndIdOrganoIn(Integer idSede, List<Integer> idOrgano);
 	
 }

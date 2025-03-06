@@ -53,6 +53,11 @@
 		<h2 th:text="${dto.mensaje}"></h2>
 		<hr>
 		<div th:if="${(dto.status == 'OK')}">
+			<div>
+			<h5>CONSIDERACIONES:</h5>
+			- El usuario es responsable de la permanencia y conservación de cada uno de los bienes descritos, recomendánse tomar las precauciones del caso para evitar sustracciones, deterioros, etc.<br>
+			- Cualquier necesidad de traslado del bien mueble patrimonial dentro o fuera del local de la Entidad u Organizacion de la Entidad, es previamente comunicado al encargado de la OCP.
+			</div>
 			<form enctype="multipart/form-data" id="formDatos">	
 				<input th:value="${dto.idActa}" id="id" type="hidden" class="id">
 				<label style="width: 150px;"><strong>NÚMERO ACTA: </strong></label><input style="font-weight: bold" th:value="${dto.numeroActa}" id="nombres" readonly="readonly" size="40"><br>

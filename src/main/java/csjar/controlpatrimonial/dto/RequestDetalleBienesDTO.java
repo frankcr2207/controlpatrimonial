@@ -17,4 +17,6 @@ public class RequestDetalleBienesDTO {
 	private Integer id;
 	private Integer idAdquisicion;
 	
+	private String tipoMovimiento;
+	
 }
