@@ -3,6 +3,7 @@
 	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<link rel="stylesheet" href="css/loader.css" >
 	
 	<style type="text/css">
 	 	.selected{ background-color: #E1E1E1; } tr:hover{ background-color: #E1E1E1; } 
@@ -40,20 +41,60 @@
 						<button type="button" class="btn btn-info btn-sm" onclick="buscarBienes()"><i class="fas fa-search"></i>&nbsp;BUSCAR</button>
 					</div>
 				</div>
-				<hr>
-				<table id="tablaBienes" class="table">
-					<thead class="thead-dark">
-			            <tr>
-			                <th>CODIGO</th>
-			                <th>BIEN</th>
-			                <th>CONSERVACION</th>
-			                <th>OBSERVACIÓN</th>
-			                <th>ANTIGUEDAD (AÑOS)</th>
-			            </tr>
-			        </thead>
-			        <tbody>
-			        </tbody>
-				</table>
+			</div>
+		</div>
+		
+		<iframe id="downloadIframe" style="display:none;"></iframe>
+	</div>
+	
+	<div class="modal fade modalEspera" id="modalEspera" data-backdrop="static" data-keyboard="false" tabindex="-1" role="dialog" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+		<div class="modal-dialog modal-dialog-centered">
+		    <div class="modal-content">
+			    <div class="modal-body" align="justify">
+			      	<div style="width:100%; height:100%">
+		      			<div style=" margin: auto;" >
+							<div style="position: relative; width: 100%; height: 100%;">
+								<div style="background-color: white; width: 100%; height: 100%; padding-top:15px; padding-bottom: auto; padding-left: auto; padding-right: auto; " align="center">
+									<div align="center">
+										<img alt="ayuda" src="img/corte.png" width="250px">
+									</div><br>
+									<div class="col-sm-2" style="height: 150px">
+						                <div class="container">
+										      <div class="wrapper">
+										        <div class="loader">
+										          <div class="dot">
+										</div>
+										</div>
+										<div class="loader">
+										          <div class="dot">
+										</div>
+										</div>
+										<div class="loader">
+										          <div class="dot">
+										</div>
+										</div>
+										<div class="loader">
+										          <div class="dot">
+										</div>
+										</div>
+										<div class="loader">
+										          <div class="dot">
+										</div>
+										</div>
+										<div class="loader">
+										          <div class="dot">
+										</div>
+										</div>
+										</div>
+										<div class="text">
+										<p><strong>ESPERE </strong></p></div>
+										</div>
+						            </div>
+								</div>
+							</div>
+						</div>
+	            	</div>
+			    </div>
 			</div>
 		</div>
 	</div>
@@ -73,7 +114,7 @@
 		        	sedes = data;
 		         	var html = '';
 		         	var len = data.length;
-		         	html+='<option value="0">SELECCIONE ...</option>';
+		         	html+='<option value="0">Seleccione una sede</option>';
 		         	for (var i = 0; i < len; i++) {
 						html+='<option value="' + data[i].id +'">'+data[i].denominacion+'</option>';
 		         	}
@@ -122,25 +163,80 @@
         });
 	   	
 	   	function buscarBienes(){
-	   		var lista = $('#listOrganos').val();
-	   		$.ajax({
-	       		type : "GET",
-	       		url : "bien/reporte?idSede=" + $('#listSedes').val() + "&idsOrgano=" + lista,
-		        dataType : 'json',
-		        success : function(data) {
 
-		        },
-		        error : function(response){
-		        	var r = jQuery.parseJSON(response.responseText);
+	        var lista = $('#listOrganos').val();
+	        var sede = $('#listSedes').val();
+	        if(lista == '' || sede == '0'){
+				toastr.clear();
+				toastr.options = {
+					"closeButton":true,
+					"progressBar": true,
+					"positionClass":"toast-topcenter-right"
+				};
+				toastr.warning('Debe seleccionar elementos');	
+				return;
+	        }
+	        
+	        $.ajax({
+	            url: "bien/download/reporte?idSede=" + $('#listSedes').val() + "&idsOrgano=" + lista,  // URL del endpoint para descargar el archivo
+	            method: 'POST',
+				cache: false,
+				contentType: "application/json; charset=utf-8",
+				processData: false,
+				xhrFields: {
+			        responseType: 'blob'
+			    },
+	            beforeSend: function() {
+	                $('#modalEspera').modal('show');
+	            },
+				success: function(response, status, xhr) {
+					$('#modalEspera').modal('hide');
+			        var filename = "";
+			        var disposition = xhr.getResponseHeader('Content-Disposition');
+			        if (disposition && disposition.indexOf('attachment') !== -1) {
+			            var filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
+			            var matches = filenameRegex.exec(disposition);
+			            if (matches != null && matches[1]) filename = matches[1].replace(/['"]/g, '');
+			        }
+
+			        var type = xhr.getResponseHeader('Content-Type');
+			        var blob = new Blob([response], { type: type });
+
+			        if (typeof window.navigator.msSaveBlob !== 'undefined') {
+						window.navigator.msSaveBlob(blob, filename);
+			        } else {
+			            var URL = window.URL || window.webkitURL;
+			            var downloadUrl = URL.createObjectURL(blob);
+
+			            if (filename) {
+			                var a = document.createElement("a");
+			                if (typeof a.download === 'undefined') {
+			                    window.location = downloadUrl;
+			                } else {
+			                    a.href = downloadUrl;
+			                    a.download = filename;
+			                    document.body.appendChild(a);
+			                    a.click();
+			                }
+			            } else {
+			                window.location = downloadUrl;
+			            }
+
+			            setTimeout(function () { URL.revokeObjectURL(downloadUrl); }, 100);
+			        }
+			    },
+				error : function(response) {
+					var r = jQuery.parseJSON(response.responseText);
 					toastr.clear();
 					toastr.options = {
 						"closeButton":true,
 						"progressBar": true,
 						"positionClass":"toast-topcenter-right"
 					};
-					toastr.warning(r.message);	
-		        }
-	      	});
+					toastr.error('Error al descargar reporte');
+				}
+			    
+	        });
 	   	}
 	</script>
 </body>

@@ -51,13 +51,12 @@
 	<div style="background-color: #790000; padding:2px; border-bottom: 5px solid #C4C4C4;">
 		<div class="form-row" id="menu">
 			 <div style="width: 75%;" class="form-row">
-				  	<a style="cursor: pointer" onclick="getUsuarios()"><i class='fas fa-user-friends'></i>&nbsp; USUARIOS</a>
-				  	<a style="cursor: pointer" onclick="getPerfiles()"><i class='fas fa-chalkboard-teacher'></i>&nbsp; PERFILES</a>
-				  	<a style="cursor: pointer" onclick="getRegistro()"><i class='fas fa-edit'></i>&nbsp; REGISTRO</a>
-				  	<a style="cursor: pointer" onclick="getGeneracion()"><i class='fas fa-pallet'></i>&nbsp; BIENES</a>
-				  	<a style="cursor: pointer" onclick="getAsignacion()"><i class='fas fa-hand-holding'></i>&nbsp; MOVIMIENTO</a>
-				  	<a style="cursor: pointer" onclick="getTrazabilidad()"><i class='fas fa-chart-line'></i>&nbsp; TRAZABILIDAD</a>
-				  	<a style="cursor: pointer" onclick="getReporte()"><i class='fas fa-layer-group'></i>&nbsp; REPORTES</a>
+				  	<a sec:authorize="hasRole('ASISTENTE INFORMATICA')" style="cursor: pointer" onclick="getUsuarios()"><i class='fas fa-user-friends'></i>&nbsp; USUARIOS</a>
+				  	<a sec:authorize="hasRole('ENCARGADO ALMACEN')" style="cursor: pointer" onclick="getRegistro()"><i class='fas fa-edit'></i>&nbsp; REGISTRO</a>
+				  	<a sec:authorize="hasAnyRole('ENCARGADO CONTROL PATRIMONIAL','ENCARGADO ALMACEN')" style="cursor: pointer" onclick="getGeneracion()"><i class='fas fa-pallet'></i>&nbsp; BIENES</a>
+				  	<a sec:authorize="hasAnyRole('ENCARGADO CONTROL PATRIMONIAL','ASISTENTE CONTROL PATRIMONIAL')" style="cursor: pointer" onclick="getAsignacion()"><i class='fas fa-hand-holding'></i>&nbsp; MOVIMIENTO</a>
+				  	<a sec:authorize="hasAnyRole('ENCARGADO CONTROL PATRIMONIAL','ASISTENTE CONTROL PATRIMONIAL')" style="cursor: pointer" onclick="getTrazabilidad()"><i class='fas fa-chart-line'></i>&nbsp; TRAZABILIDAD</a>
+				  	<a sec:authorize="hasAnyRole('ENCARGADO CONTROL PATRIMONIAL','ASISTENTE CONTROL PATRIMONIAL')" style="cursor: pointer" onclick="getReporte()"><i class='fas fa-layer-group'></i>&nbsp; REPORTES</a>
 		  	</div>
 		  	<div align="right" style="width: 25%;">
 		  		<button id="btnUsuario" type="button" class="btn btn-sm btn-outline-light btn-sm" sec:authorize="isAuthenticated()" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">

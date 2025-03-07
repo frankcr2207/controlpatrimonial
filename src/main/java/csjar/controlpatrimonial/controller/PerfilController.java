@@ -27,9 +27,14 @@ public class PerfilController {
 		super();
 		this.perfilService = perfilService;
 	}
+	
+	@GetMapping
+	public ResponseEntity<List<ResponsePerfilDTO>> listarPerfiles() throws NoSuchAlgorithmException {
+		return new ResponseEntity<>(perfilService.listarPerfiles(), HttpStatus.OK);
+	}
 
 	@GetMapping("/modulo")
-	public ResponseEntity<List<ResponsePerfilDTO>> listarPerfiles() throws NoSuchAlgorithmException {
+	public ResponseEntity<List<ResponsePerfilDTO>> listarPerfilesModulo() throws NoSuchAlgorithmException {
 		return new ResponseEntity<>(perfilService.listarPerfilesModulo(), HttpStatus.OK);
 	}
 	

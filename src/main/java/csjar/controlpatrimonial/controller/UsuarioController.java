@@ -47,19 +47,19 @@ public class UsuarioController {
 	@PostMapping
 	public ResponseEntity<ResponseEntity<HttpStatus>> crearUsuario(@RequestBody RequestUsuarioDTO usuario) throws NoSuchAlgorithmException {
 		this.usuarioService.crearUsuario(usuario);
-		return new ResponseEntity<>(HttpStatus.CREATED);
+		return new ResponseEntity<>(HttpStatus.NO_CONTENT);
 	}
 	
 	@PutMapping
 	public ResponseEntity<ResponseEntity<HttpStatus>> modificarUsuario(@RequestBody RequestUsuarioDTO usuario) throws NoSuchAlgorithmException {
 		this.usuarioService.modificarUsuario(usuario);
-		return new ResponseEntity<>(HttpStatus.CREATED);
+		return new ResponseEntity<>(HttpStatus.NO_CONTENT);
 	}
 	
 	@PatchMapping
 	public ResponseEntity<ResponseEntity<HttpStatus>> restablecerUsuario(@PathVariable RequestUsuarioDTO usuario) throws NoSuchAlgorithmException {
 		this.usuarioService.cambiarClave(usuario);
-		return new ResponseEntity<>(HttpStatus.CREATED);
+		return new ResponseEntity<>(HttpStatus.NO_CONTENT);
 	}
 	
 }

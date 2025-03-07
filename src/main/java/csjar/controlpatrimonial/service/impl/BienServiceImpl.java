@@ -404,8 +404,16 @@ public class BienServiceImpl implements BienService {
 		Map<Integer, Usuario> mapUsuarios = this.usuarioService.obtenerEntidades(idsEmpleado)
 				.stream().collect(Collectors.toMap(Usuario::getId, Function.identity()));
 		
-		bienes.stream().forEach(b -> {
+		List<Integer> idsAdquisicion = bienes.stream() 
+	            .map(b -> b.getIdAdquisicion()).distinct().collect(Collectors.toList());
+		
+		Map<Integer, Adquisicion> mapAdquisicion = this.adquisicionService.obtenerEntidades(idsAdquisicion)
+				.stream().collect(Collectors.toMap(Adquisicion::getId, Function.identity()));
+		
+		int orden = 1;
+		for(Bien b : bienes){
 			ResponseBienDTO dto = new ResponseBienDTO();
+			dto.setOrden(orden);
 			dto.setSede(sede.getDenominacion());
 			dto.setArea(mapAreas.get(b.getIdInstancia()).getDenominacion());
 			dto.setSerie(b.getSerie());
@@ -417,8 +425,10 @@ public class BienServiceImpl implements BienService {
 			Usuario empleado = mapUsuarios.get(b.getIdEmpleado());
 			dto.setEmpleado(empleado == null ? "" : empleado.getNombres() + " " + empleado.getApellidos());
 			dto.setPerfil(empleado == null ? "" : empleado.getPerfil().getDescripcion());
+			dto.setAnioAdquisicion(mapAdquisicion.get(b.getIdAdquisicion()).getFecAdquisicion().getYear());
+			orden++;
 			result.add(dto);
-		});
+		}
 		return result;
 	}
 

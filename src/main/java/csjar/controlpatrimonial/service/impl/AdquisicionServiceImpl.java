@@ -147,5 +147,10 @@ public class AdquisicionServiceImpl implements AdquisicionService {
 		this.ftpService.conectarFTP();
 		return this.ftpService.descargarArchivo(adquisicion.getRutaPdf(), adquisicion.getNombrePdf());
 	}
+
+	@Override
+	public List<Adquisicion> obtenerEntidades(List<Integer> id) {
+		return this.adquisicionRepository.findByIdIn(id);
+	}
 	
 }

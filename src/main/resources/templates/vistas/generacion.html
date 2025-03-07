@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
+	xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
 	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
@@ -74,7 +75,7 @@
 						</div>
 						<div style="width: 50%; margin: auto" align="center">
 							<button id="btnDocs" style="display: none" onclick="abrirDocumento()" type="button" class="btn btn-outline-danger btn-sm"><i class="fas fa-file-pdf"></i>&nbsp;DOCS</button><br><br>
-							<button id="btnGuardar" type="button" style="display: none" class="btn btn-primary" onclick="guardarBienes()"><i class="fas fa-save"></i>&nbsp;GUARDAR</button><br><br>
+							<button sec:authorize="hasRole('ENCARGADO CONTROL PATRIMONIAL')" id="btnGuardar" type="button" style="display: none" class="btn btn-primary" onclick="guardarBienes()"><i class="fas fa-save"></i>&nbsp;GUARDAR</button><br><br>
 							<button id="btnEtiquetas" type="button" style="display: none" class="btn btn-outline-danger" onclick="generarEtiquetas()"><i class="fas fa-file-pdf"></i>&nbsp;ETIQUETAS</button><br><br>
 							<button id="btnCancelar" style="display: none" onclick="animacion(false)" type="button" class="btn btn-secondary btn-sm"><i class="fas fa-times"></i>&nbsp;CANCELAR</button>
 						</div> 

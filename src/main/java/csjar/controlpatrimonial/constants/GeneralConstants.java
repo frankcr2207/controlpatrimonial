@@ -20,6 +20,7 @@ public class GeneralConstants {
 	public static final String BIEN_ESTADO_ASIGNADO = "ASIGNADO";
 	public static final String BIEN_ESTADO_DEVUELTO = "DEVUELTO";
 	public static final String BIEN_ESTADO_BAJA = "BAJA";
+	public static final String BIEN_REPORTE_PLANTILLA_EXCEL = "plantilla_reporte_v1";
 	
 	public static final String BIEN_CONSERVACION_BUENO = "BUENO";
 	public static final String BIEN_CONSERVACION_REGULAR = "REGULAR";

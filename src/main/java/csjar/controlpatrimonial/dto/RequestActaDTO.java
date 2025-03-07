@@ -8,6 +8,7 @@ import lombok.Data;
 public class RequestActaDTO {
 
 	private Integer idEmpleado;
+	private Integer idPerfil;
 	private String correo;
 	private String tipo;
 	private Integer idSede;

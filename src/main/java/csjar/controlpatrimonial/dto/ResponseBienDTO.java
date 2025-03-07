@@ -33,4 +33,6 @@ public class ResponseBienDTO {
 	private String area;
 	private String perfil;
 	
+	private Integer anioAdquisicion;
+	
 }

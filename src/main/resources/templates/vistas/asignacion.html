@@ -68,7 +68,9 @@
 								<label>NOMBRES: </label><input type="text" id="txtNombres" size="30"> <br>
 								<label>APELLIDOS: </label><input type="text" id="txtApellidos" size="30"><br>
 								<label>CORREO: </label><input type="text" id="txtCorreo" size="30"><br>
-								<label>CARGO: </label><input type="text" id="txtCargo" size="30"><br>
+								<label>CARGO: </label>
+								<select id="listPerfil">
+								</select><br>
 								<label>TIPO: </label><select id="listTipo"><option value="ASIGNADO">ASIGNACIÓN</option><option value="DEVUELTO">DEVOLUCIÓN</option></select>
 							</div>
 							<div style="width: 50%; padding: 10px" id="divResultado" class="interno derecho">
@@ -205,6 +207,29 @@
 		$(document).ready(function() {
 			  $('#listSede').select2();
 			  $('#listArea').select2();
+		   		$.ajax({
+		       		type : "GET",
+		       		url : "perfil",
+			        dataType : 'json',
+			        success : function(data) {
+			         	var html = '';
+			         	var len = data.length;
+			         	for (var i = 0; i < len; i++) {
+							html += '<option value="'+data[i].id+'">'+data[i].descripcion+'</option>';
+			         	}
+			         	$("#listPerfil").html(html);
+			        },
+			        error : function(response){
+			        	var r = jQuery.parseJSON(response.responseText);
+						toastr.clear();
+						toastr.options = {
+							"closeButton":true,
+							"progressBar": true,
+							"positionClass":"toast-topcenter-right"
+						};
+						toastr.warning(r.message);	
+			        }
+		      	});
 		});
 		
  		function abrirModal(){
@@ -373,6 +398,7 @@
             
             var movimiento = {
             	idEmpleado : idEmpleado,
+            	idPerfil : $('#listPerfil').val(),
             	correo : $('#txtCorreo').val(),
             	tipo : $('#listTipo').val(),
             	idArea : $('#listArea').val(),
@@ -392,18 +418,20 @@
 		            $('#modalEspera').modal('show');
 		        },
 				success:function(response) {
-					var tabla = document.getElementById("tablaBienes");
-		            var filas = tabla.getElementsByTagName("tr");
-					for (var i = filas.length - 1; i > 0; i--) {
-					    tabla.deleteRow(i);
-					}
-					var mensaje = response.mensaje;
-					$('#modalEspera').modal('hide');
-					Swal.fire(
-						mensaje,
-						'Click en OK para continuar!',
-						'success'
-					);	
+					setTimeout(function() {
+						var tabla = document.getElementById("tablaBienes");
+			            var filas = tabla.getElementsByTagName("tr");
+						for (var i = filas.length - 1; i > 0; i--) {
+						    tabla.deleteRow(i);
+						}
+						var mensaje = response.mensaje;
+						$('#modalEspera').modal('hide');
+						Swal.fire(
+							mensaje,
+							'Click en OK para continuar!',
+							'success'
+						);
+					}, 2000);
 				},
 		        error : function(response){
 		        	setTimeout(function() {

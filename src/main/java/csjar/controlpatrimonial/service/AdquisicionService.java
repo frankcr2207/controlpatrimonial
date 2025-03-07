@@ -14,4 +14,5 @@ public interface AdquisicionService {
 	Adquisicion obtenerEntidad(Integer id);
 	void actualizarEntidad(Adquisicion adquisicion);
 	byte[] descargarActa(Integer id) throws Exception;
+	List<Adquisicion> obtenerEntidades(List<Integer> id);
 }

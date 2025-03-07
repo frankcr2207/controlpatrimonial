@@ -10,12 +10,19 @@ import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.security.GeneralSecurityException;
+import java.security.KeyStore;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.security.PrivateKey;
+import java.security.Security;
+import java.security.cert.Certificate;
+import java.security.cert.X509Certificate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Base64;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -33,16 +40,29 @@ import org.apache.poi.ss.usermodel.PrintSetup;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.jxls.common.Context;
 import org.jxls.util.JxlsHelper;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.env.Environment;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
+
+import com.itextpdf.io.image.ImageDataFactory;
+import com.itextpdf.text.DocumentException;
+import com.itextpdf.text.Image;
+import com.itextpdf.text.pdf.PdfReader;
+import com.itextpdf.text.pdf.PdfSignatureAppearance;
+import com.itextpdf.text.pdf.PdfStamper;
+import com.itextpdf.text.pdf.security.BouncyCastleDigest;
+import com.itextpdf.text.pdf.security.ExternalDigest;
+import com.itextpdf.text.pdf.security.ExternalSignature;
+import com.itextpdf.text.pdf.security.MakeSignature;
+import com.itextpdf.text.pdf.security.PrivateKeySignature;
 
 import csjar.controlpatrimonial.constants.GeneralConstants;
 import csjar.controlpatrimonial.dto.RequestActaDTO;
@@ -54,6 +74,7 @@ import csjar.controlpatrimonial.entity.Acta;
 import csjar.controlpatrimonial.entity.Area;
 import csjar.controlpatrimonial.entity.Bien;
 import csjar.controlpatrimonial.entity.Catalogo;
+import csjar.controlpatrimonial.entity.Perfil;
 import csjar.controlpatrimonial.entity.Usuario;
 import csjar.controlpatrimonial.external.service.NotificacionExternalService;
 import csjar.controlpatrimonial.repository.ActaRepository;
@@ -63,6 +84,7 @@ import csjar.controlpatrimonial.service.BienService;
 import csjar.controlpatrimonial.service.BienVerService;
 import csjar.controlpatrimonial.service.CatalogoService;
 import csjar.controlpatrimonial.service.FtpService;
+import csjar.controlpatrimonial.service.PerfilService;
 import csjar.controlpatrimonial.service.UsuarioService;
 
 @Service
@@ -74,6 +96,12 @@ public class ActaServiceImpl implements ActaService {
 	@Value("${val.url.validar}")
 	private String MS_CONTROL_PATRIMONIAL_VALIDAR;
 	
+	@Value("${val.certificado.url}")
+	private String RUTA_CERTIFICADO;
+	
+	@Value("${val.certificado.password}")
+	private String CLAVE_CERTIFICADO;
+	
 	private ActaRepository repository;
 	private UsuarioService usuarioService;
 	private BienService bienService;
@@ -82,10 +110,11 @@ public class ActaServiceImpl implements ActaService {
 	private NotificacionExternalService notificacionExternalService;
 	private FtpService ftpService;
 	private BienVerService bienVerService;
+	private PerfilService perfilService;
 
 	public ActaServiceImpl(ActaRepository repository, UsuarioService usuarioService, BienService bienService,
 			NotificacionExternalService notificacionExternalService, FtpService ftpService, AreaService areaService,
-			CatalogoService catalogoService, BienVerService bienVerService) {
+			CatalogoService catalogoService, BienVerService bienVerService, PerfilService perfilService) {
 		super();
 		this.repository = repository;
 		this.usuarioService = usuarioService;
@@ -95,6 +124,7 @@ public class ActaServiceImpl implements ActaService {
 		this.areaService = areaService;
 		this.catalogoService = catalogoService;
 		this.bienVerService = bienVerService;
+		this.perfilService = perfilService;
 	}
 
 	@Transactional
@@ -105,6 +135,8 @@ public class ActaServiceImpl implements ActaService {
 		Integer numero = Objects.nonNull(actaAnterior) ? actaAnterior.getNumero() + 1 : 1;
 
 		Usuario empleadoEntity = this.usuarioService.obtenerEntidad(requestActaDTO.getIdEmpleado());
+		Perfil perfil = this.perfilService.obtenerEntidad(requestActaDTO.getIdPerfil());
+		empleadoEntity.setPerfil(perfil);
 		
 		Acta acta = new Acta();
 		acta.setUsuario(empleadoEntity);
@@ -215,7 +247,7 @@ public class ActaServiceImpl implements ActaService {
 		data.put("fecha", LocalDateTime.now().format(formatter));
 		data.put("dni", empleado.getDni());
 		data.put("nombresApellidos", empleado.getNombres() + " " + empleado.getApellidos());
-		data.put("personalControlpatrimonial", usuarioControl.getNombres() + " " + usuarioControl.getApellidos());
+		data.put("personalControlPatrimonial", usuarioControl.getNombres() + " " + usuarioControl.getApellidos());
 		data.put("correo", requestActaDTO.getCorreo());
 		data.put("area", area.getDenominacion());
 		data.put("sede", area.getSede().getDenominacion());
@@ -241,6 +273,7 @@ public class ActaServiceImpl implements ActaService {
 			bien.setSerie(b.getSerie());
 			bien.setColor(b.getColor());
 			bien.setObservaciones(b.getObservacion());
+			bien.setEstado(b.getEstadoConservacion());
 			orden++;
 			bienes.add(bien);
 		}
@@ -318,14 +351,17 @@ public class ActaServiceImpl implements ActaService {
 		process.waitFor();
 
 		String outputPdfPath = pdfDirectory + "\\" + new File(inputExcelFilePath).getName().replace(GeneralConstants.EXTENSION_EXCEL, GeneralConstants.EXTENSION_PDF);
+		String outputPdfPathSign = pdfDirectory + "\\" + new File(inputExcelFilePath).getName().replace(GeneralConstants.EXTENSION_EXCEL, "[F]" + GeneralConstants.EXTENSION_PDF);
 
 		File pdfFile = new File(outputPdfPath);
 		if (!pdfFile.exists()) {
 			throw new ResponseStatusException(HttpStatus.FAILED_DEPENDENCY,
 					"Error al convertir el archivo Excel a PDF.");
 		}
+		
+		firmarPdf(pdfFile, outputPdfPathSign);
 
-		byte[] pdfBytes = Files.readAllBytes(Paths.get(outputPdfPath));
+		byte[] pdfBytes = Files.readAllBytes(Paths.get(outputPdfPathSign));
 
 		tempExcelFile.delete();
 		pdfFile.delete();
@@ -333,6 +369,83 @@ public class ActaServiceImpl implements ActaService {
 		return pdfBytes;
 
 	}
+	
+	private void firmarPdf(File file, String outputPdfPath) throws IOException, DocumentException, GeneralSecurityException {
+		Security.addProvider(new BouncyCastleProvider());
+		File inputPdfFile = file;
+        String keystorePath = RUTA_CERTIFICADO; 
+        String keystorePassword = CLAVE_CERTIFICADO; 
+        String keyPassword = CLAVE_CERTIFICADO; 
+
+        KeyStore ks = KeyStore.getInstance("PKCS12");
+        ks.load(new FileInputStream(keystorePath), keystorePassword.toCharArray());
+
+        String alias = "";
+        Enumeration<String> aliases = ks.aliases();
+        while (aliases.hasMoreElements()) {
+            alias = aliases.nextElement();
+        }
+        
+        PrivateKey privateKey = (PrivateKey) ks.getKey(alias, keyPassword.toCharArray());
+        Certificate[] chain = ks.getCertificateChain(alias);
+
+        if (chain == null || chain.length == 0) {
+            throw new ResponseStatusException(HttpStatus.NOT_ACCEPTABLE, "No se encontró la cadena de certificados.");
+        }
+
+        PdfReader reader = new PdfReader(new FileInputStream(inputPdfFile));
+
+        FileOutputStream outputStream = new FileOutputStream(outputPdfPath);
+        PdfStamper stamper = PdfStamper.createSignature(reader, outputStream, '\0');
+
+        PdfSignatureAppearance appearance = stamper.getSignatureAppearance();
+        appearance.setReason("Acta Movimiento Control Patrimonial");
+        appearance.setLocation("Corte Superior de Justicia de Arequipa");
+        appearance.setSignDate(new java.util.GregorianCalendar());
+
+        com.itextpdf.text.Rectangle signatureRect = new com.itextpdf.text.Rectangle(200, 200, 350, 150);  
+        appearance.setVisibleSignature(signatureRect, 1, "Signature1");
+        
+        // Cargar la imagen
+        String imagePath = "static/img/FirmaDigital.jpg"; 
+
+        InputStream imageStream = new ClassPathResource(imagePath).getInputStream();
+        
+        byte[] imageBytes = convertInputStreamToByteArray(imageStream);
+        
+        Image image = Image.getInstance(imageBytes);
+        image.scaleToFit(50, 50); 
+        
+        float imageX = signatureRect.getLeft() - image.getScaledWidth() - 5; 
+        float imageY = signatureRect.getBottom() - 50; 
+
+        image.setAbsolutePosition(imageX, imageY);
+
+        // Agregar la imagen al PDF
+        stamper.getUnderContent(1).addImage(image);
+        
+        // Establecer la firma
+        PrivateKeySignature pks = new PrivateKeySignature(privateKey, "SHA-256", "BC");
+        ExternalDigest digest = new BouncyCastleDigest();
+
+        // Crear el objeto de la firma digital
+        MakeSignature.signDetached(appearance, digest, pks, chain, null, null, null, 0, MakeSignature.CryptoStandard.CMS);
+
+        stamper.close();
+        
+	}
+	
+	private static byte[] convertInputStreamToByteArray(InputStream inputStream) throws IOException {
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        byte[] buffer = new byte[1024];
+        int bytesRead;
+        
+        while ((bytesRead = inputStream.read(buffer)) != -1) {
+            byteArrayOutputStream.write(buffer, 0, bytesRead);
+        }
+        
+        return byteArrayOutputStream.toByteArray();
+    }
 
 	private boolean enviarEmail(Acta acta, Usuario empleado, String token, byte[] fileBytes) {
 		String link = MS_CONTROL_PATRIMONIAL_VALIDAR;
