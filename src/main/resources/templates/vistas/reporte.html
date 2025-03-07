@@ -3,6 +3,7 @@
 	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+	
 	<style type="text/css">
 	 	.selected{ background-color: #E1E1E1; } tr:hover{ background-color: #E1E1E1; } 
 
@@ -28,8 +29,17 @@
 		<hr>
 			<div>
 				<label>SEDE:</label><select id="listSedes" style="width: 500px;"></select><br><br>
-				<label>ORGANOS:</label><select id="listOrganos" style="width: 300px;"></select>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-				<button type="button" class="btn btn-info btn-sm" onclick="buscarbienes"><i class="fas fa-search"></i>&nbsp;BUSCAR</button>
+				<div  style="width:100%; height: 100%; font-size: 12px; margin: auto; display: flex;">
+					<div style="width: 20%;" align="left" id="divBusqueda">
+						<label>ORGANOS:</label>
+					</div>
+					<div style="width: 50%;" align="left" id="divBusqueda">
+						<select id="listOrganos" multiple style="width: 300px;" class="form form-control"></select>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+					</div>
+					<div style="width: 25%;" align="left" id="divBusqueda">
+						<button type="button" class="btn btn-info btn-sm" onclick="buscarBienes()"><i class="fas fa-search"></i>&nbsp;BUSCAR</button>
+					</div>
+				</div>
 				<hr>
 				<table id="tablaBienes" class="table">
 					<thead class="thead-dark">
@@ -51,9 +61,6 @@
 	<script>
 		$(document).ready(function() {
 		  $('#listSedes').select2();
-		});
-		$(document).ready(function() {
-			$('#listOrganos').select2();
 		});
 	
 		var sedes;
@@ -96,9 +103,8 @@
 		        	sedes = data;
 		         	var html = '';
 		         	var len = data.length;
-		         	html+='<option value="0">SELECCIONE ...</option>';
 		         	for (var i = 0; i < len; i++) {
-						html+='<option value="' + data[i].id +'">'+data[i].denominacion+'</option>';
+						html+='<option value="' + data[i].id +'"><input type="checkbox" id="' + data[i].id +'">'+data[i].denominacion+'</option>';
 		         	}
 			        $("#listOrganos").html(html);
 		        },
@@ -114,6 +120,28 @@
 		        }
 	      	});
         });
+	   	
+	   	function buscarBienes(){
+	   		var lista = $('#listOrganos').val();
+	   		$.ajax({
+	       		type : "GET",
+	       		url : "bien/reporte?idSede=" + $('#listSedes').val() + "&idsOrgano=" + lista,
+		        dataType : 'json',
+		        success : function(data) {
+
+		        },
+		        error : function(response){
+		        	var r = jQuery.parseJSON(response.responseText);
+					toastr.clear();
+					toastr.options = {
+						"closeButton":true,
+						"progressBar": true,
+						"positionClass":"toast-topcenter-right"
+					};
+					toastr.warning(r.message);	
+		        }
+	      	});
+	   	}
 	</script>
 </body>
 </html>

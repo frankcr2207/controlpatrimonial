@@ -13,5 +13,6 @@ public interface PerfilService {
 	List<ResponsePerfilDTO> listarPerfiles();
 	void crearPerfil(RequestPerfilDTO requestPerfilDTO);
 	void modificarPerfil(RequestPerfilDTO requestPerfilDTO);
+	List<ResponsePerfilDTO> listarPerfilesModulo();
 	
 }

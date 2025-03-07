@@ -1,5 +1,7 @@
 package csjar.controlpatrimonial.entity;
 
+import java.math.BigDecimal;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -25,6 +27,9 @@ public class DetalleAdquisicion {
 	
 	@Column(name="n_cantidad")
 	private Integer cantidad;
+	
+	@Column(name="n_precio_unitario")
+	private BigDecimal precioUnitario;
 	
 	@ManyToOne
 	@JoinColumn(name = "n_id_adquisicion", nullable = false)
@@ -60,6 +65,14 @@ public class DetalleAdquisicion {
 
 	public void setAdquisicion(Adquisicion adquisicion) {
 		this.adquisicion = adquisicion;
+	}
+
+	public BigDecimal getPrecioUnitario() {
+		return precioUnitario;
+	}
+
+	public void setPrecioUnitario(BigDecimal precioUnitario) {
+		this.precioUnitario = precioUnitario;
 	}
 	
 }

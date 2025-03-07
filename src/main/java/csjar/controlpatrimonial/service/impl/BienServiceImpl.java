@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -44,8 +45,9 @@ import csjar.controlpatrimonial.entity.Bien;
 import csjar.controlpatrimonial.entity.BienVer;
 import csjar.controlpatrimonial.entity.Catalogo;
 import csjar.controlpatrimonial.entity.Modelo;
+import csjar.controlpatrimonial.entity.Sede;
+import csjar.controlpatrimonial.entity.SedeOrgano;
 import csjar.controlpatrimonial.entity.Usuario;
-import csjar.controlpatrimonial.mapper.service.BienMapperService;
 import csjar.controlpatrimonial.repository.BienRepository;
 import csjar.controlpatrimonial.service.AdquisicionService;
 import csjar.controlpatrimonial.service.AreaService;
@@ -53,6 +55,8 @@ import csjar.controlpatrimonial.service.BienService;
 import csjar.controlpatrimonial.service.BienVerService;
 import csjar.controlpatrimonial.service.CatalogoService;
 import csjar.controlpatrimonial.service.ModeloService;
+import csjar.controlpatrimonial.service.OrganoService;
+import csjar.controlpatrimonial.service.SedeService;
 import csjar.controlpatrimonial.service.UsuarioService;
 import csjar.controlpatrimonial.utils.CollectionUtils;
 
@@ -66,11 +70,12 @@ public class BienServiceImpl implements BienService {
 	private BienVerService bienVerService;
 	private UsuarioService usuarioService;
 	private AreaService areaService;
-	private BienMapperService bienMapperService;
+	private OrganoService organoService;
+	private SedeService sedeService;
 	
 	public BienServiceImpl(BienRepository repository, ModeloService modeloService, CatalogoService catalogoService,
 			AdquisicionService adquisicionService, BienVerService bienVerService, UsuarioService usuarioService,
-			AreaService areaService, BienMapperService bienMapperService) {
+			AreaService areaService, OrganoService organoService, SedeService sedeService) {
 		super();
 		this.repository = repository;
 		this.modeloService = modeloService;
@@ -79,7 +84,8 @@ public class BienServiceImpl implements BienService {
 		this.bienVerService = bienVerService;
 		this.usuarioService = usuarioService;
 		this.areaService = areaService;
-		this.bienMapperService = bienMapperService;
+		this.organoService = organoService;
+		this.sedeService = sedeService;
 	}
 
 	@Override
@@ -93,7 +99,7 @@ public class BienServiceImpl implements BienService {
 			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "El código " + codigo + " se encuentra en mantenimiento.");
 		}
 		
-		if(tipoActa.equals("A")) {
+		if(tipoActa.equals(GeneralConstants.BIEN_ESTADO_ASIGNADO)) {
 			if(Objects.nonNull(bien.getIdEmpleado()) && !bien.getIdEmpleado().equals(idEmpleado)) 
 				throw new ResponseStatusException(HttpStatus.CONFLICT, "El código " + codigo + " se encuentra asignado a otro empleado.");
 			if(Objects.nonNull(bien.getIdEmpleado()) && bien.getIdEmpleado().equals(idEmpleado)) 
@@ -141,8 +147,7 @@ public class BienServiceImpl implements BienService {
 				bien.setDescripcion(b.getDescripcion());
 				bien.setSerie(b.getSerie());
 				bien.setEstado(GeneralConstants.BIEN_ESTADO_INGRESADO);
-				bien.setObservacion(GeneralConstants.BIEN_OBSERVACION_NUEVO_INGRESO);
-				bien.setObservacion(b.getObservacion());
+				bien.setObservacion(StringUtils.isNullOrEmpty(b.getObservacion()) ? GeneralConstants.BIEN_OBSERVACION_NUEVO_INGRESO : b.getObservacion());
 				bien.setModelo(mapModelos.get(b.getIdModelo()));
 				bien.setIdSede(1);
 				bien.setIdInstancia(197);
@@ -181,6 +186,9 @@ public class BienServiceImpl implements BienService {
 			bien.setCatalogo(mapCatalogos.get(b.getIdCatalogo()));
 			bien.setCodigoPatrimonial(b.getCodigoPatrimonial());
 			bien.setDescripcion(b.getDescripcion());
+			bien.setSerie(b.getSerie());
+			bien.setMarca(b.getModelo().getMarca().getNombre());
+			bien.setModelo(b.getModelo().getNombre());
 			responseBienes.add(bien);
 		});
 		
@@ -362,6 +370,56 @@ public class BienServiceImpl implements BienService {
 		repository.save(bien);
 		
 		bienVerService.generarVersion(Arrays.asList(bien), null);
+	}
+
+	@Override
+	public List<ResponseBienDTO> reporte(Integer idSede, List<Integer> idsOrgano) {
+		Sede sede = sedeService.obtenerEntidad(idSede);
+		List<ResponseBienDTO> result = new ArrayList<>(); 
+		List<SedeOrgano> sedeOrgano = this.organoService.obtenerEntidades(idSede, idsOrgano);
+		List<Integer> idsAreas = new ArrayList<>(); 
+		Map<Integer, Area> mapAreas = new HashMap<>(); 
+		sedeOrgano.stream().forEach(s -> {
+			s.getArea().stream().forEach(a -> {
+				if(!mapAreas.containsKey(a.getId())) {
+					mapAreas.put(a.getId(), a);
+				}
+				idsAreas.add(a.getId());
+			});
+		});
+		
+		List<Bien> bienes = this.repository.findByIdInstanciaIn(idsAreas);
+		if(!CollectionUtils.isValidate(bienes))
+			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No se encontraron resultados");
+		
+		List<Integer> idsCatalogo = bienes.stream() 
+	            .map(Bien::getIdCatalogo).distinct().collect(Collectors.toList());
+		
+		Map<Integer, String> mapCatalogos = this.catalogoService.obtenerCatalogo(idsCatalogo)
+				.stream().collect(Collectors.toMap(Catalogo::getId, Catalogo::getDenominacion));
+		
+		List<Integer> idsEmpleado = bienes.stream() 
+	            .map(Bien::getIdEmpleado).distinct().collect(Collectors.toList());
+		
+		Map<Integer, Usuario> mapUsuarios = this.usuarioService.obtenerEntidades(idsEmpleado)
+				.stream().collect(Collectors.toMap(Usuario::getId, Function.identity()));
+		
+		bienes.stream().forEach(b -> {
+			ResponseBienDTO dto = new ResponseBienDTO();
+			dto.setSede(sede.getDenominacion());
+			dto.setArea(mapAreas.get(b.getIdInstancia()).getDenominacion());
+			dto.setSerie(b.getSerie());
+			dto.setConservacion(b.getEstadoConservacion());
+			dto.setCodigoPatrimonial(b.getCodigoPatrimonial());
+			dto.setDescripcion(mapCatalogos.get(b.getIdCatalogo()));
+			dto.setMarca(b.getModelo().getMarca().getNombre());
+			dto.setModelo(b.getModelo().getNombre());
+			Usuario empleado = mapUsuarios.get(b.getIdEmpleado());
+			dto.setEmpleado(empleado == null ? "" : empleado.getNombres() + " " + empleado.getApellidos());
+			dto.setPerfil(empleado == null ? "" : empleado.getPerfil().getDescripcion());
+			result.add(dto);
+		});
+		return result;
 	}
 
 }

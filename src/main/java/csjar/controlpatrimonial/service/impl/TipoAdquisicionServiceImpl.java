@@ -3,10 +3,13 @@ package csjar.controlpatrimonial.service.impl;
 import java.util.List;
 import java.util.Objects;
 
+import javax.transaction.Transactional;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import csjar.controlpatrimonial.dto.RequestTipoAdquisicionDTO;
 import csjar.controlpatrimonial.dto.ResponseTipoAdquisicionDTO;
 import csjar.controlpatrimonial.entity.TipoAdquisicion;
 import csjar.controlpatrimonial.mapper.service.TipoAdquisicionMapperService;
@@ -37,6 +40,24 @@ public class TipoAdquisicionServiceImpl implements TipoAdquisicionService {
 	public List<ResponseTipoAdquisicionDTO> listarTiposAdquisicion() {
 		List<TipoAdquisicion> tipos = this.repository.findAll();
 		return this.mapper.toDTO(tipos);
+	}
+
+	@Transactional
+	@Override
+	public void guardarAdquisicion(RequestTipoAdquisicionDTO request) {
+		TipoAdquisicion tipoAdquisicion = new TipoAdquisicion();
+		tipoAdquisicion.setDenominacion(request.getDescripcion());
+		this.repository.save(tipoAdquisicion);
+	}
+
+	@Override
+	public void modificarAdquisicion(RequestTipoAdquisicionDTO request) {
+		TipoAdquisicion tipoAdquisicion = this.repository.findById(request.getId()).orElse(null);
+		if(tipoAdquisicion == null)
+			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No se encontro registro");
+		tipoAdquisicion.setDenominacion(request.getDescripcion());
+		this.repository.save(tipoAdquisicion);
+		
 	}
 
 }

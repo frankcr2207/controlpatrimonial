@@ -24,5 +24,6 @@ public interface BienService {
 	ResponseTrazabilidadDTO obtenerTrazabilidad(String codigo);
 	void modificarBien(RequestDetalleBienesDTO request);
 	void guardarMovimiento(RequestDetalleBienesDTO request);
+	List<ResponseBienDTO> reporte(Integer sede, List<Integer> idsOrgano);
 	
 }

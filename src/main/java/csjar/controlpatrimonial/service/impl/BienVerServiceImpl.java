@@ -46,7 +46,7 @@ public class BienVerServiceImpl implements BienVerService {
 			version.setIdBien(b.getId());
 			version.setIdActa(idActa);
 			version.setIdInstancia(b.getIdInstancia());
-			version.setIdActa(b.getIdSede());
+			version.setIdSede(b.getIdSede());
 			nuevos.add(version);
 		});
 		

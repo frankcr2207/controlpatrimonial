@@ -1,8 +1,10 @@
 package csjar.controlpatrimonial.controller;
 
+import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
 
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -41,6 +43,19 @@ public class AdquisicionController {
 	public ResponseEntity<ResponseEntity<HttpStatus>> gestionarAdquisicion(@RequestBody RequestAdquisicionDTO request) throws NoSuchAlgorithmException {
 		this.adquisicionService.guardarAdquisicion(request);
 		return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+	}
+	
+	@GetMapping("/pdf/{id}")
+	public ResponseEntity<?> descargarActa(@PathVariable Integer id) throws Exception {
+		try {
+			byte[] pdfBytes = adquisicionService.descargarActa(id);
+
+			return ResponseEntity.ok().header(HttpHeaders.CONTENT_TYPE, "application/pdf")
+					.header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"output.pdf\"").body(pdfBytes);
+
+		} catch (IOException e) {
+			return ResponseEntity.status(500).body(null);
+		}
 	}
 	
 }

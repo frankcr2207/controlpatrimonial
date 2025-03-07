@@ -59,4 +59,10 @@ public class PerfilServiceImpl implements PerfilService {
 			new ResponseStatusException(HttpStatus.NO_CONTENT, "No se encontró perfil"));
 	}
 
+	@Override
+	public List<ResponsePerfilDTO> listarPerfilesModulo() {
+		List<Perfil> perfiles = this.perfilRepository.findByModuloUsuarioIsNull();
+		return this.perfilMapperService.toDTO(perfiles);
+	}
+
 }

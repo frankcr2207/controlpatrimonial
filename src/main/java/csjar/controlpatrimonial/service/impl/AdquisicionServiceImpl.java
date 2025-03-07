@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -28,6 +29,7 @@ import csjar.controlpatrimonial.mapper.service.AdquisicionMapperService;
 import csjar.controlpatrimonial.repository.AdquisicionRepository;
 import csjar.controlpatrimonial.service.AdquisicionService;
 import csjar.controlpatrimonial.service.CatalogoService;
+import csjar.controlpatrimonial.service.FtpService;
 import csjar.controlpatrimonial.service.TipoAdquisicionService;
 import csjar.controlpatrimonial.utils.CollectionUtils;
 
@@ -38,15 +40,17 @@ public class AdquisicionServiceImpl implements AdquisicionService {
 	private AdquisicionMapperService adquisicionMapperService;
 	private TipoAdquisicionService tipoAdquisicionService;
 	private CatalogoService catalogoService;
+	private FtpService ftpService;
 	
 	public AdquisicionServiceImpl(AdquisicionRepository adquisicionRepository,
 		AdquisicionMapperService adquisicionMapperService, TipoAdquisicionService tipoAdquisicionService,
-		CatalogoService catalogoService) {
+		CatalogoService catalogoService, FtpService ftpService) {
 		super();
 		this.adquisicionRepository = adquisicionRepository;
 		this.adquisicionMapperService = adquisicionMapperService;
 		this.tipoAdquisicionService = tipoAdquisicionService;
 		this.catalogoService = catalogoService;
+		this.ftpService = ftpService;
 	}
 	
 	@Override
@@ -93,13 +97,25 @@ public class AdquisicionServiceImpl implements AdquisicionService {
 				DetalleAdquisicion detalle = new DetalleAdquisicion();
 				detalle.setCantidad(requestDetalle.getCantidad());
 				detalle.setCatalogo(catalogos.stream().filter(c -> c.getId().equals(requestDetalle.getIdCatalogo())).findFirst().get());
+				detalle.setPrecioUnitario(requestDetalle.getPrecioUnitario());
 				listaDetalle.add(detalle);
 			});
 			adquisicion.setDetalleAdquisicion(listaDetalle);
 			
 		}
 		
-		this.adquisicionRepository.save(adquisicion);
+		Adquisicion nnuevaAdquisicion = this.adquisicionRepository.saveAndFlush(adquisicion);
+		
+		String nombreArchivo = GeneralConstants.NOMENCLATURA_ADQUISICION_PDF + nnuevaAdquisicion.getId() + GeneralConstants.EXTENSION_PDF;
+		String directorio = GeneralConstants.DIRECTORIO_FTP_ADQUISICION + String.valueOf(LocalDateTime.now().getYear());
+		
+		nnuevaAdquisicion.setRutaPdf(directorio);
+		nnuevaAdquisicion.setNombrePdf(nombreArchivo);
+		
+		byte[] fileBytes = Base64.getDecoder().decode(requestAdquisicionDTO.getFile());
+		
+		this.ftpService.conectarFTP();
+		this.ftpService.cargarArchivo(nombreArchivo, directorio, fileBytes);
 				
 	}
 	
@@ -123,6 +139,13 @@ public class AdquisicionServiceImpl implements AdquisicionService {
 	public void actualizarEntidad(Adquisicion request) {
 		Adquisicion adquisicion = adquisicionRepository.findById(request.getId()).get();
 		adquisicion.setEstado(request.getEstado());
+	}
+
+	@Override
+	public byte[] descargarActa(Integer id) throws Exception {
+		Adquisicion adquisicion = this.adquisicionRepository.findById(id).get();
+		this.ftpService.conectarFTP();
+		return this.ftpService.descargarArchivo(adquisicion.getRutaPdf(), adquisicion.getNombrePdf());
 	}
 	
 }

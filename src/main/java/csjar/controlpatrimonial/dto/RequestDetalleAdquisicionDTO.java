@@ -9,6 +9,6 @@ public class RequestDetalleAdquisicionDTO {
 
 	private Integer idCatalogo;
 	private Integer cantidad;
-	private BigDecimal costoUnitario;
+	private BigDecimal precioUnitario;
 	
 }

@@ -36,6 +36,7 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.jxls.common.Context;
 import org.jxls.util.JxlsHelper;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.env.Environment;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -67,11 +68,11 @@ import csjar.controlpatrimonial.service.UsuarioService;
 @Service
 public class ActaServiceImpl implements ActaService {
 
-	@Value("${secret.key}")
-	private static String SECRET_KEY;
+	@Value("${val.secret.key}")
+	private String SECRET_KEY;
 	
-	@Value("${url.validar}")
-	private static String MS_CONTROL_PATRIMONIAL_VERIFICAR;
+	@Value("${val.url.validar}")
+	private String MS_CONTROL_PATRIMONIAL_VALIDAR;
 	
 	private ActaRepository repository;
 	private UsuarioService usuarioService;
@@ -137,8 +138,8 @@ public class ActaServiceImpl implements ActaService {
 				
 				bien.setIdEmpleado(null);
 				bien.setEstado(GeneralConstants.BIEN_ESTADO_DEVUELTO);
-				bien.setIdInstancia(1);
-				bien.setIdSede(197);
+				bien.setIdInstancia(197);
+				bien.setIdSede(1);
 			}
 			
 			bien.setEstadoConservacion(b.getEstadoConservacion());
@@ -149,7 +150,7 @@ public class ActaServiceImpl implements ActaService {
 		});
 		
 		String nombreArchivo = GeneralConstants.NOMENCLATURA_ACTA_PDF + acta.getNumero() + GeneralConstants.EXTENSION_PDF;
-		String directorio = "/" + String.valueOf(LocalDateTime.now().getYear());
+		String directorio = GeneralConstants.DIRECTORIO_FTP_ACTA + String.valueOf(LocalDateTime.now().getYear());
 		
 		acta.setBienes(bienes);
 		acta.setNombrePdfOriginal(nombreArchivo);
@@ -300,7 +301,7 @@ public class ActaServiceImpl implements ActaService {
 
 		String libreOfficePath = "C:\\Program Files\\LibreOffice\\program\\soffice.exe";
 																							
-		String pdfDirectory = "E:\\temp\\pdf_output";
+		String pdfDirectory = "D:\\temp\\pdf_output";
 		File pdfDir = new File(pdfDirectory);
 
 		if (!pdfDir.exists()) {
@@ -334,10 +335,11 @@ public class ActaServiceImpl implements ActaService {
 	}
 
 	private boolean enviarEmail(Acta acta, Usuario empleado, String token, byte[] fileBytes) {
+		String link = MS_CONTROL_PATRIMONIAL_VALIDAR;
 		RequestEmailDTO requestEmailDTO = new RequestEmailDTO();
 		String mensaje = GeneralConstants.NOTIFICACION_CUERPO.replace("<nombres>", empleado.getNombres().concat(" ").concat(empleado.getApellidos()))
 				.replace("<numeroActa>", acta.getNumero().toString().concat("-").concat(String.valueOf(acta.getFecRegistro().getYear())))
-					.replace("<enlace>", MS_CONTROL_PATRIMONIAL_VERIFICAR.concat("?code=").concat(acta.getId().toString()).concat("&token=").concat(token));
+					.replace("<enlace>", link.concat("?code=").concat(acta.getId().toString()).concat("&token=").concat(token));
 		
 		requestEmailDTO.setAsunto(GeneralConstants.NOTIFICACION_ASUNTO);
 		requestEmailDTO.setDestino(empleado.getCorreo());
@@ -348,8 +350,9 @@ public class ActaServiceImpl implements ActaService {
 		return this.notificacionExternalService.enviarEmail(requestEmailDTO);
 	}
 	
-	public static String generaHash(String data) throws NoSuchAlgorithmException {
-        String input = data + SECRET_KEY;
+	public String generaHash(String data) throws NoSuchAlgorithmException {
+		String llave = SECRET_KEY;
+        String input = data.concat(llave);
         MessageDigest digest = MessageDigest.getInstance("SHA-256");
         byte[] hashBytes = digest.digest(input.getBytes());
         return Base64.getEncoder().encodeToString(hashBytes);
@@ -387,7 +390,7 @@ public class ActaServiceImpl implements ActaService {
         return verificaHash(receivedHash, id, secretKey);
 	}
 	
-	public static boolean verificaHash(String receivedHash, Integer data, String secretKey) throws NoSuchAlgorithmException {
+	public boolean verificaHash(String receivedHash, Integer data, String secretKey) throws NoSuchAlgorithmException {
 		String generatedHash = generaHash(data.toString());
         return generatedHash.equals(receivedHash);
     }
@@ -431,8 +434,8 @@ public class ActaServiceImpl implements ActaService {
 	public byte[] descargarActa(Integer id) throws Exception {
 		Acta acta = this.repository.findById(id).get();
 		this.ftpService.conectarFTP();
-		byte[] fileBytes = this.ftpService.descargarArchivo(acta.getRutaPdf(), acta.getNombrePdfFirmado());
-		return fileBytes;
+		return this.ftpService.descargarArchivo(acta.getRutaPdf(), 
+			acta.getNombrePdfFirmado() != null ? acta.getNombrePdfFirmado() : acta.getNombrePdfOriginal());
 	}
 
 	@Override

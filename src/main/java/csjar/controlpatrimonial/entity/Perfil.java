@@ -28,6 +28,9 @@ public class Perfil {
 	@Column(name="s_estado")
 	private String estado;
 	
+	@Column(name="s_empleado")
+	private String moduloUsuario;
+	
 	@OneToMany(mappedBy = "perfil")
     private List<Usuario> usuarios;
 	

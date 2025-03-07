@@ -32,6 +32,9 @@ public class GeneralConstants {
 	public static final String ADQUISICION_ESTADO_GENERADO = "GENERADO";
 	
 	public static final String NOMENCLATURA_ACTA_PDF = "CP_ACTA_";
+	public static final String NOMENCLATURA_ADQUISICION_PDF = "CP_ADQUISICION_";
+	public static final String DIRECTORIO_FTP_ACTA= "/ACTA/";
+	public static final String DIRECTORIO_FTP_ADQUISICION= "/ADQUISICION/";
 	public static final String EXTENSION_EXCEL = ".xlsx";
 	public static final String EXTENSION_PDF = ".pdf";
 	

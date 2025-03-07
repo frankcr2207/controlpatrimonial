@@ -1,6 +1,8 @@
 
 package csjar.controlpatrimonial.service.impl;
 
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 
 import csjar.controlpatrimonial.entity.Area;
@@ -20,6 +22,11 @@ public class AreaServiceImpl implements AreaService {
 	@Override
 	public Area obtenerEntidad(Integer id) {
 		return this.repository.findById(id).get();
+	}
+
+	@Override
+	public List<Area> obtenerEntidades(List<Integer> idSedeOrgano) {
+		return null;
 	}
 
 }

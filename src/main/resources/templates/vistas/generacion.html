@@ -73,6 +73,7 @@
 							<label>ESTADO: </label><input type="text" id="txtEstado">
 						</div>
 						<div style="width: 50%; margin: auto" align="center">
+							<button id="btnDocs" style="display: none" onclick="abrirDocumento()" type="button" class="btn btn-outline-danger btn-sm"><i class="fas fa-file-pdf"></i>&nbsp;DOCS</button><br><br>
 							<button id="btnGuardar" type="button" style="display: none" class="btn btn-primary" onclick="guardarBienes()"><i class="fas fa-save"></i>&nbsp;GUARDAR</button><br><br>
 							<button id="btnEtiquetas" type="button" style="display: none" class="btn btn-outline-danger" onclick="generarEtiquetas()"><i class="fas fa-file-pdf"></i>&nbsp;ETIQUETAS</button><br><br>
 							<button id="btnCancelar" style="display: none" onclick="animacion(false)" type="button" class="btn btn-secondary btn-sm"><i class="fas fa-times"></i>&nbsp;CANCELAR</button>
@@ -103,6 +104,9 @@
 				            	<th>CATALOGO</th>
 				            	<th>CODIGO PATRIMONIAL</th>
 				                <th>DESCRIPCION</th>
+				                <th>MARCA</th>
+				                <th>MODELO</th>
+				                <th>SERIE</th>
 				                <th></th>
 				            </tr>
 				        </thead>
@@ -139,7 +143,22 @@
 	  </div>
 	</div>
 	
-	
+	<div class="modal fade" id="documentModal" tabindex="-1" aria-labelledby="documentModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="documentModalLabel">Vista de la adquisicion</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <iframe id="documentFrame" src="" width="100%" height="500px" frameborder="0"></iframe>
+                </div>
+                <div class="modal-body">
+                	<button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">CERRAR</button>
+                </div>
+            </div>
+        </div>
+    </div>
 	
 	<script type="text/javascript">
 		var dataSelect;
@@ -180,6 +199,9 @@
 	
     <script type="text/javascript">
     
+	    function salirModal() {
+	    	$('#documentModal').modal('hide');
+	    }
 	    function buscarAdquisicion(){
     		var tabla = document.getElementById("tablaAdquisicion");
             var filas = tabla.getElementsByTagName("tr");
@@ -266,6 +288,8 @@
 					$('#txtFecRegistro').val(data.fecRegistro);
 					$('#txtEstado').val(data.estado);
 					$('#btnCancelar').show();
+					$('#btnDocs').show();
+					
 					if(data.estado == 'REGISTRADO'){
 						$('#btnEtiquetas').hide();
 						$('#btnGuardar').show();
@@ -330,14 +354,20 @@
 						            var celda2 = fila.insertCell(1);
 						            var celda3 = fila.insertCell(2);
 						            var celda4 = fila.insertCell(3);
+						            var celda5 = fila.insertCell(4);
+						            var celda6 = fila.insertCell(5);
+						            var celda7 = fila.insertCell(6);
 						            celda1.innerHTML = data[i].catalogo;
 						            celda2.innerHTML = data[i].codigoPatrimonial;
 						            celda3.innerHTML = data[i].descripcion;
+						            celda4.innerHTML = data[i].marca;
+						            celda5.innerHTML = data[i].modelo;
+						            celda6.innerHTML = data[i].serie;
 						            if(data[i].codigoPatrimonial == '')
 						            	editar = '<button type="button" class="btn btn-warning btn-sm" onclick="editarBien('+data[i].id+')"><i class="fas fa-edit"></i></button>';
 						            else
 						            	editar = '';
-						            celda4.innerHTML = editar;
+						            celda7.innerHTML = editar;
 								}
 						    })
 						    .catch(function(error) {
@@ -385,6 +415,7 @@
 		    	$('#btnGuardar').hide();
 		    	$('#btnReplicar').hide();
 		    	$('#btnEtiquetas').hide();
+		    	$('#btnDocs').hide();
 			}
 		}
 		
@@ -510,6 +541,9 @@
     					    tabla.deleteRow(i);
     					}
     					$('#txtEstado').val('GENERADO');
+    					$('#btnGuardar').hide();
+    					$('#btnEtiquetas').show();
+    					
     					Swal.fire(
     						'BIENES GENERADOS CORRECTAMENTE!!',
     						'Click en OK para continuar!',
@@ -668,6 +702,48 @@
 		        }
 			});
    		}
+		
+		function abrirDocumento() {
+			
+			var id = $('#txtId').val();
+			
+	    	$.ajax({
+	            url: 'adquisicion/pdf/' + id,
+	            method: 'GET',
+	            xhrFields: {
+	                responseType: 'blob' // Importante para manejar archivos binarios
+	            },
+	            success: function(data) {
+	                // Convertir la respuesta en un Blob y generar un objeto URL
+	                const blob = new Blob([data], { type: 'application/pdf' });
+	                const url = URL.createObjectURL(blob);
+
+	                // Configurar el iframe con el archivo
+	                $('#documentFrame').attr('src', url);
+
+	                // Mostrar el modal
+	                const modal = new bootstrap.Modal(document.getElementById('documentModal'));
+	                modal.show();
+	            },
+	            error: function(response) {
+	                if (response.responseJSON) {
+	                    // Si el backend devolvió un JSON válido
+	                    toastr.warning(response.responseJSON.message);
+	                } else if (response.responseText) {
+	                    try {
+	                        // Intentar parsear el texto como JSON
+	                        var jsonResponse = JSON.parse(response.responseText);
+	                        toastr.warning(jsonResponse.message);
+	                    } catch (e) {
+	                        // Si no se puede parsear, es otro tipo de error
+	                        toastr.error("Error inesperado: " + response.statusText);
+	                    }
+	                } else {
+	                    toastr.error("Error inesperado: No se pudo procesar la solicitud.");
+	                }
+	            }
+	        });
+	    }
 	</script>
 
 </body>

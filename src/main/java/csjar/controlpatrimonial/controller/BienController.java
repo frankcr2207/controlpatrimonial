@@ -97,4 +97,9 @@ public class BienController {
 		this.bienService.guardarMovimiento(request);
 		return new ResponseEntity<>(HttpStatus.NO_CONTENT);
 	}
+	
+	@GetMapping("/reporte")
+	public ResponseEntity<List<ResponseBienDTO>> reporte(@RequestParam Integer idSede, @RequestParam List<Integer> idsOrgano){
+		return new ResponseEntity<>(this.bienService.reporte(idSede, idsOrgano), HttpStatus.OK);
+	}
 }

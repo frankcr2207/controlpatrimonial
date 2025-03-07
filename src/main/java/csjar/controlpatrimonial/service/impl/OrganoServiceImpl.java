@@ -38,4 +38,9 @@ public class OrganoServiceImpl implements OrganoService{
 		
 	}
 
+	@Override
+	public List<SedeOrgano> obtenerEntidades(Integer idSede, List<Integer> idsOrgano) {
+		return this.sedeOrganoRepository.findByIdSedeAndIdOrganoIn(idSede, idsOrgano);
+	}
+
 }

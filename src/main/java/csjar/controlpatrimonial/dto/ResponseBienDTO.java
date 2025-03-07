@@ -29,4 +29,8 @@ public class ResponseBienDTO {
 	private Integer idActa;
 	private String conservacion;
 	
+	private String sede;
+	private String area;
+	private String perfil;
+	
 }

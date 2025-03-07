@@ -28,9 +28,9 @@ public class PerfilController {
 		this.perfilService = perfilService;
 	}
 
-	@GetMapping
+	@GetMapping("/modulo")
 	public ResponseEntity<List<ResponsePerfilDTO>> listarPerfiles() throws NoSuchAlgorithmException {
-		return new ResponseEntity<>(perfilService.listarPerfiles(), HttpStatus.OK);
+		return new ResponseEntity<>(perfilService.listarPerfilesModulo(), HttpStatus.OK);
 	}
 	
 	@GetMapping("/{id}")

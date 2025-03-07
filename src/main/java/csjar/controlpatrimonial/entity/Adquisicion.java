@@ -44,6 +44,12 @@ public class Adquisicion {
 	@Column(name="s_estado")
 	private String estado;
 	
+	@Column(name="s_ruta_pdf")
+	private String rutaPdf;
+	
+	@Column(name="s_pdf")
+	private String nombrePdf;
+	
 	@Column(name="s_login")
 	private String usuario;
 	
@@ -126,6 +132,22 @@ public class Adquisicion {
 
 	public void setRegularizar(String regularizar) {
 		this.regularizar = regularizar;
+	}
+
+	public String getRutaPdf() {
+		return rutaPdf;
+	}
+
+	public void setRutaPdf(String rutaPdf) {
+		this.rutaPdf = rutaPdf;
+	}
+
+	public String getNombrePdf() {
+		return nombrePdf;
+	}
+
+	public void setNombrePdf(String nombrePdf) {
+		this.nombrePdf = nombrePdf;
 	}
 	
 }

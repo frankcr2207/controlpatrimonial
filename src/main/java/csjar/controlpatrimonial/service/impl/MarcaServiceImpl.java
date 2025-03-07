@@ -28,4 +28,10 @@ public class MarcaServiceImpl implements MarcaService {
 		return this.mapper.toDTO(marcas);
 	}
 
+	@Override
+	public List<Marca> obtenerEntidades(List<Integer> ids) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 }

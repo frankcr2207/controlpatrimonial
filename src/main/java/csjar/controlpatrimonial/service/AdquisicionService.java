@@ -13,4 +13,5 @@ public interface AdquisicionService {
 	void guardarAdquisicion(RequestAdquisicionDTO requestAdquisicionDTO);
 	Adquisicion obtenerEntidad(Integer id);
 	void actualizarEntidad(Adquisicion adquisicion);
+	byte[] descargarActa(Integer id) throws Exception;
 }

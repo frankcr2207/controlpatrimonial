@@ -28,4 +28,9 @@ public class SedeServiceImpl implements SedeService {
 		return this.mapper.toDTO(sedes);
 	}
 
+	@Override
+	public Sede obtenerEntidad(Integer id) {
+		return this.repository.findById(id).orElse(null);
+	}
+
 }
