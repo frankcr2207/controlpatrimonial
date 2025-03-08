@@ -63,5 +63,11 @@ public class ActaController {
 			return ResponseEntity.status(500).body(null);
 		}
 	}
+	
+	@PostMapping("/notificar/{id}")
+	public ResponseEntity<ResponseActaDTO> notificarActa(@PathVariable Integer id) throws Exception {
+		actaService.notificarActa(id);
+		return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+	}
 
 }

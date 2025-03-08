@@ -154,6 +154,7 @@ public class BienServiceImpl implements BienService {
 				if(adquisicion.getEstado().equals(GeneralConstants.ADQUISICION_ESTADO_REGISTRADO))
 					bien.setCodigoPatrimonial(catalogo.getCodigo().concat(String.format("%04d", secuencia)));
 				bien.setIdCatalogo(b.getIdCatalogo());
+				bien.setEstadoConservacion(GeneralConstants.BIEN_CONSERVACION_BUENO);
 				bienes.add(bien);
 				secuencia++;
 				catalogo.setSecuencia(secuencia);

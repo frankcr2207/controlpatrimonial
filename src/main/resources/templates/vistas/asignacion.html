@@ -28,7 +28,7 @@
 		</div>
 		<div  style="width:60%; height: 100%; font-size: 12px; margin: auto; display: flex;">
 			<div style="width: 50%;" id="divBusqueda" class="interno izquierdo"><br>
-				<label>NOMBRES: </label><input type="text" id="txtEmpleado" onkeydown="handleEnterDni(event)"> <br>
+				<label>NOMBRES: </label><input type="text" id="txtEmpleado"> <br>
 			</div>
 			<div style="width: 50%; padding: 10px" id="divResultado" class="interno derecho">
 				<button type="button" class="btn btn-outline-info" onclick="buscarActa()"><i class="fas fa-search"></i>&nbsp;BUSCAR</button>
@@ -54,7 +54,7 @@
 		</div>
 	</div>
 	
-	<div class="modal fade modalNuevo" id="modalNuevo" data-backdrop="static" data-keyboard="false" tabindex="-1" role="dialog" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+	<div class="modal fade modalNuevo" id="modalNuevo" >
 		<div class="modal-dialog modal-dialog-centered modal-xl">
 		    <div class="modal-content">
 			    <div class="modal-body" align="justify">
@@ -106,7 +106,7 @@
 			</div>
 		</div>
 	</div>
-	    <div class="modal fade" id="documentModal" tabindex="-1" aria-labelledby="documentModalLabel" aria-hidden="true">
+	    <div class="modal fade" id="documentModal" >
         <div class="modal-dialog modal-xl">
             <div class="modal-content">
                 <div class="modal-header">
@@ -472,6 +472,10 @@
     	       		url : "acta/" + empleado,
     		        dataType : 'json',
     		        success : function(data) {
+						for (var i = filas.length - 1; i > 0; i--) {
+						    tabla.deleteRow(i);
+						}
+						
 						for (var i = 0; i < data.length; i++) { 
 							var fila = tbody.insertRow();
 	
@@ -553,6 +557,44 @@
 	            }
 	        });
 	    }
+        
+        function notificarActa(id) {
+            $.ajax({
+				type: "POST",
+				url: "acta/notificar/" + id,
+				cache: false,
+				dataType: "json",
+				contentType: "application/json; charset=utf-8",
+				processData: false,
+				beforeSend:function(){
+		            $('#modalEspera').modal('show');
+		        },
+				success:function(response) {
+					setTimeout(function() {
+						$('#modalEspera').modal('hide');
+						Swal.fire(
+							'Acta fue notificada!',
+							'Click en OK para continuar!',
+							'success'
+						);
+					}, 2000);
+				},
+		        error : function(response){
+		        	setTimeout(function() {
+		        		$('#modalEspera').modal('hide');
+			        	var r = jQuery.parseJSON(response.responseText);
+						toastr.clear();
+						toastr.options = {
+							"closeButton":true,
+							"progressBar": true,
+							"positionClass":"toast-topcenter-right"
+						};
+						toastr.warning(r.message);	
+		        	}, 2000);
+		        }
+			});
+            
+        }
         
     </script>
 </body>

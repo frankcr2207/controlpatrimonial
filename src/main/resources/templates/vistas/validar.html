@@ -63,7 +63,7 @@
 				<label style="width: 150px;"><strong>NÚMERO ACTA: </strong></label><input style="font-weight: bold" th:value="${dto.numeroActa}" id="nombres" readonly="readonly" size="40"><br>
 				<label style="width: 150px;"><strong>FECHA: </strong></label><input style="font-weight: bold" th:value="${#temporals.format(dto.fecha, 'dd-MM-yyyy hh:mm:ss a')}" id="nombres" readonly="readonly" size="20"><br>
 				<label style="width: 150px;"><strong>NOMBRES: </strong></label><input style="font-weight: bold" th:value="${dto.nombresApellidos}" id="nombres" readonly="readonly" size="40"><br>
-				<label style="width: 150px;"><strong>CARGUE EL ACTA: </strong></label><input type="file" id="txtArchivo" >
+				<label id="lblArchivo" style="width: 150px;"><strong>CARGUE EL ACTA: </strong></label><input type="file" id="txtArchivo" >
 				<div style="width: 100%; margin: auto; padding: 40px" align="center">
 					<button class="btn btn-primary" type="button" id="btnEnviar" onclick="confirmar()">ENVIAR</button>
 				</div>
@@ -163,30 +163,26 @@
             dataType: "json",
             processData: false,
             contentType: false,
-			beforeSend:function(){
-	            $('#modalEspera').modal('show');
-	        },
 			success:function(response) {
 				$('#modalEspera').modal('hide');
 				$('#btnEnviar').hide();
+				$('#txtArchivo').hide();
+				$('#lblArchivo').hide();
 				Swal.fire(
-				  'ACTA FUE ENVIADO CON ÉXITO!!',
+				  'ACTA FUE ENVIADO CON ÉXITO, PUEDE CERRAR LA VENTANA',
 				  'Click en OK para continuar!',
 				  'success'
 				);
 			},
 	        error : function(response){
-	        	setTimeout(function() {
-	        		$('#modalEspera').modal('hide');
-		        	var r = jQuery.parseJSON(response.responseText);
-					toastr.clear();
-					toastr.options = {
-						"closeButton":true,
-						"progressBar": true,
-						"positionClass":"toast-topcenter-right"
-					};
-					toastr.warning(r.message);
-		        }, 2000);
+	        	var r = jQuery.parseJSON(response.responseText);
+				toastr.clear();
+				toastr.options = {
+					"closeButton":true,
+					"progressBar": true,
+					"positionClass":"toast-topcenter-right"
+				};
+				toastr.warning(r.message);
 	        }
 		
 		});

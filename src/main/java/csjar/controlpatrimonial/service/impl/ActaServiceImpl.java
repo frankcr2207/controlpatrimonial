@@ -63,6 +63,7 @@ import com.itextpdf.text.pdf.security.ExternalDigest;
 import com.itextpdf.text.pdf.security.ExternalSignature;
 import com.itextpdf.text.pdf.security.MakeSignature;
 import com.itextpdf.text.pdf.security.PrivateKeySignature;
+import com.mysql.cj.util.StringUtils;
 
 import csjar.controlpatrimonial.constants.GeneralConstants;
 import csjar.controlpatrimonial.dto.RequestActaDTO;
@@ -144,7 +145,7 @@ public class ActaServiceImpl implements ActaService {
 		acta.setNumero(numero);
 		acta.setIdUsuario(usuario.getId());
 		acta.setIdArea(requestActaDTO.getIdArea());
-		acta.setTipo(requestActaDTO.getTipo().equals("A") ? GeneralConstants.ACTA_TIPO_ASIGNACION : GeneralConstants.ACTA_TIPO_DEVOLUCION);
+		acta.setTipo(requestActaDTO.getTipo());
 		
 		Integer idSede = requestActaDTO.getIdSede();
 		Integer idInstancia = requestActaDTO.getIdArea();
@@ -247,12 +248,13 @@ public class ActaServiceImpl implements ActaService {
 		data.put("fecha", LocalDateTime.now().format(formatter));
 		data.put("dni", empleado.getDni());
 		data.put("nombresApellidos", empleado.getNombres() + " " + empleado.getApellidos());
+		data.put("cargoEmpleado", empleado.getPerfil().getDescripcion());
 		data.put("personalControlPatrimonial", usuarioControl.getNombres() + " " + usuarioControl.getApellidos());
 		data.put("correo", requestActaDTO.getCorreo());
 		data.put("area", area.getDenominacion());
 		data.put("sede", area.getSede().getDenominacion());
 		data.put("direccion", area.getSede().getDireccion());
-		data.put("tipo", requestActaDTO.getTipo().equals("A") ? GeneralConstants.ACTA_TIPO_ASIGNACION : GeneralConstants.ACTA_TIPO_DEVOLUCION);
+		data.put("tipo", requestActaDTO.getTipo().equals("ASIGNADO") ? GeneralConstants.ACTA_TIPO_ASIGNACION : GeneralConstants.ACTA_TIPO_DEVOLUCION);
 		data.put("secuenciaActa", numero + "-" + LocalDateTime.now().getYear());
 
 		List<Integer> idsCatalogo = listaBienes.stream().map(Bien::getIdCatalogo).distinct()
@@ -476,7 +478,7 @@ public class ActaServiceImpl implements ActaService {
 		
 		ResponseActaDTO response = new ResponseActaDTO();
 		boolean validation = this.validar(code, token.replace(" ", "+"));
-		response.setMensaje(validation ? "Validación de datos correcta" : "Validación de datos incorrecta");
+		response.setMensaje(validation ? "Validación de token correcto." : "Validación de token incorrecto.");
 		response.setStatus(validation ? "OK" : "KO");
 		if(validation) {
 			Acta acta = this.repository.findById(code).orElse(null);
@@ -516,7 +518,7 @@ public class ActaServiceImpl implements ActaService {
 		String pdf = acta.getNombrePdfOriginal();
 		pdf = pdf.substring(0, pdf.lastIndexOf("."));
 		pdf = pdf.concat("_[F]").concat(GeneralConstants.EXTENSION_PDF);
-		String directorio = "/" + String.valueOf(acta.getFecRegistro().getYear());
+		String directorio = GeneralConstants.DIRECTORIO_FTP_ACTA + String.valueOf(acta.getFecRegistro().getYear());
 		
 		Path path = Paths.get(GeneralConstants.SERVER_TEMP + pdf);
         Files.write(path, multipartFile.getBytes());
@@ -538,7 +540,7 @@ public class ActaServiceImpl implements ActaService {
 	public void contieneFirmaDigital(File pdfFile) throws IOException {
         PDDocument document = PDDocument.load(pdfFile);
             List<PDSignature> signatures = document.getSignatureDictionaries();
-            if(signatures.isEmpty())
+            if(signatures.size() == 1)
             	throw new ResponseStatusException(HttpStatus.NOT_FOUND, "El archivo no está firmado digitalmente.");
 
     }
@@ -548,7 +550,7 @@ public class ActaServiceImpl implements ActaService {
 		Acta acta = this.repository.findById(id).get();
 		this.ftpService.conectarFTP();
 		return this.ftpService.descargarArchivo(acta.getRutaPdf(), 
-			acta.getNombrePdfFirmado() != null ? acta.getNombrePdfFirmado() : acta.getNombrePdfOriginal());
+			StringUtils.isNullOrEmpty(acta.getNombrePdfFirmado()) ? acta.getNombrePdfOriginal() : acta.getNombrePdfFirmado());
 	}
 
 	@Override
@@ -576,7 +578,7 @@ public class ActaServiceImpl implements ActaService {
 	public void notificarActa(Integer idActa) throws IOException {
 		Acta acta = this.repository.findById(idActa).get();
 		this.ftpService.conectarFTP();
-		byte[] fileBytes = this.ftpService.descargarArchivo(acta.getRutaPdf(), acta.getNombrePdfFirmado());
+		byte[] fileBytes = this.ftpService.descargarArchivo(acta.getRutaPdf(), acta.getNombrePdfOriginal());
 		if(!enviarEmail(acta, acta.getUsuario(), acta.getToken(), fileBytes))
 			throw new ResponseStatusException(HttpStatus.CONFLICT, "No se pudo notificar el acta");
 		acta.setEstado(GeneralConstants.ACTA_ESTADO_NOTIFICADO);
